@@ -10,7 +10,7 @@ The Kiit framework was developed by **<a href="https://github.com/kishorereddy">
 {{% break %}}
 
 # Code Helix
-Kiit is a product of **<a href="https://codehelix.co">Code Helix</a>** which is a small New York City based software services company that has historically specialized in mobile and server development for freelance and contract work for SMBs ( Small and Medium Sized businesses ) and start-ups. Code Helix is made up of a small, passionate group of seasoned professionals in engineering and product development, with the goal of delivering high-quality applications and systems for both internal and/or external, public facing use.
+Kiit is a product of **<a href="https://codehelix.co">Code Helix</a>** which is a small New York City based software services company that has historically specialized in mobile and server development for freelance and contract work for SMBs ( Small and Medium Sized businesses ) and start-ups. At the moment, Code Helix only publishes Kiit as an open-source project. 
 {{% break %}}
 
 # Philosophy
@@ -18,7 +18,7 @@ We aim to simplify mobile and especially server-side development on the JVM usin
 {{% break %}}
 
 # Kotlin
-We strongly believe that **<a href="https://kotlinlang.org/">Kotlin</a>** is the perfect language to build scalable applications efficiently with significantly less risk due to its modern set of features, static types, solid interop with existing libraries, and functional programming paradigms. Out of other languages such as Scala, Rust, Go, NodeJS, Ruby, Python for server development, Kotlin strikes the right balance with its combination of simplicity, features, type-safety, conciseness, access to existing JVM ecosystem, and has enormous potential for developing multi-platform apps within and outside of the JVM. The modules are built with an emphasis on simplicity, immutability, and functional programming. However, we do not believe in a dogmatic approach to FP(functional programming), and carefully choose all the features of Kotlin to incorporate for the purpose of keeping things simple, pragmatic and easy for anyone to maintain code.
+We strongly believe that **<a href="https://kotlinlang.org/">Kotlin</a>** is the perfect language to build scalable applications efficiently with significantly less risk due to its modern set of features, static types, solid interop with existing libraries, and functional programming paradigms. Out of other languages such as Scala, Rust, Go, NodeJS, Ruby, Python for server development, Kotlin strikes the right balance with its combination of simplicity for engineers, features, type-safety, conciseness, access to existing JVM ecosystem, and has enormous potential for developing multi-platform apps within and outside of the JVM. The modules are built with an emphasis on simplicity, immutability, and practical functional programming. We carefully choose all the features of Kotlin to incorporate for the purpose of keeping things simple, pragmatic and easy for anyone to maintain code.
 {{% break %}}
 
 

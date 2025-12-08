@@ -6,14 +6,14 @@ section_header: Updates
 
 
 # Status
-{{% sk-name %}} is <strong>production ready as of January 2021</strong> and being made generally available. Many components are marked as <strong>stable</strong> and few are still in <strong>beta</strong> and/or only meant for <strong>internal</strong> use.
+{{% sk-name %}} is <strong>production ready as of January 2024</strong> and being made generally available. Many components are marked as <strong>stable</strong> and few are still in <strong>beta</strong> and/or only meant for <strong>internal</strong> use.
 There is also a <strong>Homebrew installer</strong> for Mac OS for using the {{% sk-name %}} <strong>CLI</strong> tool to create new projects.
 {{% sk-link-cli %}}
 {{% break %}}
 
 
 # Releases
-You can check the current releases at <a href="https://github.com/slatekit/slatekit/releases">Releases</a>
+You can check the current releases at <a href="https://github.com/slatekit/kiit/releases">Releases</a>
 {{% break %}}
 
 # Current
@@ -57,13 +57,13 @@ Upcoming developments and features
     </tr>
     <tr>
         <td><strong>6</strong></td>
-        <td><strong>Multi-Platform</strong></td>
-        <td>Project improvements to support Kotlin Multi-Platform <strong>iOS</strong> and <strong>Javascript</strong></td>
+        <td><strong>Gradle</strong></td>
+        <td>Update the build system to Kotlin DSL and support for multi-platform.</td>
     </tr>
     <tr>
         <td><strong>7</strong></td>
-        <td><strong>MBaaS</strong></td>
-        <td>See details below for more info</td>
+        <td><strong>Multi-Platform</strong></td>
+        <td>Project improvements to support Kotlin Multi-Platform <strong>iOS</strong> and <strong>Javascript</strong></td>
     </tr>
 </table>
 {{% break %}}
@@ -83,8 +83,7 @@ Upcoming developments and features
                         { name:"Status"      , anchor: "#status"    },
                         { name:"Releases"    , anchor: "#releases"  },
                         { name:"Current"     , anchor: "#current"   },
-                        { name:"Upcoming"    , anchor: "#upcoming"  },
-                        { name:"MBaaS"       , anchor: "#mbaas"   }
+                        { name:"Upcoming"    , anchor: "#upcoming"  }
                     ]
                 }
             ]

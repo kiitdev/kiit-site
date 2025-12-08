@@ -22,7 +22,7 @@ Feel free to contact us using all the various channels below! We put a lot of ef
           <div class="col-md-4 wow fadeInUp">
             <div class="box text-center">
               <a href="https://twitter.com/slatekit"><img src="assets/media/img/twitter.png" ></a>
-              <div><a href="https://twitter.com/slatekit"><h3>Twitter</h3></a></div>
+              <div><a href="https://x.com/kiitdev"><h3>Twitter</h3></a></div>
               <p>Follow updates {{% sk-contact-twitter %}}</p>
             </div>
           </div>
@@ -58,7 +58,7 @@ Feel free to contact us using all the various channels below! We put a lot of ef
 
 
 # Support
-We prioritize issues/tickets so they fall into one of the release schedules listed above ( e.g. hot-fixes, patches, minor features, major upgrades). 
+We all have full-time jobs and are not available for immediate requests. Issues/tickets are prioritized into one of the release schedules listed above ( e.g. hot-fixes, patches, minor features, major upgrades). 
 {{% break %}}
 
 # Discuss
