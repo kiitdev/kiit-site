@@ -7,11 +7,15 @@ tags: []
 draft: true
 ---
 
+# Overview {#overview}
 Write a 1-3 sentence intro/hook here.
+{{% section-end mod="blog/{{ .Name }}" %}}
 
-## Overview {#overview}
-Start writing here. Add more `## Heading {#anchor}` sections as needed, and add a matching
-`{ name: "...", anchor: "#..." }` entry to the archComponent script below for each one.
+# Next Section {#next-section}
+Start writing here. Add more `# Heading {#anchor}` sections as needed, closing each one with
+`{{%/* section-end mod="blog/{{ .Name }}" */%}}` for spacing and a "Back to top" link, and add a
+matching `{ name: "...", anchor: "#..." }` entry to the archComponent script below for each one.
+{{% section-end mod="blog/{{ .Name }}" %}}
 
 <script>
     var archComponent = {
@@ -25,7 +29,8 @@ Start writing here. Add more `## Heading {#anchor}` sections as needed, and add 
                 {
                     name: "In this post",
                     items: [
-                        { name: "Overview", anchor: "#overview" }
+                        { name: "Overview", anchor: "#overview" },
+                        { name: "Next Section", anchor: "#next-section" }
                     ]
                 }
             ]
