@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <!--<base href="{{ .Site.BaseURL }}">-->
+
+    <base href="../../">
+    {{ partial "header.html" . }}
+    <link rel="stylesheet" href="assets/theme/css/about-1.css">
+    <link rel="stylesheet" href="assets/app/slatekit.css">
+    <link rel="stylesheet" href="assets/app/syntax.css">
+    <link href="https://demos.creative-tim.com/argon-design-system-pro/assets/css/nucleo-icons.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/e3fa66ef24.js" crossorigin="anonymous"></script>
+    {{ partial "header-app.html" . }}
+    <title>{{ .Title }} &mdash; Kiit Blog</title>
+</head>
+
+<body>
+
+    <!-- Page Loading -->
+    <div class="se-pre-con"></div>
+
+    <!-- ========== Start Navbar ========== -->
+        <!-- header start -->
+        <div class="header-classic fixed-top navbar-light wow fadeInDown">
+            <!-- navigation start -->
+            <div class="container">
+                <div class="row">
+                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                        <nav class="navbar navbar-expand-lg navbar-classic">
+                            {{ partial "header_logo.html" . }}
+                            <button
+                                class="navbar-toggler collapsed"
+                                type="button"
+                                data-toggle="collapse"
+                                data-target="#navbar-classic"
+                                aria-controls="navbar-classic"
+                                aria-expanded="false"
+                                aria-label="Toggle navigation">
+                                <span class="icon-bar top-bar mt-0"></span>
+                                <span class="icon-bar middle-bar"></span>
+                                <span class="icon-bar bottom-bar"></span>
+                            </button>
+                            <div class="collapse navbar-collapse" id="navbar-classic">
+                                {{ partial "nav.html" . }}
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <!-- navigation close -->
+        </div>
+        <!-- header close -->
+        <!-- ========== End Navbar ========== -->
+    <!-- ========== Start Header ========== -->
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-2 d-none d-lg-block">
+                {{ partial "sidebar.html" . }}
+            </div>
+            <div class="col-lg-9 flex">
+                <section class="features">
+                    <div class="container-fluid text-center">
+                        <div class="mx-auto">
+                            <h1>{{ .Title }}</h1>
+                            <p class="text-muted">
+                                {{ .Date.Format "January 2, 2006" }}
+                                {{ with .Params.tags }} &middot; {{ delimit . ", " }}{{ end }}
+                            </p>
+                        </div>
+                    </div>
+                </section>
+                {{ .Content }}
+            </div>
+            <div class="col-sm-1 flex">
+            </div>
+        </div>
+      </div>
+
+
+    <!-- ========== Start links ========== -->
+    <section class="links">
+        {{ partial "footer_social.html" . }}
+    </section>
+    <!-- ========== End links ========== -->
+
+    <!-- ========== Start Footer ========== -->
+    <footer class="footer">
+        {{ partial "footer_made_by.html" . }}
+    </footer>
+    <!-- ========== End Footer ========== -->
+
+    <!-- ============= Java Script =============-->
+    {{ partial "footer.html" . }}
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="assets/theme/js/sass-1.js"></script>
+    <script type="text/javascript">
+        $( document ).ready(function() {
+            setupArchComponent();
+            if (window.mermaid) {
+                mermaid.initialize({ startOnLoad: true });
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <!--<base href="{{ .Site.BaseURL }}">-->
+
+    <base href="../">
+    {{ partial "header.html" . }}
+    <link rel="stylesheet" href="assets/theme/css/about-1.css">
+    <link rel="stylesheet" href="assets/app/slatekit.css">
+    {{ partial "header-app.html" . }}
+    <title>Kiit Blog</title>
+</head>
+
+<body>
+
+    <!-- Page Loading -->
+    <div class="se-pre-con"></div>
+
+    <!-- ========== Start Navbar ========== -->
+        <!-- header start -->
+        <div class="header-classic fixed-top navbar-light wow fadeInDown">
+            <!-- navigation start -->
+            <div class="container">
+                <div class="row">
+                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                        <nav class="navbar navbar-expand-lg navbar-classic">
+                            {{ partial "header_logo.html" . }}
+                            <button
+                                class="navbar-toggler collapsed"
+                                type="button"
+                                data-toggle="collapse"
+                                data-target="#navbar-classic"
+                                aria-controls="navbar-classic"
+                                aria-expanded="false"
+                                aria-label="Toggle navigation">
+                                <span class="icon-bar top-bar mt-0"></span>
+                                <span class="icon-bar middle-bar"></span>
+                                <span class="icon-bar bottom-bar"></span>
+                            </button>
+                            <div class="collapse navbar-collapse" id="navbar-classic">
+                                {{ partial "nav.html" . }}
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <!-- navigation close -->
+        </div>
+        <!-- header close -->
+        <!-- ========== End Navbar ========== -->
+    <!-- ========== Start Header ========== -->
+    <section class="header wow fadeInUp">
+        <div class="container text-center">
+            <h2>{{ .Params.section_header }}</h2>
+        </div>
+    </section>
+
+    <section class="sk-creative">
+      <div class="container">
+        {{ .Content }}
+        <div class="row">
+        {{ range .RegularPages.ByDate.Reverse }}
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title"><a href="{{ .RelPermalink }}">{{ .Title }}</a></h5>
+                <p class="text-muted"><small>{{ .Date.Format "January 2, 2006" }}</small></p>
+                <p class="card-text">{{ .Summary }}</p>
+                <a href="{{ .RelPermalink }}" class="btn btn-primary">Read more</a>
+              </div>
+            </div>
+          </div>
+        {{ end }}
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========== Start links ========== -->
+    <section class="links">
+        {{ partial "footer_social.html" . }}
+    </section>
+    <!-- ========== End links ========== -->
+
+    <!-- ========== Start Footer ========== -->
+    <footer class="footer">
+        {{ partial "footer_made_by.html" . }}
+    </footer>
+    <!-- ========== End Footer ========== -->
+
+    <!-- ============= Java Script =============-->
+    {{ partial "footer.html" . }}
+
+    <script src="assets/theme/js/sass-1.js"></script>
+</body>
+
+</html>
