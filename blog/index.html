@@ -8,7 +8,7 @@
 
     
 
-    <base href="../../">
+    <base href="../">
           
       
     <link href="https://fonts.googleapis.com/css?family=Dosis:300,400,500,600,700,800&display=swap" rel="stylesheet">
@@ -36,16 +36,13 @@
 
     <link rel="stylesheet" href="assets/theme/css/about-1.css">
     <link rel="stylesheet" href="assets/app/slatekit.css">
-    <link rel="stylesheet" href="assets/app/syntax.css">
-    <link href="https://demos.creative-tim.com/argon-design-system-pro/assets/css/nucleo-icons.css" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/e3fa66ef24.js" crossorigin="anonymous"></script>
           
    
     
    
 
 
-    <title>Slate Kit: Start</title>
+    <title>Kiit Blog</title>
 </head>
 
 <body>
@@ -150,140 +147,54 @@
         
         
     
-    <div class="container-fluid">
+    <section class="header wow fadeInUp">
+        <div class="container text-center">
+            <h2>Kiit Blog</h2>
+        </div>
+    </section>
+
+    <section class="sk-creative">
+      <div class="container">
+        <p>Notes and deep dives from the Kiit team.</p>
+
         <div class="row">
-            <div class="col-sm-2 d-none d-lg-block">
-                <div id="sidebar-wrapper">
-   <div class="sidebar-header">
-      <a class="brand" href="/">
-      <span>Index</span>
-      </a>
-      
-      </button>
-   </div>
-   <div id="sk_arch_component_menu_sections" class="sidebar-nav">
         
-    </div>
-</div>
-            </div>
-            <div class="col-lg-9 flex">
-                <section class="features">
-                    <div class="container-fluid text-center">
-                        <div class="mx-auto">
-                            <a id="sk_arch_component_link" href="arch/cli">
-                                <img id="sk_arch_component_img" src="assets/media/img/white/desktop.png" alt="" style="width:70px;" class="img-fluid">
-                            </a>
-                            <h1 id="sk_arch_component_name">Setup</h1>
-                        </div>
-                    </div>
-                </section>
-                <h1 id="overview">Overview</h1>
-<p>Slate Kit can be setup fairly easily. Most of the dependencies are on Java / Gradle. Also refer to <strong><a class="url-ch" href="http://www.kotlinlang.org">Kotlin</a></strong> for more info.</p>
-<p><br/><br/></p>
-<h1 id="required">Required</h1>
-<p>Installation of Java, Kotlin, Gradle and Slate Kit is fairly easy. We recommend the following installation steps and centralized location for simplicity.
-</p>
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title"><a href="/blog/kiit-codes/">Success and failure deserve a shape that both people and AI can read</a></h5>
+                <p class="text-muted"><small>July 19, 2026</small></p>
+                <p class="card-text"><h1 id="overview">Overview</h1>
+<p>I&rsquo;m sure you&rsquo;ve come across a log line or an exception that just said something like &ldquo;an error occurred,&rdquo; with no real context attached. It&rsquo;s frustrating, and it usually means the debugging session is about to take twice as long as it should.</p>
+<p>Here is what I kept running into, across different jobs and different codebases.</p>
 <table class="table table-bordered table-striped">
-    <tr class="">
-        <td><strong>Tech</strong></td>
-        <td><strong>Version</strong></td>
-        <td><strong>Instructions</strong></td>
+    <tr>
+        <td><strong>Problem</strong></td>
+        <td><strong>Description</strong></td>
     </tr>
     <tr>
-        <td><a class="url-ch" href="http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html">Java</a></td>
-        <td>1.8</td>
-        <td><div>
-                <ul>
-                    <li>Install java 1.8.0 to example: <strong>
-                    /usr/bin/java or C:\tools\Java\jdk1.8.0</strong></li>
-                    <li>Add home env variable: <strong>JAVA_HOME=C:\tools\Java\jdk1.8.0 ( Windows )</strong></li>
-                </ul>
-            </div>
-        </td>
+        <td><strong>Exceptions are inconsistent</strong></td>
+        <td>Some get thrown for outcomes you expect, some for genuine bugs, and you usually cannot tell which just by reading a function signature.</td>
     </tr>
     <tr>
-        <td><a class="url-ch" href="https://kotlinlang.org/">Kotlin</a></td>
-        <td>>= 1.3.21</td>
-        <td>
-            <div>
-                <ul>
-                    <li>Install Kotlin via the gradel plugin</li>
-                    <li>Add <strong>"org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.21"</strong> to your build script</li>
-                </ul>
-            </div>
-        </td>
+        <td><strong>Booleans tell you almost nothing</strong></td>
+        <td><code>success: Boolean</code> answers one question and skips the one you actually needed.</td>
     </tr>
     <tr>
-        <td><a class="url-ch" href="https://gradle.org/install">Gradle</a></td>
-        <td>>= 3.5</td>
-        <td>
-            <div>
-                <ul>
-                    <li>Install Gradle e.g. <strong>/usr/local/bin/gradle or c:\tools\gradle ( Windows )</strong></li>
-                    <li>Add <strong>/usr/local/bin/gradle or C:\tools\gradle\bin ( Windows)</strong> to your system PATH variable.</li>
-                    <li>You can also use the gradle-wrapper.jar if you are familiar with gradle</li>
-                </ul>
-            </div>
-        </td>
+        <td><strong>HTTP codes leak everywhere</strong></td>
+        <td>They show up in background jobs and CLI commands that have nothing to do with HTTP, mostly because there was nothing better around.</td>
     </tr>
 </table>
-<p><br/><br/></p>
-<h1 id="suggested">Suggested</h1>
-<p>The software below is recommended but not required. 
-Slate Kit supports MySql with support for PostGres and Sql Server coming later. Having the MySql Java Connector will 
-help with the sample apps and is also needed for the ORM ( entities ).
-</p>
-<table class="table table-bordered table-striped">
-    <tr class="">
-        <td><strong>Tech</strong></td>
-        <td><strong>Version</strong></td>
-        <td><strong>About</strong></td>
-    </tr>
-    <tr>
-        <td><a class="url-ch" href="https://www.jetbrains.com/idea/download/">IntelliJ</a></td>
-        <td>Refer to JetBrains</td>
-        <td>IDE</td>
-    </tr>
-</table>
-<p><br/><br/></p>
-<h1 id="slate-kit-cli">Slate Kit CLI</h1>
-<p>There is a Slate Kit CLI ( command line interface ) application for Mac ( integrated with HomeBrew ) that serves as a project creator.
-    <br/>See <a href="start/generators" >Generators</a> for more info
-</p>
-<br/><br/>
-<script>
-    var archComponent = {
-        name: "Setup",
-        page: "start/setup",
-        icon: "assets/media/img/white/gears.png",
-        menu: {
-            mode: "normal",
-            useTemplate:false,
-            sections: [
-                {
-                    name: "Guide",
-                    items: [
-                        { name:"Overview"       , anchor: "#overview" },
-                        { name:"Required"       , anchor: "#required"  },
-                        { name:"Suggested"      , anchor: "#suggested"  },
-                        { name:"Slate Kit CLI"  , anchor: "#slate kit cli"  }
-                    ]
-                }
-            ]
-        }
-    };
-
-    function setupArchComponent() {
-        buildArchComponent(archComponent);
-    }
-</script>
-
+<p>None of these three things talk to each other. None of them compose. I think most of us just get used to the friction and stop noticing it, until a debugging session drags on and you realize you still don&rsquo;t actually know what happened, only that something didn&rsquo;t go as planned.</p></p>
+                <a href="/blog/kiit-codes/" class="btn btn-primary">Read more</a>
+              </div>
             </div>
-            <div class="col-sm-1 flex">
-            </div>
+          </div>
+        
         </div>
       </div>
-    
+    </section>
+
 
     
     <section class="links">
@@ -327,11 +238,6 @@ help with the sample apps and is also needed for the ORM ( entities ).
     </script>
 
     <script src="assets/theme/js/sass-1.js"></script>
-    <script type="text/javascript">
-        $( document ).ready(function() {
-            setupArchComponent();
-        });
-    </script>
 </body>
 
 </html>
