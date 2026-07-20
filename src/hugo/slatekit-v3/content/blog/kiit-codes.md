@@ -481,20 +481,35 @@ And if you try it and something feels off, or you think a category is missing, o
             useTemplate: false,
             sections: [
                 {
-                    name: "In this post",
+                    name: "About",
                     items: [
-                        { name:"Overview",                  anchor: "#overview" },
-                        { name:"What is kiit.codes",         anchor: "#what-is-kiit-codes" },
-                        { name:"Inspired by HTTP/gRPC",      anchor: "#inspired-by-http-and-grpc" },
-                        { name:"Design principles",          anchor: "#design-principles" },
-                        { name:"What this doesn't do",       anchor: "#what-this-doesnt-do" },
-                        { name:"Three tiers of detail",      anchor: "#three-tiers-of-detail" },
-                        { name:"Use case 1: Validation",     anchor: "#use-case-1-validation" },
-                        { name:"Use case 2: Exceptions",     anchor: "#use-case-2-exceptions" },
-                        { name:"Use case 3: API responses",  anchor: "#use-case-3-api-responses" },
-                        { name:"Readable by AI too",         anchor: "#readable-by-ai-too" },
-                        { name:"What's next",                anchor: "#whats-next" },
-                        { name:"Try it",                     anchor: "#try-it" }
+                        { name:"Overview",     anchor: "#overview" },
+                        { name:"kiit.codes",   anchor: "#what-is-kiit-codes" },
+                        { name:"Inspiration",  anchor: "#inspired-by-http-and-grpc" }
+                    ]
+                },
+                {
+                    name: "Design",
+                    items: [
+                        { name:"Principles",          anchor: "#design-principles" },
+                        { name:"Out of scope",        anchor: "#what-this-doesnt-do" },
+                        { name:"3 Tiers of Detail",   anchor: "#three-tiers-of-detail" }
+                    ]
+                },
+                {
+                    name: "Examples",
+                    items: [
+                        { name:"Use case 1",  anchor: "#use-case-1-validation" },
+                        { name:"Use case 2",  anchor: "#use-case-2-exceptions" },
+                        { name:"Use case 3",  anchor: "#use-case-3-api-responses" }
+                    ]
+                },
+                {
+                    name: "Usage",
+                    items: [
+                        { name:"Readable by AI",  anchor: "#readable-by-ai-too" },
+                        { name:"What's next",     anchor: "#whats-next" },
+                        { name:"Try it",          anchor: "#try-it" }
                     ]
                 }
             ]
