@@ -294,7 +294,7 @@ h2.anchor .hash-link {
   font-family: var(--ifm-heading-font-family);
   font-weight: 600;
   font-size: 1.5rem;
-  color: var(--ifm-color-emphasis-700);
+  color: var(--kiit-color-accent);
   margin-top: -0.5rem;
 }
 
