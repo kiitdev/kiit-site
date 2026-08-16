@@ -27,8 +27,29 @@
  */
 :root {
   --kiit-color-brand: #5e72e4;
-  --kiit-color-accent-pink: #ff5777;
   --kiit-color-accent-orange: #f8a13e;
+
+  /*
+   * Accent color (fuchsia), used for the MoreLink/BackToTop pill buttons.
+   * --kiit-color-accent is the raw hue for decorative use; -dark/-darker are
+   * AA-calibrated variants for solid-fill buttons with white text — the raw
+   * hue only clears ~3:1 contrast against white, short of the 4.5:1 small
+   * text needs. Same darkening approach as --ifm-color-primary below, same
+   * hue, lower lightness.
+   */
+  --kiit-color-accent: #f53da8;
+  --kiit-color-accent-dark: #cc0c7b;
+  --kiit-color-accent-darker: #99085d;
+
+  /*
+   * Named alias for the recurring blue used on structural/navigational
+   * accents that aren't links or buttons: the "#" heading anchor, Sidebar
+   * Group titles (e.g. "Foundations"), and Topic (H3) headings. Same value
+   * as --ifm-color-primary, given its own name so those three usages read
+   * as one deliberate design decision instead of three separate places that
+   * happen to reference the primary color.
+   */
+  --kiit-color-heading-accent: var(--ifm-color-primary);
 
   --ifm-color-primary: #5066e2;
   --ifm-color-primary-dark: #4159df;
@@ -153,7 +174,7 @@
 /* Section titles specifically (e.g. "Foundations"), same blue as the "#"
    anchor in the page body, distinct from standalone top-level links. */
 .theme-doc-sidebar-item-category-level-1 > .menu__list-item-collapsible > .menu__link {
-  color: var(--ifm-color-primary);
+  color: var(--kiit-color-heading-accent);
 }
 
 /* Divider above each top-level sidebar section (e.g. above "Foundations"). */
@@ -230,10 +251,10 @@
   font-weight: 800;
 }
 
-/* H3 sub-headings (e.g. Goals/Inspiration) in the same blue as the "#"
-   anchor next to an H2. */
+/* H3 sub-headings (e.g. Goals/Inspiration) in --kiit-color-heading-accent,
+   the same blue as the "#" anchor next to an H2. */
 .theme-doc-markdown h3 {
-  color: var(--ifm-color-primary);
+  color: var(--kiit-color-heading-accent);
 }
 
 h2.anchor {
@@ -251,6 +272,7 @@ h2.anchor .hash-link {
   right: calc(100% + 0.5rem);
   opacity: 1 !important;
   padding-left: 0;
+  color: var(--kiit-color-heading-accent);
 }
 
 /*

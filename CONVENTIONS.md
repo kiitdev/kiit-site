@@ -157,7 +157,27 @@ never registered globally.
    darkened value, dark mode a slightly lightened one; the true undiluted
    hex stays available as `--kiit-color-brand` for decorative,
    non-text use (logos, hero art).
-4. **Site font is set once, globally, with an easy-revert comment** — the
+4. **Named color tokens, not raw hex or bare Infima variables, at each call
+   site** — every recurring color has one semantic name in
+   `src/css/custom.css`, so a CSS rule reads as "this is the heading accent"
+   rather than "this happens to be the same value as the primary color":
+   - `--kiit-color-brand` (`#5e72e4`) — the undiluted brand hex, decorative
+     use only (logos, hero art), not accessibility-calibrated for text.
+   - `--kiit-color-heading-accent` (aliases `--ifm-color-primary`) — the blue
+     used for the H2 "#" heading anchor, Sidebar Group titles (e.g.
+     "Foundations"), and Topic (H3) headings. Named separately from
+     `--ifm-color-primary` even though it's the same value, since those three
+     usages are a deliberate shared design choice, not incidental reuse.
+   - `--kiit-color-accent` (`#f53da8`, fuchsia) — used as the solid fill
+     for the `MoreLink`/`BackToTop` pill buttons, giving them a distinct
+     identity from primary-blue links and headings. `-dark`/`-darker`
+     variants (`#cc0c7b`/`#99085d`) are the AA-calibrated shades actually
+     used for the button fill and its hover state; the raw `--kiit-color-accent`
+     only clears ~3:1 contrast against white text, short of the 4.5:1 small
+     text needs, same reasoning as item 3 above for the primary blue.
+   - `--kiit-color-accent-orange` (`#f8a13e`) — carried over from the live
+     site's palette, defined but not yet applied to any specific UI element.
+5. **Site font is set once, globally, with an easy-revert comment** — the
    active choice (currently Nunito, both body and headings) lives in
    `src/css/custom.css`'s `@import` and `--ifm-font-family-base` /
    `--ifm-heading-font-family` values. When trying a new font, leave the

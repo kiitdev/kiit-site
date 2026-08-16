@@ -2,7 +2,7 @@
   display: inline-block;
   padding: 0.25rem 0.7rem;
   border-radius: 6px;
-  background-color: var(--ifm-color-primary);
+  background-color: var(--kiit-color-accent-dark);
   color: #fff;
   font-size: 0.75rem;
   font-weight: 700;
@@ -11,7 +11,7 @@
 }
 
 .moreLink:hover {
-  background-color: var(--ifm-color-primary-dark);
+  background-color: var(--kiit-color-accent-darker);
   color: #fff;
   text-decoration: none;
 }

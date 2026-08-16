@@ -47,7 +47,7 @@ The same model is then reused across statuses, validation, exceptions, and resul
 |---:|---|---|
 | 1 | HTTP status codes | Validated against, not derived from — the most common HTTP codes map onto kiit-codes' eight groups without needing a ninth. |
 | 2 | gRPC status codes | Same validation as HTTP — every gRPC code maps onto the existing eight groups. |
-| 3 | Arrow's `Either`/`Validated`, kotlin-result | Same general shape of container type, but those provide no taxonomy underneath — kiit-codes provides the taxonomy itself, usable with or without a container type. |
+| 3 | Scala's `Either`/`Try` | Built on `Either`'s two-branch shape, structured around `Try`'s branches, with the `Status` taxonomy incorporated on top. |
 
 <Spacer />
 
@@ -360,6 +360,8 @@ taxonomy — an enum can't be extended this way.
 
 ## Tutorial
 
+### Code
+
 This walks through building a tiny service that returns `Status` for expected outcomes, then
 crosses a boundary that can only communicate via exceptions.
 
@@ -389,6 +391,10 @@ class UserService {
 }
 ```
 
+<Spacer />
+
+### Callers
+
 Call it and branch on the result:
 
 ```kotlin
@@ -400,6 +406,10 @@ println("${created.name} (success=${created.success})") // CREATED (success=true
 val denied = service.authorize("alice", "bob")
 println("${denied.name} (success=${denied.success})") // UNAUTHORIZED (success=false)
 ```
+
+<Spacer />
+
+### Try/Catch
 
 Now add a method that throws instead, for a caller that only understands exceptions:
 

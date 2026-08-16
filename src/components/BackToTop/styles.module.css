@@ -5,7 +5,7 @@
   padding: 0.4rem 0.9rem;
   border: none;
   border-radius: 6px;
-  background-color: var(--ifm-color-primary);
+  background-color: var(--kiit-color-accent-dark);
   color: #fff;
   font-size: 0.85rem;
   font-weight: 600;
@@ -13,5 +13,5 @@
 }
 
 .backToTop:hover {
-  background-color: var(--ifm-color-primary-dark);
+  background-color: var(--kiit-color-accent-darker);
 }
