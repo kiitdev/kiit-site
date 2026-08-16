@@ -15,16 +15,35 @@
   border-radius: var(--ifm-card-border-radius);
   border: 1px solid var(--ifm-color-emphasis-300);
   background-color: #fff;
-  color: var(--ifm-font-color-base);
-  text-decoration: none;
   transition: border-color 0.2s ease, transform 0.2s ease;
 }
 
 .moduleCard:hover {
   border-color: var(--ifm-color-primary);
   transform: translateY(-2px);
+}
+
+.moduleCardLink {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
   color: var(--ifm-font-color-base);
   text-decoration: none;
+}
+
+.moduleCardLink:hover {
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+}
+
+.moduleCardLink p {
+  margin-bottom: 0;
+}
+
+.moduleCardDocs {
+  align-self: flex-end;
+  margin-top: 0.25rem;
 }
 
 /* Coming-soon card: not a link, so no hover lift, and muted to read as a

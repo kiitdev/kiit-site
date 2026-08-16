@@ -16,6 +16,16 @@
   }
 }
 
+.heroBanner :global(.hero__subtitle) {
+  font-weight: 700;
+}
+
+.heroLogo {
+  width: auto;
+  height: 160px;
+  margin: 0.5rem 0 1rem;
+}
+
 .buttons {
   display: flex;
   align-items: center;

@@ -120,7 +120,14 @@ never registered globally.
 4. **`MoreLink`** — small pill-button link to a term's dedicated in-page
    section, visually matching `BackToTop`. Only rendered when a genuine
    matching section actually exists on the page — never a dangling link to
-   a hoped-for future section.
+   a hoped-for future section. Takes an optional `label` (defaults to
+   "More") and `variant` (`"accent"` default pill, or `"green"` — the same
+   pastel-bg/dark-text pairing as the Passed status pill, not a solid fill).
+   Used with `label="Docs"` `variant="green"` on the homepage module cards
+   to link into that module's docs page, and only rendered there when a
+   `docsUrl` actually exists. kiit-result has no docs page yet, so its
+   `docsUrl` is a placeholder pointing at the generic `/docs/intro` landing
+   page — fix once kiit-result's real docs page is built.
 5. **`BackToTop`** — pill button, scrolls to the top of the page. Placed once
    after every Section's content, including the last Section on the page
    (for consistency), not just Sections that happen to have a following

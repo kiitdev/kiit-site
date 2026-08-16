@@ -6,9 +6,8 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'Kiit',
-  tagline: 'A lightweight, modular Kotlin framework. Adopt one module at a time.',
-  // TODO: placeholder Docusaurus favicon, swap for a real Kiit favicon once one exists.
-  favicon: 'img/favicon.ico',
+  tagline: 'A lightweight, modular Kotlin toolkit. Adopt one module at a time.',
+  favicon: 'img/kiit-logo.png',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
@@ -72,8 +71,10 @@ const config: Config = {
     },
     navbar: {
       title: 'Kiit',
-      // No navbar logo yet — no dedicated overall Kiit mark exists, only the
-      // per-module logos (kiit-codes, kiit-result) used on the homepage cards.
+      logo: {
+        alt: 'Kiit logo',
+        src: 'img/kiit-logo.png',
+      },
       items: [
         {
           // TODO: Step 4 splits this into separate kiit-codes / kiit-result
@@ -122,7 +123,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Kiit is a lightweight, modular Kotlin framework for building server applications, APIs, CLIs, and jobs. Adopt one module at a time.<br />Copyright © ${new Date().getFullYear()} Kiit.`,
+      copyright: `Kiit is a lightweight, modular Kotlin toolkit for building server applications, APIs, CLIs, and jobs. Adopt one module at a time.<br />Copyright © ${new Date().getFullYear()} Kiit.`,
     },
     // Dark code block background in both site themes (not just dark mode).
     prism: {

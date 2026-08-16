@@ -42,6 +42,16 @@
   --kiit-color-accent-darker: #99085d;
 
   /*
+   * Same background/text pairing as the Passed status pill in
+   * groupColors.ts (single source of truth for group/status colors): a
+   * light pastel fill with dark green text, not the solid-fill/white-text
+   * style BackToTop/MoreLink otherwise use.
+   */
+  --kiit-color-passed-bg: #d4f4dd;
+  --kiit-color-passed-bg-hover: #c3e0cb;
+  --kiit-color-passed-green: #1e7e34;
+
+  /*
    * Named alias for the recurring blue used on structural/navigational
    * accents that aren't links or buttons: the "#" heading anchor, Sidebar
    * Group titles (e.g. "Foundations"), and Topic (H3) headings. Same value

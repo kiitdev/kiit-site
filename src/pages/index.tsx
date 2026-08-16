@@ -16,6 +16,7 @@ function HomepageHeader() {
         <Heading as="h1" className="hero__title">
           {siteConfig.title}
         </Heading>
+        <img src="/img/kiit-logo.png" alt="Kiit logo" className={styles.heroLogo} />
         <p className="hero__subtitle">{siteConfig.tagline}</p>
         <div className={styles.buttons}>
           <Link className="button button--secondary button--lg" to="/docs/intro">
@@ -32,7 +33,7 @@ export default function Home(): ReactNode {
   return (
     <Layout
       title={siteConfig.title}
-      description="Kiit is a lightweight, modular Kotlin framework. Start with kiit-codes and kiit-result.">
+      description="Kiit is a lightweight, modular Kotlin toolkit. Start with kiit-codes and kiit-result.">
       <HomepageHeader />
       <main>
         <HomepageModules />
