@@ -54,6 +54,7 @@ has nothing to publish to.
 Docusaurus copies it into `build/CNAME` automatically as part of every build, and it
 gets published to Pages along with everything else — no separate step needed.
 
-> **Status**: this describes the target setup. As of this writing, the workflow file,
-> the `CNAME` move into `static/`, and the repo's Pages source setting are all still
-> pending — none of the actual deployment plumbing exists yet.
+> **Status**: the workflow file and the `CNAME` move into `static/` are both done.
+> The one remaining step is the repo's Pages source setting (Settings → Pages →
+> Build and deployment → Source: "GitHub Actions"), which has to be set by hand in
+> GitHub — it can't be done from a workflow file.
