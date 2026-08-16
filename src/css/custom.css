@@ -4,8 +4,14 @@
  * work well for content-centric websites.
  */
 
-/* Kiit brand fonts, carried over from the current kiit.dev site. */
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700;800&family=Dosis:wght@300;400;500;600;700;800&display=swap');
+/*
+ * Kiit brand fonts. Currently swapped out site-wide (body + headings) for
+ * Nunito instead of the original Open Sans/Dosis pair carried over from the
+ * live kiit.dev site. To revert: restore this import and the
+ * --ifm-font-family-base/--ifm-heading-font-family values further down.
+ */
+/* @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700;800&family=Dosis:wght@300;400;500;600;700;800&display=swap'); */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&display=swap');
 
 /*
  * Kiit brand palette, pulled from the live site's stylesheets:
@@ -32,8 +38,8 @@
   --ifm-color-primary-lighter: #677ae6;
   --ifm-color-primary-lightest: #7f8fe9;
 
-  --ifm-font-family-base: 'Open Sans', system-ui, sans-serif;
-  --ifm-heading-font-family: 'Dosis', system-ui, sans-serif;
+  --ifm-font-family-base: 'Nunito', system-ui, sans-serif;
+  --ifm-heading-font-family: 'Nunito', system-ui, sans-serif;
 
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);

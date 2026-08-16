@@ -7,6 +7,8 @@ slug: /kiit-codes
 import GroupBadge from '@site/src/components/GroupBadge';
 import CodeBadge from '@site/src/components/CodeBadge';
 import BackToTop from '@site/src/components/BackToTop';
+import ConceptTermLink from '@site/src/components/ConceptTermLink';
+import MoreLink from '@site/src/components/MoreLink';
 
 # kiit-codes
 
@@ -50,7 +52,7 @@ export, iOS/Swift export via SKIE) have less track record and are still being ex
 | # | Resource | Details |
 |---:|---|---|
 | 1 | Repository | [github.com/kiitdev/kiit-codes](https://github.com/kiitdev/kiit-codes) |
-| 2 | Maven coordinate | `dev.kiit:kiit-codes` |
+| 2 | Maven coordinate | [dev.kiit:kiit-codes](https://central.sonatype.com/artifact/dev.kiit/kiit-codes) |
 | 3 | npm coordinate | `@kiit/codes` (JS/TS export, not CI-gated yet) |
 | 4 | Related module | [kiit-result](https://github.com/kiitdev/kiit-result) builds a `Result<T, E>` type on top of this same taxonomy (docs page coming next) |
 | 5 | API reference | Generated from source KDoc, linked here once published |
@@ -72,8 +74,15 @@ dependencies {
 
 ### Source
 
-[github.com/kiitdev/kiit-codes](https://github.com/kiitdev/kiit-codes), licensed
-[Apache 2.0](https://github.com/kiitdev/kiit-codes/blob/main/LICENSE).
+| # | Item | Link |
+|---:|---|---|
+| 1 | Git Repo | [github.com/kiitdev/kiit-codes](https://github.com/kiitdev/kiit-codes) |
+| 2 | Root folder of sources in repo | [kiit-codes/src/commonMain/kotlin](https://github.com/kiitdev/kiit-codes/tree/main/kiit-codes/src/commonMain/kotlin) |
+| 3 | Sample app | [samples/sample-kotlin](https://github.com/kiitdev/kiit-codes/tree/main/samples/sample-kotlin) |
+| 4 | Package Name | [kiit.codes](https://github.com/kiitdev/kiit-codes/tree/main/kiit-codes/src/commonMain/kotlin/kiit/codes) |
+| 5 | Unit Tests | [kiit-codes/src/commonTest](https://github.com/kiitdev/kiit-codes/tree/main/kiit-codes/src/commonTest) |
+
+Licensed [Apache 2.0](https://github.com/kiitdev/kiit-codes/blob/main/LICENSE).
 
 ### Example
 
@@ -96,19 +105,20 @@ when (val status = authorize(userId, requesterId)) {
 
 ### Terms
 
-| # | Term | Definition |
-|---:|---|---|
-| 1 | `Status` | Sealed interface describing the outcome of an operation. Either `Passed` or `Failed`. |
-| 2 | Group | The second taxonomy tier. A fixed, closed subtype of `Passed` or `Failed` (e.g. `Restricted`, `Rejected`). |
-| 3 | Code | The third taxonomy tier. An open, individual `Status` instance within a group (e.g. `Restricted.DENIED`). |
-| 4 | `name` | SCREAMING_SNAKE_CASE label, e.g. `"TOKEN_EXPIRED"`. Stable, used as a searchable key in logs/metrics. |
-| 5 | `origin` | Where a status came from. Built-in codes use `"kiit"`; custom codes default to `"custom"` unless set explicitly. |
-| 6 | `id` | `"$origin.$name"`. Unique across every `Status`, usable as a map key. |
-| 7 | `message` | Human-readable constant description. Never built from runtime data. |
-| 8 | `success` | `true` for every `Passed` subtype, `false` for every `Failed` subtype. |
-| 9 | `Err` | Error representation for use with `Result`/`Outcome`-style types. |
-| 10 | `Checked` | Non-monadic validation result that reports every problem found, not just the first. |
-| 11 | `StatusException` | Sealed exception hierarchy carrying a `Checked`, for boundaries that only communicate via exceptions. |
+| # | Term | Definition | |
+|---:|---|---|---|
+| 1 | Taxonomy | The overall `Status → Group → Code` classification system. | <MoreLink href="#taxonomy" /> |
+| 2 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L45">Status</ConceptTermLink> | Sealed interface for an operation's outcome: `Passed` or `Failed`. | <MoreLink href="#tiers" /> |
+| 3 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L76">Group</ConceptTermLink> | Second tier: a fixed subtype of `Passed`/`Failed` (e.g. `Restricted`). | <MoreLink href="#tiers" /> |
+| 4 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt">Code</ConceptTermLink> | Third tier: an open `Status` instance within a group (e.g. `DENIED`). | <MoreLink href="#tiers" /> |
+| 5 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L50">name</ConceptTermLink> | Stable SCREAMING_SNAKE_CASE label, e.g. `"TOKEN_EXPIRED"`, for logs. | |
+| 6 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L57">origin</ConceptTermLink> | Where a status came from: `"kiit"` for built-ins, `"custom"` by default. | |
+| 7 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L60">id</ConceptTermLink> | `"$origin.$name"`: unique across every `Status`, usable as a map key. | |
+| 8 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L67">message</ConceptTermLink> | Human-readable constant description. Never built from runtime data. | |
+| 9 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L73">success</ConceptTermLink> | `true` for `Passed`, `false` for `Failed`. | |
+| 10 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L32">Err</ConceptTermLink> | Error representation for use with `Result`/`Outcome`-style types. | <MoreLink href="#err" /> |
+| 11 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Checked.kt#L29">Checked</ConceptTermLink> | Non-monadic validation result reporting every problem, not just the first. | <MoreLink href="#checked" /> |
+| 12 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/StatusException.kt#L46">StatusException</ConceptTermLink> | Sealed exception hierarchy carrying a `Checked`, for exception-only boundaries. | <MoreLink href="#exceptions" /> |
 
 ### Tiers
 
@@ -119,6 +129,29 @@ The `Status → Group → Code` tiers:
 | 1 | `Status` | Fixed — `Passed` or `Failed` |
 | 2 | Group | Fixed — one of the eight groups below |
 | 3 | Code | Open — built-in or domain-specific |
+
+Every `Status` belongs to exactly one `Group`, and every concrete status value is a
+`Code` within that `Group`. `Passed.Succeeded.SUCCESS` is the `SUCCESS` `Code` inside
+the `Succeeded` `Group`, under the `Passed` `Status`. `Failed.Restricted.DENIED` is
+the `DENIED` `Code` inside the `Restricted` `Group`, under the `Failed` `Status`.
+
+`Succeeded.CREATED` is one built-in `Code`. Its fields, each read on its own line:
+
+```kotlin
+val status: Status = Succeeded.CREATED
+
+status.name     // "CREATED"
+status.origin   // "kiit"
+status.id       // "kiit.CREATED"
+status.message  // "A new resource was created."
+status.success  // true
+status.group    // "Succeeded"
+```
+
+### Taxonomy
+
+The full `Status → Group → Code` taxonomy: every built-in `Passed` and `Failed` group,
+and every built-in code within each.
 
 ![Kiit Codes taxonomy](/img/kiit-codes/kiit-codes-taxonomy.png)
 
