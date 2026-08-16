@@ -76,12 +76,55 @@
   font-weight: 700;
 }
 
-/* Same "#" prefix as the in-page H2 anchor, in the same primary blue,
-   ahead of the TOC entry's own heading-colored text. */
-.table-of-contents.table-of-contents__left-border > li > .table-of-contents__link::before {
-  content: '#';
-  color: var(--ifm-color-primary);
+/*
+ * TOC-only emoji per top-level Section, matched by position rather than
+ * heading text (replaces the earlier "#" anchor-style prefix — having both
+ * the "#" and an emoji was too much). Deliberately NOT in the page body
+ * headings themselves: an emoji there breaks Docusaurus's anchor-id slug
+ * (e.g. "🎓 Tutorial" slugs to "-tutorial", not "tutorial", breaking every
+ * #tutorial-style link), and the standard markdown fix for that
+ * ({#tutorial}) in turn breaks MDX parsing in a file that already uses JSX
+ * components like this one does. Position-based means this only stays
+ * correct as long as every doc page follows the fixed Overview -> Setup ->
+ * Concepts -> Design -> Tutorial -> Guide section order from the docs
+ * template — if that order ever changes, these need updating to match.
+ */
+.table-of-contents.table-of-contents__left-border > li:nth-child(-n + 6) > .table-of-contents__link::before {
   margin-right: 0.35rem;
+}
+
+.table-of-contents.table-of-contents__left-border > li:nth-child(1) > .table-of-contents__link::before {
+  content: '💡';
+}
+
+.table-of-contents.table-of-contents__left-border > li:nth-child(2) > .table-of-contents__link::before {
+  content: '🚀';
+}
+
+.table-of-contents.table-of-contents__left-border > li:nth-child(3) > .table-of-contents__link::before {
+  content: '🗂️';
+}
+
+.table-of-contents.table-of-contents__left-border > li:nth-child(4) > .table-of-contents__link::before {
+  content: '🏗️';
+}
+
+.table-of-contents.table-of-contents__left-border > li:nth-child(5) > .table-of-contents__link::before {
+  content: '🎓';
+}
+
+.table-of-contents.table-of-contents__left-border > li:nth-child(6) > .table-of-contents__link::before {
+  content: '⚙️';
+}
+
+/*
+ * Extra left indent on the nested Topic list (H3 sub-items, e.g. Goals under
+ * Overview) so it clears the emoji prefix on its parent Section and reads
+ * as properly nested, instead of sitting nearly flush with the Section's
+ * own emoji-prefixed text.
+ */
+.table-of-contents.table-of-contents__left-border > li > ul {
+  padding-left: calc(var(--ifm-toc-padding-horizontal) + 1.1rem);
 }
 
 /*
