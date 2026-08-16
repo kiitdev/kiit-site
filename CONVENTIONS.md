@@ -6,10 +6,47 @@ new doc pages (starting with `kiit-result`) or extending existing ones.
 
 ## 1. Terminology
 
+### Page content
+
 1. **Section** — an H2 heading on a doc page (`Overview`, `Setup`, `Concepts`,
    `Design`, `Tutorial`, `Guide`). Matches the docs template's own vocabulary.
 2. **Topic** — an H3 heading nested under a Section (e.g. `Goals`, `Install`,
    `Terms`, `Tiers`). Always belongs to exactly one Section.
+3. **Heading Anchor** — the "#" link that appears next to a Section heading
+   in the page body, linking to that Section's own URL fragment.
+4. **Header Diagram** — the large image directly under the page's H1, before
+   `Overview` starts. Distinct from a diagram embedded within a specific
+   Topic further down the page (e.g. the taxonomy diagram inside
+   `Taxonomy`).
+5. **Page Tagline** — the styled one-line description under the H1
+   (rendered via the `.kiit-tagline` class), summarizing what the module is
+   in a single sentence.
+
+### Site chrome (Docusaurus's own terms, used consistently rather than
+### reinvented)
+
+6. **Sidebar** — the left-hand doc navigation column.
+7. **TOC** (Table of Contents) — the right-hand navigation column, listing
+   the current page's Sections and Topics.
+8. **Breadcrumbs** — the page-location trail above the H1 (e.g.
+   `Foundations / kiit-codes`).
+9. **Navbar** — the site-wide top bar (`Kiit` / `Docs` / `Blog` / `GitHub`).
+
+### Sidebar & TOC internals
+
+10. **Sidebar Group** — a category label in the left Sidebar (e.g.
+    `Foundations`), grouping one or more doc pages together. Deliberately
+    *not* called "Section" — that term is reserved for an H2 within a page's
+    body, and reusing it here would be genuinely ambiguous: a Sidebar Group
+    organizes doc *pages*, a Section is a heading *within* one page.
+11. **Sidebar Item** — an individual doc-page link inside the Sidebar (e.g.
+    `kiit-codes`), whether or not it sits inside a Sidebar Group.
+12. **TOC Entry** — a single link within the TOC, at either the Section or
+    Topic level.
+13. **Section Icon** — the small emoji glyph prefixed to a Section's TOC
+    Entry (applied positionally via CSS, see Section 8.2 below). Distinct
+    from the general-purpose `Icon` component, which wraps Tabler icons for
+    use in page body content, not the TOC.
 
 ## 2. Docs Page Structure
 
