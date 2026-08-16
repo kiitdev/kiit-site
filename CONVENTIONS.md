@@ -8,42 +8,51 @@ new doc pages (starting with `kiit-result`) or extending existing ones.
 
 ### Page content
 
-1. **Section** — an H2 heading on a doc page (`Overview`, `Setup`, `Concepts`,
-   `Design`, `Tutorial`, `Guide`). Matches the docs template's own vocabulary.
-2. **Topic** — an H3 heading nested under a Section (e.g. `Goals`, `Install`,
-   `Terms`, `Tiers`). Always belongs to exactly one Section.
-3. **Heading Anchor** — the "#" link that appears next to a Section heading
-   in the page body, linking to that Section's own URL fragment.
-4. **Header Diagram** — the large image directly under the page's H1, before
-   `Overview` starts. Distinct from a diagram embedded within a specific
-   Topic further down the page (e.g. the taxonomy diagram inside
+Listed in top-to-bottom order as they appear on the page:
+
+1. **Page Title** — the H1, with the module's logo beside it (the
+   `PageTitle` component).
+2. **Page Tagline** — the styled one-line description directly under the
+   Page Title (rendered via the `.kiit-tagline` class), summarizing what the
+   module is in a single sentence.
+3. **Page Description** — a plain, unstyled 1-2 line paragraph directly under
+   the Page Tagline, giving a bit more detail than the Tagline without
+   turning into full `Overview` prose. Not a special component — just a
+   regular paragraph, so it reads as secondary to the styled Tagline above
+   it.
+4. **Header Diagram** — the large image directly under the Page Description,
+   before `Overview` starts. Distinct from a diagram embedded within a
+   specific Topic further down the page (e.g. the taxonomy diagram inside
    `Taxonomy`).
-5. **Page Tagline** — the styled one-line description under the H1
-   (rendered via the `.kiit-tagline` class), summarizing what the module is
-   in a single sentence.
+5. **Section** — an H2 heading on a doc page (`Overview`, `Setup`, `Concepts`,
+   `Design`, `Tutorial`, `Guide`). Matches the docs template's own vocabulary.
+6. **Topic** — an H3 heading nested under a Section (e.g. `Goals`, `Install`,
+   `Terms`, `Tiers`). Always belongs to exactly one Section.
+7. **Heading Anchor** — the "#" link that appears next to a Section heading
+   in the page body, linking to that Section's own URL fragment.
 
 ### Site chrome (Docusaurus's own terms, used consistently rather than
 ### reinvented)
 
-6. **Sidebar** — the left-hand doc navigation column.
-7. **TOC** (Table of Contents) — the right-hand navigation column, listing
+8. **Sidebar** — the left-hand doc navigation column.
+9. **TOC** (Table of Contents) — the right-hand navigation column, listing
    the current page's Sections and Topics.
-8. **Breadcrumbs** — the page-location trail above the H1 (e.g.
-   `Foundations / kiit-codes`).
-9. **Navbar** — the site-wide top bar (`Kiit` / `Docs` / `Blog` / `GitHub`).
+10. **Breadcrumbs** — the page-location trail above the Page Title (e.g.
+    `Foundations / kiit-codes`).
+11. **Navbar** — the site-wide top bar (`Kiit` / `Docs` / `Blog` / `GitHub`).
 
 ### Sidebar & TOC internals
 
-10. **Sidebar Group** — a category label in the left Sidebar (e.g.
+12. **Sidebar Group** — a category label in the left Sidebar (e.g.
     `Foundations`), grouping one or more doc pages together. Deliberately
     *not* called "Section" — that term is reserved for an H2 within a page's
     body, and reusing it here would be genuinely ambiguous: a Sidebar Group
     organizes doc *pages*, a Section is a heading *within* one page.
-11. **Sidebar Item** — an individual doc-page link inside the Sidebar (e.g.
+13. **Sidebar Item** — an individual doc-page link inside the Sidebar (e.g.
     `kiit-codes`), whether or not it sits inside a Sidebar Group.
-12. **TOC Entry** — a single link within the TOC, at either the Section or
+14. **TOC Entry** — a single link within the TOC, at either the Section or
     Topic level.
-13. **Section Icon** — the small emoji glyph prefixed to a Section's TOC
+15. **Section Icon** — the small emoji glyph prefixed to a Section's TOC
     Entry (applied positionally via CSS, see Section 8.2 below). Distinct
     from the general-purpose `Icon` component, which wraps Tabler icons for
     use in page body content, not the TOC.
@@ -79,6 +88,12 @@ new doc pages (starting with `kiit-result`) or extending existing ones.
    legacy Jekyll source were deleted outright rather than archived. Only
    genuinely reusable source material (e.g. old blog post drafts, old
    architecture doc source) is worth keeping there.
+4. **`hide_title: true` whenever the Page Title is a component, not markdown**
+   — Docusaurus auto-injects an `<h1>` from the frontmatter `title` field
+   whenever it doesn't detect a literal `# Heading` at the start of the
+   content. Once the Page Title is rendered via the `PageTitle` component
+   instead of `# kiit-codes`, that detection no longer fires, so without
+   `hide_title: true` the page ends up with two H1s.
 
 ## 4. React Components
 
@@ -119,6 +134,13 @@ never registered globally.
    name registry (`src/theme/icons.ts`), never imported directly from
    `@tabler/icons-react` at a call site. Swapping the underlying icon
    library later only means editing that one registry file.
+8. **`PageTitle`** — renders the Page Title: the H1 with the module's logo
+   beside it (`title`/`logo` props). Replaces the plain `# Module Name`
+   markdown heading, so the doc's frontmatter needs `hide_title: true` (see
+   Section 3.4) wherever it's used. Safe to do — Docusaurus's own `Heading`
+   component is a no-op for H1 (no id/anchor generation happens for it
+   either way), so this produces identical H1 behavior to the markdown
+   syntax it replaces.
 
 ## 5. Theming & Color
 

@@ -2,6 +2,7 @@
 sidebar_position: 1
 title: kiit-codes
 slug: /kiit-codes
+hide_title: true
 ---
 
 import GroupBadge from '@site/src/components/GroupBadge';
@@ -10,10 +11,16 @@ import BackToTop from '@site/src/components/BackToTop';
 import ConceptTermLink from '@site/src/components/ConceptTermLink';
 import MoreLink from '@site/src/components/MoreLink';
 import Spacer from '@site/src/components/Spacer';
+import PageTitle from '@site/src/components/PageTitle';
+import Icon from '@site/src/components/Icon';
 
-# kiit-codes
+<PageTitle title="kiit-codes" logo="/img/modules/kiit-codes-logo.png" />
 
 <p className="kiit-tagline">A Kotlin library for classifying and handling success and failure.</p>
+
+A small, dependency-free status and error taxonomy for application outcomes, with
+extensible codes, protocol mappings, validation, typed exceptions, and optional
+`Result<T, E>` integration.
 
 ![Kiit Codes overview](/img/kiit-codes/kiit-codes-overview.png)
 
@@ -163,13 +170,21 @@ status.group    // "Succeeded"
 The full `Status → Group → Code` taxonomy: every built-in `Passed` and `Failed` group,
 and every built-in code within each.
 
-| Tier | Name | Fixed/Open |
-|---|---|---|
-| 1 | `Status` | Fixed — `Passed` or `Failed` |
-| 2 | Group | Fixed — one of the eight groups below |
-| 3 | Code | Open — built-in or domain-specific |
-
 ![Kiit Codes taxonomy](/img/kiit-codes/kiit-codes-taxonomy.png)
+
+| Tier | Parent | Fixed/Open | Children | Description |
+|---|---|---|---|---|
+| 1 | <span style={{fontFamily: 'var(--ifm-font-family-monospace)', fontWeight: 800, color: 'var(--ifm-color-primary)'}}>Status</span> | <span style={{display: 'inline-flex', alignItems: 'center', gap: '0.3rem'}}><Icon name="lock" size={16} /> Fixed</span> | <GroupBadge group="Passed" /> | |
+| | | | <GroupBadge group="Failed" /> | |
+| 2 | <span style={{fontFamily: 'var(--ifm-font-family-monospace)', fontWeight: 800, color: 'var(--ifm-color-primary)'}}>Group</span> | <span style={{display: 'inline-flex', alignItems: 'center', gap: '0.3rem'}}><Icon name="lock" size={16} /> Fixed</span> | <GroupBadge group="Succeeded" /> | The operation completed successfully. |
+| | | | <GroupBadge group="Pending" /> | The operation was accepted but has not yet fully resolved. |
+| | | | <GroupBadge group="Excluded" /> | The item was intentionally excluded from the operation. |
+| | | | <GroupBadge group="Information" /> | The response provides information; no operation was performed. |
+| | | | <GroupBadge group="Restricted" /> | The caller is not allowed. |
+| | | | <GroupBadge group="Invalid" /> | The request itself is wrong. |
+| | | | <GroupBadge group="Rejected" /> | The caller was allowed, but the business refuses it. |
+| | | | <GroupBadge group="Unserved" /> | The system can't serve it right now, though nothing was wrong with the request. |
+| 3 | <span style={{fontFamily: 'var(--ifm-font-family-monospace)', fontWeight: 800, color: 'var(--ifm-color-primary)'}}>Code</span> | <span style={{display: 'inline-flex', alignItems: 'center', gap: '0.3rem'}}><Icon name="lock-open" size={16} /> Open + Defaults</span> | | Ships with common built-in codes (e.g. `SUCCESS`, `DENIED`); extensible with custom, domain-specific codes within the same group. |
 
 <Spacer />
 
