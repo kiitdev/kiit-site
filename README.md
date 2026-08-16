@@ -9,7 +9,9 @@
 # About
 Sources for the www.kiit.dev Website
 
-Kiit is a **Kotlin** Tool-Kit, a simple, light-weight, modular framework to build Apps, APIs, CLIs, Jobs, and more for **Start-ups, Personal projects, and SMBs** ( small-medium sized businesses ). These libraries can be used for both Server and Android and there are modules for the server that abstract infrastructure ( Queues, Files, SMS, Emails, Alerts ) with integrations for **AWS** ( SQS, S3 ), Twilio ( SMS ), SendGrid ( Email ), Slack ( Alerts ) and more. Multi-platform support is planned as a future state.
+# Status
+Date: 2026-08-15 - This site is stale and is currently being updated.
+
 
 This contains all the source code for generating www.kiit.dev site content. 
 This uses a static site generator ( Hugo ) and most of the content is in markdown.
