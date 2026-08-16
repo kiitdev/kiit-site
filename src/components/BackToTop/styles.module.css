@@ -1,0 +1,17 @@
+.backToTop {
+  display: block;
+  width: max-content;
+  margin: 1.5rem 0 0.5rem auto;
+  padding: 0.4rem 0.9rem;
+  border: none;
+  border-radius: 6px;
+  background-color: var(--ifm-color-primary);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.backToTop:hover {
+  background-color: var(--ifm-color-primary-dark);
+}

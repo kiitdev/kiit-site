@@ -1,0 +1,23 @@
+/*
+ * Borrows the active breadcrumb's "badge" shape (fully rounded pill, tinted
+ * background fill, no border) rather than reinventing one, but softened:
+ * the breadcrumb itself uses bold primary-blue text on its overlay tint,
+ * which read as too strong repeated 57 times down a table. This keeps the
+ * pill/fill shape and drops to a muted, unbolded gray instead.
+ */
+.badge {
+  display: inline-block;
+  width: 11rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 8px;
+  background-color: var(--ifm-hover-overlay);
+  color: var(--ifm-color-emphasis-700);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8em;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

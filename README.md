@@ -1,66 +1,43 @@
+# Website
 
-[![WebSite](https://img.shields.io/badge/site-slatekit-blue)](https://www.kiit.dev)
-![Kotlin](https://img.shields.io/badge/kotlin-1.3-orange.svg)
-![Apache 2](https://img.shields.io/badge/license-Apache2-brightgreen.svg?style=flat)
-![BSL ](https://img.shields.io/badge/license-bsl__1.0-yellow.svg?style=flat)
-[![Follow us on twitter](https://img.shields.io/badge/twitter-slatekit-blue.svg)](https://twitter.com/slatekit)
-![image](assets/media/slatekit-banner.png)
+This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
 
-# About
-Sources for the www.kiit.dev Website
-
-# Status
-Date: 2026-08-15 - This site is stale and is currently being updated.
-
-
-This contains all the source code for generating www.kiit.dev site content. 
-This uses a static site generator ( Hugo ) and most of the content is in markdown.
-It is automatically published via github-pages. 
-
-# Links
-num | type | link 
-----|-----|------
-1 | Website   | https://www.kiit.dev
-2 | Framework | https://github.com/slatekit/kiit
-3 | Modules   | https://www.kiit.dev/arch/overview/
-4 | Install   | https://github.com/slatekit/slatekit-cli ( Homebrew )
-
-
-# Install
-1. Hugo ( see https://gohugo.io/getting-started/installing/ )
-2. Clone this repo ( git clone git@github.com:code-helix/kiit-site.git )
-
-# Develop
-Currently, the root directory of the hugo theme/site is at **src/hugo/slatekit-v3**
+## Installation
 
 ```bash
-# Move to dir
-cd ~/git/kiit/kiit-site/src/hugo/slatekit-v3
-
-# Run hugo while serving drafts
-hugo serve -D 
-
-# Go to http://localhost:1313/
+npm install
 ```
 
-# Publish
-Make changes on a separate branch e.g **docs-version-1.20.0** and then merge to main/master.
+**Note**: feel free to use the package manager of your choice.
 
-1. Move to directory `cd ~/git/kiit-site/src/hugo/slatekit-v3`
-2. Generate site `hugo`
-3. Content is at `~/git/kiit-site/src/hugo/slatekit-v3/public`
-4. Copy content to root directory e.g. `public/info` -> `~/git/kiit-site/info`
-5. Publish your branch
-6. Create a PR to merge your branch to main/master.
-7. After the merge to main/master, the site will automatically update(delayed due to cached content)
+## Local Development
 
+```bash
+npm run start
+```
 
-# Folders
+This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
 
-name | purpose | location 
---|---|---
-theme   | theme for site   | src/hugo/slatekit-v3/themes/wavo
-content | content for page | src/hugo/slatekit-v3/content/start/overview
-assets  | js,css,img       | src/hugo/slatekit-v3/themes/wavo/static/assets
-shortcodes   | reusable html | src/hugo/slatekit-v3/themes/layouts/shortcodes/sk-modules.html
+## Build
 
+```bash
+npm run build
+```
+
+This command generates static content into the `build` directory and can be served using any static contents hosting service.
+
+## Deployment
+
+Using SSH:
+
+```bash
+USE_SSH=true npm run deploy
+```
+
+Not using SSH:
+
+```bash
+GIT_USER=<Your GitHub username> npm run deploy
+```
+
+If you are using GitHub Pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
