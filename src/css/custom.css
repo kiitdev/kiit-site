@@ -1,0 +1,331 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/*
+ * Kiit brand fonts. Currently swapped out site-wide (body + headings) for
+ * Nunito instead of the original Open Sans/Dosis pair carried over from the
+ * live kiit.dev site. To revert: restore this import and the
+ * --ifm-font-family-base/--ifm-heading-font-family values further down.
+ */
+/* @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700;800&family=Dosis:wght@300;400;500;600;700;800&display=swap'); */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&display=swap');
+
+/*
+ * Kiit brand palette, pulled from the live site's stylesheets:
+ * indigo #5e72e4 (primary), pink #ff5777 and orange #f8a13e (accents).
+ *
+ * --ifm-color-primary below is NOT the raw brand hex. The raw hex only
+ * hits ~4.2:1 contrast against white, short of WCAG AA (4.5:1) for body
+ * text and links. It's darkened slightly (L 63% -> 60%) to clear AA in
+ * light mode, and lightened further (L 63% -> 67%) in dark mode where it
+ * sits on a dark background instead. The true, undiluted brand hex stays
+ * available as --kiit-color-brand for decorative use (logos, hero art)
+ * where text contrast rules don't apply.
+ */
+:root {
+  --kiit-color-brand: #5e72e4;
+  --kiit-color-accent-orange: #f8a13e;
+
+  /*
+   * Accent color (fuchsia), used for the MoreLink/BackToTop pill buttons.
+   * --kiit-color-accent is the raw hue for decorative use; -dark/-darker are
+   * AA-calibrated variants for solid-fill buttons with white text — the raw
+   * hue only clears ~3:1 contrast against white, short of the 4.5:1 small
+   * text needs. Same darkening approach as --ifm-color-primary below, same
+   * hue, lower lightness.
+   */
+  --kiit-color-accent: #f53da8;
+  --kiit-color-accent-dark: #cc0c7b;
+  --kiit-color-accent-darker: #99085d;
+
+  /*
+   * Named alias for the recurring blue used on structural/navigational
+   * accents that aren't links or buttons: the "#" heading anchor, Sidebar
+   * Group titles (e.g. "Foundations"), and Topic (H3) headings. Same value
+   * as --ifm-color-primary, given its own name so those three usages read
+   * as one deliberate design decision instead of three separate places that
+   * happen to reference the primary color.
+   */
+  --kiit-color-heading-accent: var(--ifm-color-primary);
+
+  --ifm-color-primary: #5066e2;
+  --ifm-color-primary-dark: #4159df;
+  --ifm-color-primary-darker: #3952de;
+  --ifm-color-primary-darkest: #243fd8;
+  --ifm-color-primary-light: #6074e4;
+  --ifm-color-primary-lighter: #677ae6;
+  --ifm-color-primary-lightest: #7f8fe9;
+
+  --ifm-font-family-base: 'Nunito', system-ui, sans-serif;
+  --ifm-heading-font-family: 'Nunito', system-ui, sans-serif;
+
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --ifm-color-primary: #6f81e7;
+  --ifm-color-primary-dark: #5b70e4;
+  --ifm-color-primary-darker: #5167e2;
+  --ifm-color-primary-darkest: #344ddd;
+  --ifm-color-primary-light: #8392ea;
+  --ifm-color-primary-lighter: #8d9bec;
+  --ifm-color-primary-lightest: #aab5f1;
+
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/*
+ * Right-hand table of contents. Top-level entries (the page's H2 sections,
+ * e.g. Overview/Setup/Concepts) are bold, larger, and colored to match the
+ * actual on-page H2 heading text color (--ifm-heading-color, which just
+ * inherits the body text color by default, not the primary blue used for
+ * the "#" anchor next to it) so the TOC entry and its heading read as the
+ * same color for direct comparison. Sub-items (H3, e.g. Goals/Inspiration)
+ * are left at Infima's default weight/color. The ">" combinators target only
+ * links that are direct children of the root <ul>, since nested headings
+ * render in their own nested <ul> without the table-of-contents__left-border
+ * class repeated.
+ */
+.table-of-contents.table-of-contents__left-border > li > .table-of-contents__link {
+  color: var(--ifm-heading-color);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/*
+ * TOC-only emoji per top-level Section, matched by position rather than
+ * heading text (replaces the earlier "#" anchor-style prefix — having both
+ * the "#" and an emoji was too much). Deliberately NOT in the page body
+ * headings themselves: an emoji there breaks Docusaurus's anchor-id slug
+ * (e.g. "🎓 Tutorial" slugs to "-tutorial", not "tutorial", breaking every
+ * #tutorial-style link), and the standard markdown fix for that
+ * ({#tutorial}) in turn breaks MDX parsing in a file that already uses JSX
+ * components like this one does. Position-based means this only stays
+ * correct as long as every doc page follows the fixed Overview -> Setup ->
+ * Concepts -> Design -> Tutorial -> Guide section order from the docs
+ * template — if that order ever changes, these need updating to match.
+ */
+.table-of-contents.table-of-contents__left-border > li:nth-child(-n + 6) > .table-of-contents__link::before {
+  margin-right: 0.35rem;
+}
+
+.table-of-contents.table-of-contents__left-border > li:nth-child(1) > .table-of-contents__link::before {
+  content: '💡';
+}
+
+.table-of-contents.table-of-contents__left-border > li:nth-child(2) > .table-of-contents__link::before {
+  content: '🚀';
+}
+
+.table-of-contents.table-of-contents__left-border > li:nth-child(3) > .table-of-contents__link::before {
+  content: '🗂️';
+}
+
+.table-of-contents.table-of-contents__left-border > li:nth-child(4) > .table-of-contents__link::before {
+  content: '🏗️';
+}
+
+.table-of-contents.table-of-contents__left-border > li:nth-child(5) > .table-of-contents__link::before {
+  content: '🎓';
+}
+
+.table-of-contents.table-of-contents__left-border > li:nth-child(6) > .table-of-contents__link::before {
+  content: '⚙️';
+}
+
+/*
+ * Extra left indent on the nested Topic list (H3 sub-items, e.g. Goals under
+ * Overview) so it clears the emoji prefix on its parent Section and reads
+ * as properly nested, instead of sitting nearly flush with the Section's
+ * own emoji-prefixed text.
+ */
+.table-of-contents.table-of-contents__left-border > li > ul {
+  padding-left: calc(var(--ifm-toc-padding-horizontal) + 1.1rem);
+}
+
+/*
+ * Left-hand docs sidebar: same font family, weight, and color as the
+ * right-hand TOC at each matching level, just bigger. Children ("kiit-codes"
+ * under Foundations) mirror the TOC sub-items' 600 weight and muted
+ * --ifm-toc-link-color; top-level items (the "Foundations" category, and
+ * any standalone level-1 link) mirror the TOC top-level's 700 weight and
+ * --ifm-heading-color. Sizes still beat their TOC counterparts: 0.95rem vs.
+ * the TOC's 0.8rem for children, 1.15rem vs. the TOC's 1rem for top-level.
+ */
+.menu__link {
+  font-family: var(--ifm-font-family-base);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ifm-toc-link-color);
+}
+
+.theme-doc-sidebar-item-category-level-1 > .menu__list-item-collapsible > .menu__link,
+.theme-doc-sidebar-item-link-level-1 > .menu__link {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ifm-heading-color);
+}
+
+/* Section titles specifically (e.g. "Foundations"), same blue as the "#"
+   anchor in the page body, distinct from standalone top-level links. */
+.theme-doc-sidebar-item-category-level-1 > .menu__list-item-collapsible > .menu__link {
+  color: var(--kiit-color-heading-accent);
+}
+
+/* Divider above each top-level sidebar section (e.g. above "Foundations"). */
+.theme-doc-sidebar-item-category-level-1 {
+  border-top: 1px solid var(--ifm-toc-border-color);
+  padding-top: 0.5rem;
+}
+
+/*
+ * Same light gray surface as the right-hand TOC (theme-doc-toc-desktop,
+ * below). Unlike the TOC, this container's own divider is a border-right
+ * on itself (not a nested child's left border), so uniform padding on all
+ * sides is safe here — no risk of the fill bleeding past the divider line.
+ */
+.theme-doc-sidebar-container {
+  box-sizing: border-box;
+  background-color: var(--ifm-color-emphasis-100);
+  padding: 0.75rem;
+}
+
+/* Sub-items (H3, e.g. Goals/Inspiration) get a moderate bold, short of the
+   top-level entries' full 700 weight, which read as too heavy at that level. */
+.table-of-contents__link {
+  font-weight: 600;
+}
+
+/* Whichever TOC entry is currently scrolled into view goes full bold, on
+   top of Infima's default active-state color change. No visible effect on
+   top-level entries (already 700), but sub-items bolden from 600 to 700. */
+.table-of-contents__link--active {
+  font-weight: 700;
+}
+
+/*
+ * Light gray surface behind the whole TOC sidebar, theme-aware since
+ * --ifm-color-emphasis-100 is Infima's own light/dark-adjusted gray token.
+ * box-sizing: border-box keeps the padding inside the sidebar's existing
+ * column width instead of adding to it. No left padding specifically: the
+ * inner <ul> (table-of-contents__left-border) draws its own left border as
+ * the actual divider between content and TOC, so left padding on this outer
+ * box would push the gray fill past that line into the content side.
+ */
+.theme-doc-toc-desktop {
+  box-sizing: border-box;
+  background-color: var(--ifm-color-emphasis-100);
+  border-radius: 8px;
+  padding: 0.75rem 0.75rem 0.75rem 0;
+}
+
+/*
+ * Heading anchor "#" links, H2 only (Overview/Setup/Concepts, not the H3s
+ * nested under them, which keep Docusaurus's default hover-to-reveal
+ * behavior): always visible instead of opacity 0 until hover, and hangs in
+ * the left margin instead of trailing the heading text. Absolute positioning
+ * (rather than flex-reversing the heading's content) keeps the heading text
+ * itself at its original left edge, aligned with the body text below it,
+ * instead of shifting the whole heading right to make room for the "#".
+ *
+ * Extra left padding on the doc content column itself, so the "#" hanging
+ * left of an H2 has its own room instead of overlapping the left sidebar nav.
+ */
+.theme-doc-markdown {
+  padding-left: 2rem;
+}
+
+/*
+ * Top-level page body headings only (H2, e.g. Overview/Setup), bolder than
+ * Infima's default (--ifm-heading-font-weight is 700, but Dosis is a thin
+ * geometric font, so 700 doesn't read as bold as it would in a heavier
+ * typeface). 800 is Dosis's heaviest loaded weight. H3 sub-headings (e.g.
+ * Goals/Inspiration) are left at the default weight.
+ */
+.theme-doc-markdown h2 {
+  font-weight: 800;
+}
+
+/* H3 sub-headings (e.g. Goals/Inspiration) in --kiit-color-heading-accent,
+   the same blue as the "#" anchor next to an H2. */
+.theme-doc-markdown h3 {
+  color: var(--kiit-color-heading-accent);
+}
+
+h2.anchor {
+  position: relative;
+}
+
+/*
+ * Positioned via "right" (offset from the heading's own left edge, since
+ * this element's containing block is the heading itself) rather than "left",
+ * so the 0.5rem gap to the heading text is exact regardless of how wide the
+ * "#" glyph itself renders, instead of guessing a fixed left offset.
+ */
+h2.anchor .hash-link {
+  position: absolute;
+  right: calc(100% + 0.5rem);
+  opacity: 1 !important;
+  padding-left: 0;
+  color: var(--kiit-color-heading-accent);
+}
+
+/*
+ * Markdown tables default to shrink-to-fit their content (Infima sets
+ * table { display: block } with no width), so a short 2-column table sits
+ * noticeably narrower than a long 3-column one. Force every table in doc
+ * content to the full content-column width for a consistent look.
+ */
+.theme-doc-markdown table {
+  width: 100%;
+}
+
+/*
+ * One-line module tagline shown under a doc page's H1, in the casual
+ * handwriting accent font rather than body copy. Applied via <p
+ * class="kiit-tagline"> in the doc's markdown, not automatic on every H1.
+ */
+.kiit-tagline {
+  font-family: var(--ifm-heading-font-family);
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: var(--kiit-color-accent);
+  margin-top: -0.5rem;
+}
+
+/* Breadcrumbs (e.g. "Foundations / kiit-codes" above the page title) get
+   the same base body font, explicit rather than relying on inheritance. */
+.breadcrumbs__link {
+  font-family: var(--ifm-font-family-base);
+  font-weight: 700;
+}
+
+/*
+ * Top navbar (across docs and blog): same primary blue as the rest of the
+ * site's blue accents, with bold white links (Kiit / Docs / Blog / GitHub).
+ * Small link text needs 4.5:1 contrast (vs. 3:1 for the hero's large title
+ * text elsewhere), so light mode uses the plain primary (already AA-safe at
+ * 4.84:1), while dark mode uses the one-shade-darker primary-darker instead,
+ * since the plain dark-mode primary only clears 3.52:1 against white.
+ */
+.navbar {
+  --ifm-navbar-background-color: var(--ifm-color-primary);
+  --ifm-navbar-link-color: #fff;
+  --ifm-navbar-link-hover-color: rgba(255, 255, 255, 0.75);
+}
+
+[data-theme='dark'] .navbar {
+  --ifm-navbar-background-color: var(--ifm-color-primary-darker);
+}
+
+.navbar__brand,
+.navbar__title,
+.navbar__link {
+  color: var(--ifm-navbar-link-color);
+  font-weight: 700;
+}

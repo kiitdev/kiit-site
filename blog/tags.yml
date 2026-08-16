@@ -1,0 +1,19 @@
+announcement:
+  label: Announcement
+  permalink: /announcement
+  description: Announcements about Kiit and its modules
+
+kiit:
+  label: Kiit
+  permalink: /kiit
+  description: Posts about the overall Kiit framework
+
+kiit-codes:
+  label: kiit-codes
+  permalink: /kiit-codes
+  description: Posts about the kiit-codes module
+
+kiit-result:
+  label: kiit-result
+  permalink: /kiit-result
+  description: Posts about the kiit-result module
