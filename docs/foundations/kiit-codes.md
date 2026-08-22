@@ -409,6 +409,30 @@ println("${denied.name} (success=${denied.success})") // UNAUTHORIZED (success=f
 
 <Spacer />
 
+### Validation
+
+Now add a method that reports every problem at once instead of stopping at the first:
+
+```kotlin
+fun UserService.validateSignup(id: String, email: String): Checked {
+    val errors = mutableListOf<Err>()
+    if (id.isBlank()) errors.add(Err.on("id", id, "Id is required"))
+    if (!email.contains("@")) errors.add(Err.on("email", email, "Email must contain @"))
+    return if (errors.isEmpty()) Checked.success(Succeeded.SUCCESS)
+           else Checked.failure(Invalid.INVALID_VALUE, errors)
+}
+
+val checked = service.validateSignup("", "not-an-email")
+println("valid=${checked.isValid}, errors=${checked.errors.size}")
+// valid=false, errors=2
+```
+
+`Checked` can only be constructed through `Checked.success(status)`/`Checked.failure(status, errors)`,
+so `status` and `errors` can never disagree. See [Concepts](#checked) for the full type, or
+[Guide](#usage) for `collect(...)` combining multiple `Checked` results into one.
+
+<Spacer />
+
 ### Try/Catch
 
 Now add a method that throws instead, for a caller that only understands exceptions:
