@@ -117,10 +117,10 @@
  * ({#tutorial}) in turn breaks MDX parsing in a file that already uses JSX
  * components like this one does. Position-based means this only stays
  * correct as long as every doc page follows the fixed Overview -> Setup ->
- * Concepts -> Design -> Tutorial -> Guide section order from the docs
+ * Concepts -> Design -> Tutorial -> Guide -> FAQ section order from the docs
  * template — if that order ever changes, these need updating to match.
  */
-.table-of-contents.table-of-contents__left-border > li:nth-child(-n + 6) > .table-of-contents__link::before {
+.table-of-contents.table-of-contents__left-border > li:nth-child(-n + 7) > .table-of-contents__link::before {
   margin-right: 0.35rem;
 }
 
@@ -146,6 +146,10 @@
 
 .table-of-contents.table-of-contents__left-border > li:nth-child(6) > .table-of-contents__link::before {
   content: '⚙️';
+}
+
+.table-of-contents.table-of-contents__left-border > li:nth-child(7) > .table-of-contents__link::before {
+  content: '❓';
 }
 
 /*
