@@ -43,6 +43,9 @@ const config: Config = {
           // versioned instances, one each for kiit-codes and kiit-result.
           sidebarPath: './sidebars.ts',
           editUrl: 'https://github.com/kiitdev/kiit-site/tree/main/',
+          // Hidden from the sidebar/build for now, not deleted — default
+          // Docusaurus scaffold content, kept on disk until it's replaced.
+          exclude: ['tutorial-basics/**', 'tutorial-extras/**'],
         },
         blog: {
           showReadingTime: true,

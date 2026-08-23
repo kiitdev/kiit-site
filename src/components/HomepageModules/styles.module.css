@@ -14,7 +14,7 @@
   margin-bottom: 1.5rem;
   border-radius: var(--ifm-card-border-radius);
   border: 1px solid var(--ifm-color-emphasis-300);
-  background-color: #fff;
+  background-color: var(--ifm-background-color);
   transition: border-color 0.2s ease, transform 0.2s ease;
 }
 

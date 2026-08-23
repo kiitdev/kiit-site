@@ -18,6 +18,7 @@ import Icon from '@site/src/components/Icon';
 
 <p className="kiit-tagline">A Kotlin library for classifying and handling success and failure.</p>
 
+
 A small, dependency-free status and error taxonomy for application outcomes, with
 extensible codes, protocol mappings, validation, typed exceptions, and optional
 `Result<T, E>` integration.
@@ -265,40 +266,102 @@ and every built-in code within each.
 
 ### Err
 
+Error representation for use with Validation, Exceptions, and Result types. This stores instance level error details and the building block for `Checked`'s error list.
+
+```kotlin
+sealed class Err {
+    abstract val message: String
+
+    data class ErrorInfo(override val message: String, val cause: Throwable? = null) : Err()
+    data class ErrorField(val field: String, val value: String, override val message: String) : Err()
+    data class ErrorList(val errors: List<Err>, override val message: String) : Err()
+}
+```
+
 | Variant | Fields | Use |
 |---|---|---|
 | `Err.ErrorInfo` | `message`, `cause?`, `ref?` | Default implementation: a message with an optional cause. |
 | `Err.ErrorField` | `field`, `value`, `message`, `cause?`, `ref?` | An error on a specific field. |
 | `Err.ErrorList` | `errors`, `message`, `cause?`, `ref?` | Wraps a list of other errors. |
 
-Builders: `Err.of(message)`, `Err.of(status)`, `Err.on(field, value, message)`,
-`Err.on(field, message)` (value omitted for sensitive fields), `Err.ex(throwable)`,
-`Err.obj(any)`, `Err.list(strings, message)`, `Err.build(any?)`.
+| Builder | Use |
+|---|---|
+| `Err.of(message)` | Plain message, no field or cause. |
+| `Err.of(status)` | Build directly from a `Status`. |
+| `Err.on(field, value, message)` | Error on a specific field, including its value. |
+| `Err.on(field, message)` | Same, but omits the value — for sensitive fields. |
+| `Err.ex(throwable)` | Wrap a caught exception or throwable. |
+| `Err.obj(any)` | Wrap an arbitrary object as the cause. |
+| `Err.list(strings, message)` | Build an `Err.ErrorList` from a list of plain strings. |
+| `Err.build(any?)` | Generic builder that dispatches based on the input's type. |
 
 <Spacer />
 
 ### Checked
 
-`Checked(status: Status, errors: List<Err>)`, constructed only through `Checked.success(status)`
-or `Checked.failure(status, errors)`, so `status` and `errors` can never disagree: a passing
-`Checked` always has an empty `errors` list, a failing one always has at least one entry.
-`isValid: Boolean` reflects `errors.isEmpty()`. Implements `HasErrors`. `collect(vararg checks)` /
-`collect(checks: List<Checked>)` combine multiple `Checked` into one, failing with
-`Invalid.INVALID_VALUE` and every pooled error if any input failed.
+Non-monadic validation result that reports every problem at once, instead of stopping at the
+first. `Checked(status: Status, errors: List<Err>)`, reachable only through
+`Checked.success(status)` or `Checked.failure(status, errors)`.
+
+```kotlin
+class Checked private constructor(
+    val status: Status,
+    val errors: List<Err>,
+) : HasErrors {
+    val isValid: Boolean get() = errors.isEmpty()
+
+    companion object {
+        fun success(status: Passed = Succeeded.SUCCESS): Checked
+        fun failure(status: Failed, errors: List<Err>): Checked
+    }
+}
+```
+
+| # | Trait | Details |
+|---:|---|---|
+| 1 | Invariant | `status` and `errors` can never disagree: a passing `Checked` always has an empty `errors` list, a failing one always has at least one entry. |
+| 2 | `isValid` | `Boolean`, reflects `errors.isEmpty()`. |
+| 3 | Interface | Implements `HasErrors`. |
+| 4 | `collect(...)` | `collect(vararg checks)` / `collect(checks: List<Checked>)` combine multiple `Checked` into one, failing with `Invalid.INVALID_VALUE` and every pooled error if any input failed. |
 
 <Spacer />
 
 ### Exceptions
 
-Sealed, with four subclasses matching the `Failed` groups: `RestrictedException`,
-`InvalidException`, `RejectedException`, `UnservedException`. Each carries a `Checked`, exposed
-as `status: Status` and `errors: List<Err>`. `Failed.toException(errors)` converts a bare
-`Failed` status into the matching subclass. Platform-idiomatic equivalents exist for iOS
-(`@ObjCName` in `iosMain`) and JS/TS (`jsMain`).
+Sealed exception hierarchy carrying a `Checked`, for boundaries that only understand
+exceptions — one subclass per `Failed` group:
+
+```kotlin
+sealed class StatusException(val checked: Checked) : Exception() {
+    val status: Status get() = checked.status
+    val errors: List<Err> get() = checked.errors
+
+    class RestrictedException(status: Failed.Restricted, errors: List<Err> = emptyList()) : StatusException(...)
+    class InvalidException(status: Failed.Invalid, errors: List<Err> = emptyList()) : StatusException(...)
+    class RejectedException(status: Failed.Rejected, errors: List<Err> = emptyList()) : StatusException(...)
+    class UnservedException(status: Failed.Unserved, errors: List<Err> = emptyList()) : StatusException(...)
+}
+```
+
+| Exception | Matches |
+|---|---|
+| `RestrictedException` | `Failed.Restricted` |
+| `InvalidException` | `Failed.Invalid` |
+| `RejectedException` | `Failed.Rejected` |
+| `UnservedException` | `Failed.Unserved` |
+
+| # | Trait | Details |
+|---:|---|---|
+| 1 | Carries | A `Checked`, exposed as `status: Status` and `errors: List<Err>`. |
+| 2 | Conversion | `Failed.toException(errors)` converts a bare `Failed` status into the matching subclass. |
+| 3 | Platform equivalents | iOS via `@ObjCName` in `iosMain`; JS/TS via `jsMain`. |
 
 <Spacer />
 
 ### Protocols
+
+Maps `Status` to and from external protocol representations — HTTP and gRPC out of the box,
+or a custom protocol of your own via `CodeLookup`.
 
 | Type | Purpose |
 |---|---|
@@ -327,14 +390,14 @@ taxonomy — an enum can't be extended this way.
 
 ### Features
 
-| Feature | Description |
-|---|---|
-| [Status classification](#taxonomy) | The core `Passed`/`Failed` taxonomy. |
-| [Extensibility](#usage) | Domain-specific codes within the same fixed groups. |
-| [Protocol mappings](#protocols-1) | HTTP, gRPC, and custom protocol lookups. |
-| [Validation](#usage) | `Checked`/`Err`/`collect` for reporting every problem found. |
-| [Typed exceptions](#usage) | `StatusException` for exception-only boundaries. |
-| Result integration | [kiit-result](https://github.com/kiitdev/kiit-result)'s `Result<T, E>` built on this taxonomy. |
+| # | Feature | Description |
+|---:|---|---|
+| 1 | **[Status classification](#taxonomy)** | The core `Passed`/`Failed` split, with a fixed `Group` and an open `Code` beneath it for finer-grained classification. |
+| 2 | **[Extensibility](#usage)** | Add domain-specific codes within the same fixed groups, without forking the taxonomy or losing shared meaning. |
+| 3 | **[Protocol mappings](#protocols-1)** | Map statuses to and from HTTP, gRPC, or any custom protocol via `CodeLookup`/`CompositeLookup`. |
+| 4 | **[Validation](#usage)** | `Checked`, `Err`, and `collect` report every problem found at once, instead of stopping at the first. |
+| 5 | **[Typed exceptions](#usage)** | `StatusException` and `Failed.toException()` for boundaries that only understand exceptions. |
+| 6 | **Result integration** | The separate [kiit-result](https://github.com/kiitdev/kiit-result) module builds a `Result<T, E>` type on top of this same taxonomy. |
 
 <Spacer />
 
@@ -360,7 +423,7 @@ taxonomy — an enum can't be extended this way.
 
 ## Tutorial
 
-### Code
+### Status Codes
 
 This walks through building a tiny service that returns `Status` for expected outcomes, then
 crosses a boundary that can only communicate via exceptions.
@@ -409,6 +472,30 @@ println("${denied.name} (success=${denied.success})") // UNAUTHORIZED (success=f
 
 <Spacer />
 
+### Validation
+
+Now add a method that reports every problem at once instead of stopping at the first:
+
+```kotlin
+fun UserService.validateSignup(id: String, email: String): Checked {
+    val errors = mutableListOf<Err>()
+    if (id.isBlank()) errors.add(Err.on("id", id, "Id is required"))
+    if (!email.contains("@")) errors.add(Err.on("email", email, "Email must contain @"))
+    return if (errors.isEmpty()) Checked.success(Succeeded.SUCCESS)
+           else Checked.failure(Invalid.INVALID_VALUE, errors)
+}
+
+val checked = service.validateSignup("", "not-an-email")
+println("valid=${checked.isValid}, errors=${checked.errors.size}")
+// valid=false, errors=2
+```
+
+`Checked` can only be constructed through `Checked.success(status)`/`Checked.failure(status, errors)`,
+so `status` and `errors` can never disagree. See [Concepts](#checked) for the full type, or
+[Guide](#usage) for `collect(...)` combining multiple `Checked` results into one.
+
+<Spacer />
+
 ### Try/Catch
 
 Now add a method that throws instead, for a caller that only understands exceptions:
@@ -431,6 +518,21 @@ try {
 `Restricted.UNAUTHORIZED` belongs to the `Restricted` group. See [Concepts](#exceptions)
 for the full exception hierarchy, or [Design](#philosophy) for why the taxonomy is shaped this
 way.
+
+<Spacer />
+
+### Result
+
+`kiit-codes` classifies an outcome, but doesn't hand back a value alongside it. For that, pair it
+with [kiit-result](/docs/kiit-result) — a separate Kiit library that builds a `Result<T, E>` type
+on this same taxonomy:
+
+```kotlin
+fun UserService.find(id: String): Result<User, Status> =
+    users[id]?.let { Result.success(it) } ?: Result.failure(Rejected.NOT_EXISTS)
+```
+
+See the [kiit-result docs](/docs/kiit-result) for the full API.
 
 <BackToTop />
 
@@ -489,6 +591,9 @@ fun requireAuthorized(id: String, requesterId: String) {
 
 ### Protocols
 
+Working code for the types introduced in [Concepts](#protocols) — mapping statuses to and from
+HTTP, gRPC, and a custom protocol of your own.
+
 **HTTP**, via `CodesToHttp`:
 
 ```kotlin
@@ -518,5 +623,73 @@ val lookup = CompositeLookup(
 
 lookup.toCode(PAYMENT_DECLINED) // 402
 ```
+
+<BackToTop />
+
+## FAQ
+
+Common questions about the taxonomy, design choices, alternatives, adoption, and project maturity.
+
+### Why
+
+| Question | Answer |
+|---|---|
+| **Why not just use exceptions or booleans?** | Exceptions are thrown inconsistently across a codebase, and a boolean can't say why. This gives every outcome a shared shape, closed categories, open codes underneath. |
+| **Why a closed taxonomy but open codes?** | Closed categories keep generic handling, exhaustive matching, logging, and protocol mappings consistent everywhere. Codes stay open so each domain can extend it freely. |
+| **Why classify outcomes if my domain errors already explain what happened?** | Domain errors explain *what* happened in one domain. The taxonomy explains *what kind* of outcome it was, consistently, across every domain in the app. |
+| **Does this replace domain modeling?** | No. It classifies outcomes; it doesn't replace aggregates, value objects, or domain events. An infrastructure-level vocabulary, not a competing one. |
+
+<Spacer />
+
+### Alternatives
+
+| Question | Answer |
+|---|---|
+| **How is this different from Arrow's `Either`/`Validated` or `kotlin-result`?** | Those give you a `Result` type with no taxonomy underneath, you supply the meaning yourself. This provides the taxonomy those types can build on, plus a working exception path. |
+| **Why not just use raw HTTP status codes everywhere?** | A background job or CLI command doesn't have an HTTP status. HTTP was the closest precedent, and the taxonomy is validated against it, but it isn't scoped to HTTP. |
+| **Doesn't this lock me into Kiit's taxonomy?** | The eight categories are closed and cross-validated against HTTP and gRPC. Every code inside them is yours to extend, and you're free to ignore the built-in ones entirely. |
+
+<Spacer />
+
+### API
+
+| Question | Answer |
+|---|---|
+| **Why not just use strings for status names?** | Strings don't give you compiler-checked exhaustiveness, discoverability, or protocol mappings. The goal is consistent classification, not just naming. |
+| **Why isn't `Status` just an enum?** | Enums can't be extended by consumers. This lets every application define its own statuses while still participating in the same taxonomy. |
+| **Why exactly eight categories?** | Every gRPC code and the most common HTTP codes map onto these eight without needing a ninth, tested directly against both. |
+| **Why was the numeric status code field removed?** | An earlier version had one, and it invited the wrong inference, a number resembling an HTTP code but meaning something else. Real protocol numbers are available on demand, never implied. |
+| **Isn't 50+ codes a steep learning curve?** | Most of the real cost is the eight categories, not the codes. Each category's default is a safe fallback; the rest is opt-in precision you reach for as needed. |
+| **Why is `Unserved` so much bigger than the others?** | Independent evidence, not an oversight, both HTTP and gRPC show the same clustering on their own for capacity and infrastructure failures. |
+| **Why isn't retry logic or severity built in?** | Retryability cuts across categories rather than aligning with them; `Unserved` alone has both retryable and non-retryable codes. A dedicated `Retry` category was considered and rejected. |
+| **Doesn't a generic category lose domain-specific detail?** | No, the category is deliberately coarse while the code stays domain-specific. `PAYMENT_DECLINED` and `ORDER_CONFLICT` can both be `Rejected` and still keep distinct identities. |
+
+<Spacer />
+
+### Adoption
+
+| Question | Answer |
+|---|---|
+| **What if I classify something incorrectly?** | Nothing catastrophic, a status can be moved to a more appropriate category later. The taxonomy improves consistency, it doesn't enforce absolute correctness upfront. |
+| **What if my company already has its own status system?** | You don't have to replace it overnight. Existing statuses can map into the taxonomy incrementally while keeping their original names and meanings. |
+| **How does this work across microservices?** | Services don't need identical codes, only the shared categories. Each service keeps its own domain-specific statuses while exposing consistent high-level semantics. |
+
+<Spacer />
+
+### AI
+
+| Question | Answer |
+|---|---|
+| **Is the "built for AI" angle just marketing?** | The design decisions are justified on ordinary engineering grounds first, consistency, exhaustive matching, explicit semantics. AI benefits from the same properties, but the library stands on its own without them. |
+| **What evidence supports the AI-related claims?** | Intentionally modest. Stable names and explicit classification are expected to reduce ambiguity for AI tooling, but that's a hypothesis to validate with real benchmarks, not an assumed result. |
+
+<Spacer />
+
+### Maturity
+
+| Question | Answer |
+|---|---|
+| **Is this production-ready at 1.0.1?** | The version reflects the public package's youth, not the underlying design's. The core classification has years of internal production use prior to extraction; newer pieces (JS/TS, iOS) have less track record. |
+| **What about single-maintainer risk?** | Real risk, worth being upfront about. Apache 2.0 licensed and source available, but there's currently no second maintainer or organizational backing. |
 
 <BackToTop />

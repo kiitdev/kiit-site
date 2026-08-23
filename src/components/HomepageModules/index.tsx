@@ -31,9 +31,7 @@ const modules: ModuleItem[] = [
       "A Kotlin Result<T, E> type for representing the outcome of an operation as " +
       "a success or failure, built on kiit-codes' status taxonomy.",
     repoUrl: 'https://github.com/kiitdev/kiit-result',
-    // TODO: kiit-result's own docs page doesn't exist yet — points at the
-    // generic docs landing page for now, fix once that page is built.
-    docsUrl: '/docs/intro',
+    docsUrl: '/docs/kiit-result',
   },
   {
     name: 'kiit-registry',
