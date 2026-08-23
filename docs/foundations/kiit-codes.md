@@ -150,7 +150,6 @@ val status: Status = Succeeded.CREATED
 
 status.name     // "CREATED"
 status.origin   // "kiit"
-status.id       // "kiit.CREATED"
 status.message  // "A new resource was created."
 status.success  // true
 status.group    // "Succeeded"
@@ -160,9 +159,9 @@ status.group    // "Succeeded"
 |---|---|
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L50">name</ConceptTermLink> | Stable SCREAMING_SNAKE_CASE label, e.g. `"TOKEN_EXPIRED"`, for logs. |
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L57">origin</ConceptTermLink> | Where a status came from: `"kiit"` for built-ins, `"custom"` by default. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L60">id</ConceptTermLink> | `"$origin.$name"`: unique across every `Status`, usable as a map key. |
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L67">message</ConceptTermLink> | Human-readable constant description. Never built from runtime data. |
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L73">success</ConceptTermLink> | `true` for `Passed`, `false` for `Failed`. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L76">group</ConceptTermLink> | The fixed `Group` this status belongs to, e.g. `"Succeeded"`, `"Pending"`, `"Excluded"`, or `"Restricted"`. |
 
 <Spacer />
 
