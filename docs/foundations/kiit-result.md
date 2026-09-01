@@ -89,17 +89,17 @@ dependencies {
 import kiit.codes.Invalid
 import kiit.codes.Rejected
 import kiit.result.Outcome
-import kiit.result.OutcomeBuilder
+import kiit.result.Outcomes
 
-class UserService : OutcomeBuilder {
+class UserService {
     private val users = mutableMapOf<String, User>()
 
     fun create(id: String, email: String): Outcome<User> {
-        if (email.isBlank()) return invalid(Invalid.BAD_REQUEST)
-        if (users.containsKey(id)) return rejected(Rejected.CONFLICT)
+        if (email.isBlank()) return Outcomes.invalid(Invalid.BAD_REQUEST)
+        if (users.containsKey(id)) return Outcomes.rejected(Rejected.CONFLICT)
         val user = User(id, email)
         users[id] = user
-        return success(user)
+        return Outcomes.success(user)
     }
 }
 ```
@@ -386,27 +386,27 @@ A single `UserService` grows through each step below, no prior Concepts or Desig
 ```kotlin
 data class User(val id: String, val email: String)
 
-class UserService : OutcomeBuilder {
+class UserService {
     private val users = mutableMapOf<String, User>()
 
     fun create(id: String, email: String): Outcome<User> {
-        if (email.isBlank()) return invalid(Invalid.BAD_REQUEST)
-        if (users.containsKey(id)) return rejected(Rejected.CONFLICT)
+        if (email.isBlank()) return Outcomes.invalid(Invalid.BAD_REQUEST)
+        if (users.containsKey(id)) return Outcomes.rejected(Rejected.CONFLICT)
         val user = User(id, email)
         users[id] = user
-        return success(user)
+        return Outcomes.success(user)
     }
 }
 ```
 
-`create` returns an `Outcome<User>` (`Result<User, Err>`) instead of throwing for either expected failure. `invalid`/`rejected`/`success` are `FailedBuilder`/`PassedBuilder` methods, inherited via `OutcomeBuilder`. Each pre-fills the right kiit-codes status.
+`create` returns an `Outcome<User>` (`Result<User, Err>`) instead of throwing for either expected failure. `invalid`/`rejected`/`success` are `Outcomes` builder methods (`FailedBuilder`/`PassedBuilder` under the hood). Each pre-fills the right kiit-codes status.
 
 <Spacer />
 
 ### Fetch and compose
 
 ```kotlin
-fun fetch(id: String): Outcome<User> = users[id]?.let { success(it) } ?: invalid(Invalid.NOT_FOUND)
+fun fetch(id: String): Outcome<User> = users[id]?.let { Outcomes.success(it) } ?: Outcomes.invalid(Invalid.NOT_FOUND)
 ```
 
 ```kotlin
@@ -425,7 +425,7 @@ userService.create("alice", "alice@example.com")
 ```kotlin
 fun authorize(id: String, requesterId: String): Outcome<User> =
     fetch(id).flatMap { user ->
-        if (user.id != requesterId) restricted(Restricted.UNAUTHORIZED) else success(user)
+        if (user.id != requesterId) Outcomes.restricted(Restricted.UNAUTHORIZED) else Outcomes.success(user)
     }
 ```
 
