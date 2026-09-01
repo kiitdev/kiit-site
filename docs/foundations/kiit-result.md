@@ -156,6 +156,8 @@ Result<T, E>.action : Action? (optional, both branches)
 
 `result.message` is a convenience accessor equal to `result.status.message` on either branch.
 
+![Kiit Result structure](/img/kiit-result/kiit-result-structure.png)
+
 <Spacer />
 
 ### Status
@@ -184,16 +186,18 @@ This hierarchy belongs to kiit-codes, not kiit-result. See the [kiit-codes docs]
 
 Attach it via `result.withAction(action, chain = true)`. Chaining links to whatever action is already present by default, which is what makes it useful for pinpointing which layer failed inside a nested call chain. Once attached, `action` survives `map`/`mapError`/`toOutcome()`/`toTry()`, the same as `status` does.
 
+![Kiit Result action](/img/kiit-result/kiit-result-action.png)
+
 <Spacer />
 
 ### Aliases
 
-| Alias | Definition | Role |
-|---|---|---|
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-result/blob/main/kiit-result/src/commonMain/kotlin/kiit/result/Aliases.kt#L17">Option</ConceptTermLink> | `Result<T, Unit>` | The historical `Option`/`Maybe` role (Rust/Scala/Arrow), reimagined so absence carries a `status` explaining why, not just a bare `None`. `Options.some(value)`/`Options.none()` are the entry points. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-result/blob/main/kiit-result/src/commonMain/kotlin/kiit/result/Aliases.kt#L24">Try</ConceptTermLink> | `Result<T, Throwable>` | Exception as the error type, the shape used when crossing an exception-only boundary. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-result/blob/main/kiit-result/src/commonMain/kotlin/kiit/result/Aliases.kt#L31">Outcome</ConceptTermLink> | `Result<T, Err>` | kiit-codes' `Err` as the error type, the most commonly used alias. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-result/blob/main/kiit-result/src/commonMain/kotlin/kiit/result/Aliases.kt#L38">Validated</ConceptTermLink> | `Result<T, Err.ErrorList>` | For validation, collecting multiple errors instead of stopping at the first. |
+![Kiit Result aliases](/img/kiit-result/kiit-result-aliases.png)
+
+1. **<ConceptTermLink href="https://github.com/kiitdev/kiit-result/blob/main/kiit-result/src/commonMain/kotlin/kiit/result/Aliases.kt#L31">Outcome</ConceptTermLink>**: kiit-codes' `Err` as the error type, the most commonly used alias.
+2. **<ConceptTermLink href="https://github.com/kiitdev/kiit-result/blob/main/kiit-result/src/commonMain/kotlin/kiit/result/Aliases.kt#L38">Validated</ConceptTermLink>**: For validation, collecting multiple errors instead of stopping at the first.
+3. **<ConceptTermLink href="https://github.com/kiitdev/kiit-result/blob/main/kiit-result/src/commonMain/kotlin/kiit/result/Aliases.kt#L24">Try</ConceptTermLink>**: Exception as the error type, the shape used when crossing an exception-only boundary.
+4. **<ConceptTermLink href="https://github.com/kiitdev/kiit-result/blob/main/kiit-result/src/commonMain/kotlin/kiit/result/Aliases.kt#L17">Option</ConceptTermLink>**: The historical `Option`/`Maybe` role (Rust/Scala/Arrow), reimagined so absence carries a `status` explaining why, not just a bare `None`. `Options.some(value)`/`Options.none()` are the entry points.
 
 <Spacer />
 
