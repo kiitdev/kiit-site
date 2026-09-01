@@ -23,9 +23,11 @@ Success holds a value, Failure holds an error, and either can carry an Action re
 
 ### Goals
 
-Returning `null` for "not found" loses the reason, and throwing for expected, recoverable failures (validation, a conflict, an unauthorized caller) is expensive and easy to over- or under-catch. kiit-result's `Result<T, E>` fixes this with a `status` on both branches, not just `Failure`, so a caller knows the kind of success or failure, not just whether one happened. `Outcome<T>`, `Try<T>`, `Option<T>`, and `Validated<T>` all share this one `Result<T, E>` instead of needing four separate types, each just fixing `E` to the error shape a situation calls for.
+kiit-result's `Result<T, E>` exists so a caller knows the kind of success or failure, not just whether one happened. A `status` rides on both branches, not just `Failure`, closing a gap that `null` and thrown exceptions both leave unfilled: neither can say why something failed, or that it succeeded but was excluded, say, because of a duplicate.
 
-Builders like `restricted()` and `invalid()` pick the matching status automatically, so a `Failure`'s status and its error normally can't disagree without deliberately bypassing them. An optional `Action` records which operation produced or wrapped a result, useful for tracing across nested calls. The same closed status vocabulary on every branch also gives a model reading or generating code one exhaustive pattern to match against, on `Success` and `Failure` alike, rather than a bespoke shape per library. See [Philosophy](#philosophy) for the full rationale.
+`Outcome<T>`, `Try<T>`, `Option<T>`, and `Validated<T>` share this one type, each just fixing the error shape a situation calls for.
+
+A set of builder functions pick the right status for you: call `restricted()` for an unauthorized caller, `invalid()` for bad input, and so on, so the status matches the error without having to build one by hand. An optional `Action` can ride along too, recording which operation produced a result so a failure several layers deep is easy to trace back to its source. The same small, fixed vocabulary on every branch also makes code easier for a model to read or generate correctly, one predictable shape instead of a bespoke one per library. See [Philosophy](#philosophy) for the full rationale.
 
 <Spacer />
 
