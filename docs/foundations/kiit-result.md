@@ -105,8 +105,6 @@ class UserService {
 ```
 
 ```kotlin
-import kiit.result.flatMap
-
 userService.create("alice", "alice@example.com")
     .map { it.email }
     .onSuccess { println("registered: $it") }
@@ -250,6 +248,7 @@ A `List<Result<T, E>>` adds its own operators: `combine()` sequences the list in
 `Options` also adds `some(value)`/`none(...)` on top of the generic builders above, a discoverable `Some`/`None`-style pair for `Option<T>` specifically. `none()` defaults to `Rejected.NOT_EXISTS`, distinct from the generic `Unserved.UNEXPECTED` fallback:
 
 ```kotlin
+import kiit.codes.Rejected
 import kiit.result.Options
 
 // Option<Int> — present
@@ -384,6 +383,11 @@ A single `UserService` grows through each step below, no prior Concepts or Desig
 ### Create
 
 ```kotlin
+import kiit.codes.Invalid
+import kiit.codes.Rejected
+import kiit.result.Outcome
+import kiit.result.Outcomes
+
 data class User(val id: String, val email: String)
 
 class UserService {
@@ -406,6 +410,10 @@ class UserService {
 ### Fetch and compose
 
 ```kotlin
+import kiit.codes.Invalid
+import kiit.result.Outcome
+import kiit.result.Outcomes
+
 fun fetch(id: String): Outcome<User> = users[id]?.let { Outcomes.success(it) } ?: Outcomes.invalid(Invalid.NOT_FOUND)
 ```
 
@@ -423,6 +431,11 @@ userService.create("alice", "alice@example.com")
 ### Authorize
 
 ```kotlin
+import kiit.codes.Restricted
+import kiit.result.Outcome
+import kiit.result.Outcomes
+import kiit.result.flatMap
+
 fun authorize(id: String, requesterId: String): Outcome<User> =
     fetch(id).flatMap { user ->
         if (user.id != requesterId) Outcomes.restricted(Restricted.UNAUTHORIZED) else Outcomes.success(user)
@@ -471,6 +484,10 @@ asTry.onFailure { ex -> println("caught: ${ex.message}") }
 `Result` is sealed with exactly two subtypes, so a `when` over it is exhaustive without a `default`/`else` branch, on Kotlin, and on Java 21's pattern-matching `switch` too.
 
 ```kotlin
+import kiit.result.Failure
+import kiit.result.Outcome
+import kiit.result.Success
+
 val result: Outcome<User> = userService.create("alice", "alice@example.com")
 
 when (result) {
@@ -486,6 +503,17 @@ when (result) {
 `result.status` is itself a closed hierarchy: `Passed` or `Failed` at the top, each with four further subtypes. Nesting a `when` inside a `when` gets exhaustiveness at both levels. Capture `result.status` into a local `val` first, so the compiler can smart-cast it reliably inside the nested `when` too. See [Concepts > Status](#status) for the full set of subtypes.
 
 ```kotlin
+import kiit.codes.Excluded
+import kiit.codes.Failed
+import kiit.codes.Information
+import kiit.codes.Invalid
+import kiit.codes.Passed
+import kiit.codes.Pending
+import kiit.codes.Rejected
+import kiit.codes.Restricted
+import kiit.codes.Succeeded
+import kiit.codes.Unserved
+
 when (val status = result.status) {
     is Passed -> when (status) {
         is Succeeded -> println("succeeded: ${status.name}")
@@ -509,6 +537,9 @@ when (val status = result.status) {
 Attach an `Action` when a result is produced, then read it back for logging or tracing. Chaining links a new `Action` to whatever one was already there, so a caller several layers up can see the whole path an operation took. `map`/`mapError` carry an existing `Action` forward automatically; `flatMap` doesn't, since the new `Result` comes from caller-supplied code, so reattach it explicitly there if it needs to carry through.
 
 ```kotlin
+import kiit.result.Action
+import kiit.result.Outcome
+
 fun createUser(id: String, email: String): Outcome<User> =
     userService.create(id, email)
         .withAction(Action(action = "createUser", xid = "req-42", data = mapOf("email" to email)))
@@ -536,6 +567,11 @@ outer.action?.previous?.action
 The everyday operators for composing and inspecting a `Result` without leaving its own shape: `map` transforms the success value, `flatMap` chains another `Result`-returning step, `exists` checks the value without unwrapping it, and `onSuccess`/`onFailure` run a side effect on whichever branch matches.
 
 ```kotlin
+import kiit.result.Outcome
+import kiit.result.Outcomes
+import kiit.result.Success
+import kiit.result.flatMap
+
 val ok: Outcome<Int> = Outcomes.success(42)
 val bad: Outcome<Int> = Outcomes.unserved("boom")
 
@@ -567,6 +603,15 @@ bad.onFailure { err -> println("failed: ${err.message}") }
 Every accessor for pulling a value or error out of a `Result` lives in this family, nullable, defaulted, or throwing, depending on how the failure case should be handled. `getOrNull`/`getErrorOrNull` hand back `null`; `getOr`/`getOrElse` hand back a fallback (literal or computed from the error); `getOrThrow`/`getErrorOrThrow`/`getOrRethrow` throw instead, differing only in what gets thrown.
 
 ```kotlin
+import kiit.result.Failure
+import kiit.result.Outcome
+import kiit.result.Outcomes
+import kiit.result.Success
+import kiit.result.Try
+import kiit.result.getOr
+import kiit.result.getOrElse
+import kiit.result.getOrRethrow
+
 val ok: Outcome<Int> = Outcomes.success(42)
 val bad: Outcome<Int> = Outcomes.unserved("boom")
 
@@ -615,6 +660,14 @@ bad2.getOrRethrow()
 Operators on `List<Result<T, E>>` for working with a batch of results at once: checking whether they all/any succeeded, sequencing them into one `Result`, or splitting them into separate success/error lists.
 
 ```kotlin
+import kiit.result.Outcomes
+import kiit.result.allFailure
+import kiit.result.allSuccess
+import kiit.result.anyFailure
+import kiit.result.anySuccess
+import kiit.result.combine
+import kiit.result.partition
+
 val results = listOf(Outcomes.success(1), Outcomes.success(2), Outcomes.success(3))
 val mixed = listOf(Outcomes.success(1), Outcomes.unserved<Int>("boom"), Outcomes.success(3))
 
@@ -656,6 +709,14 @@ mixed.partition()
 Operators that reshape a `Result` into something else entirely: `fold` collapses both branches into one plain value, `recover` unconditionally turns a `Failure` into a `Success`, and `flatten` collapses a nested `Result`.
 
 ```kotlin
+import kiit.codes.Err
+import kiit.result.Outcome
+import kiit.result.Outcomes
+import kiit.result.Result
+import kiit.result.Success
+import kiit.result.flatten
+import kiit.result.recover
+
 val ok: Outcome<Int> = Outcomes.success(42)
 val bad: Outcome<Int> = Outcomes.unserved("boom")
 
@@ -681,6 +742,17 @@ nested.flatten()
 The rest of the operator surface: branch-specific transforms and combinators (`mapError`, `existsError`, `orElse`, `or`, `and`), attaching a status or `Action` after construction (`withStatus`/`withAction`), and `transform` for mapping either branch into a brand-new `Result`.
 
 ```kotlin
+import kiit.codes.Err
+import kiit.codes.Restricted
+import kiit.codes.Succeeded
+import kiit.result.Action
+import kiit.result.Outcome
+import kiit.result.Outcomes
+import kiit.result.Success
+import kiit.result.and
+import kiit.result.or
+import kiit.result.orElse
+
 val ok: Outcome<Int> = Outcomes.success(42)
 val bad: Outcome<Int> = Outcomes.unserved("boom")
 
@@ -732,6 +804,9 @@ bad.transform({ Success("value: $it") }, { Success("error: ${it.message}") })
 **Passed group** (`success`/`pending`/`excluded`/`information`), building a `Success`:
 
 ```kotlin
+import kiit.codes.Succeeded
+import kiit.result.Outcomes
+
 // Success(42), default status Succeeded.SUCCESS
 Outcomes.success(42)
 // Success(42), custom message
@@ -750,6 +825,11 @@ Outcomes.information(Unit, "cache miss, refetched")
 **Failed group** (`restricted`/`invalid`/`rejected`/`unserved`), building a `Failure`:
 
 ```kotlin
+import kiit.codes.Err
+import kiit.codes.Rejected
+import kiit.codes.Restricted
+import kiit.result.Outcomes
+
 // Failure, default status Restricted.DENIED
 Outcomes.restricted("not an admin")
 // Failure, explicit status
@@ -765,6 +845,8 @@ Outcomes.unserved("downstream timed out")
 `Options.some`/`Options.none` are the `Option<T>`-specific pair on top of the same groups:
 
 ```kotlin
+import kiit.result.Options
+
 // Option<Int>, present
 Options.some(42)
 // Option<Int>, absent, Rejected.NOT_EXISTS
@@ -778,6 +860,7 @@ Options.none<Int>()
 `Outcome<T> = Result<T, Err>` pairs a value with kiit-codes' `Err` on failure, the most commonly used alias. `Outcomes` is the ready-made `Builder` implementation for it. See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#err) for `Err`'s full shape (`ErrorInfo`/`ErrorField`/`ErrorList`).
 
 ```kotlin
+import kiit.result.Outcome
 import kiit.result.Outcomes
 
 fun parseAge(input: String): Outcome<Int> =
@@ -799,6 +882,7 @@ bad.getErrorOrNull()?.message
 `Try<T> = Result<T, Throwable>` uses an exception as the error type, for crossing an exception-only boundary. `Tries.attempt` catches a throwing computation and wraps whatever it throws.
 
 ```kotlin
+import kiit.result.Try
 import kiit.result.Tries
 
 fun parseAge(input: String): Try<Int> = Tries.attempt { input.toInt() }
@@ -819,6 +903,7 @@ bad.getErrorOrNull()
 `Option<T> = Result<T, Unit>` reimagines the historical `Option`/`Maybe` role on `Result`, so absence carries a `status` explaining why instead of a bare `None`. `Options.some`/`Options.none` are the entry points.
 
 ```kotlin
+import kiit.result.Option
 import kiit.result.Options
 
 fun findUser(id: String): Option<User> =
@@ -841,6 +926,7 @@ missing.status
 
 ```kotlin
 import kiit.codes.Err
+import kiit.result.Validated
 import kiit.result.Validations
 
 data class SignupForm(val email: String, val password: String)
