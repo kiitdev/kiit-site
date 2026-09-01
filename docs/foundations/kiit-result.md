@@ -17,8 +17,7 @@ import ConceptTermLink from '@site/src/components/ConceptTermLink';
 
 Success holds a value, Failure holds an error, and either can carry an Action recording which operation produced it, useful for tracing across nested or chained calls.
 
-{/* TODO: Header Diagram — export assets/kiit-result.drawio (kiit-result repo) to
-     kiit-site/static/img/kiit-result/kiit-result-overview.png once finalized. */}
+![Kiit Result overview](/img/kiit-result/kiit-result-overview.png)
 
 ## Overview
 
@@ -170,8 +169,7 @@ Every `Result` carries a `status`, not just `Failure`. `Success<T>.status` is a 
 
 This hierarchy belongs to kiit-codes, not kiit-result. See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#taxonomy) for the full set of groups and codes. <MoreLink label="Using it" href="#using-status" />
 
-{/* TODO: Status diagram — Passed/Failed taxonomy panel, either a new export or reused from
-    kiit-codes/assets/kiit-codes-overview-pub.png's taxonomy panel. */}
+![Kiit Result status taxonomy](/img/kiit-result/kiit-result-status.png)
 
 <Spacer />
 
