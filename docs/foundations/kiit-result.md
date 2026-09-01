@@ -25,7 +25,7 @@ Success holds a value, Failure holds an error, and either can carry an Action re
 
 kiit-result's `Result<T, E>` exists so a caller knows the kind of success or failure, not just whether one happened. A `status` rides on both branches, not just `Failure`, closing a gap that `null` and thrown exceptions both leave unfilled: neither can say why something failed, or that it succeeded but was excluded, say, because of a duplicate.
 
-`Outcome<T>`, `Try<T>`, `Option<T>`, and `Validated<T>` share this one type, each just fixing the error shape a situation calls for.
+`Outcome<T>`, `Try<T>`, `Option<T>`, and `Validated<T>` are simply aliases on this one type, ensuring a consistent approach. Each just sets the error shape their respective use cases.
 
 A set of builder functions pick the right status for you: call `restricted()` for an unauthorized caller, `invalid()` for bad input, and so on, so the status matches the error without having to build one by hand. An optional `Action` can ride along too, recording which operation produced a result so a failure several layers deep is easy to trace back to its source. The same small, fixed vocabulary on every branch also makes code easier for a model to read or generate correctly, one predictable shape instead of a bespoke one per library. See [Philosophy](#philosophy) for the full rationale.
 
