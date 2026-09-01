@@ -404,9 +404,8 @@ taxonomy — an enum can't be extended this way.
 
 | # | Limitation | Details |
 |---:|---|---|
-| 1 | Single maintainer | Apache 2.0 licensed and source available, but no second maintainer or organizational backing yet. |
-| 2 | AI framing is unproven | Stable names and explicit classification are expected to reduce ambiguity for AI tooling, but that's a hypothesis, not a benchmarked result. |
-| 3 | JS/TS not CI-gated | Exists but isn't CI-gated or published to npm yet; lacks the compiler-enforced exhaustiveness that Kotlin, Java, and Swift (via SKIE) get. |
+| 1 | AI framing is unproven | Stable names and explicit classification are expected to reduce ambiguity for AI tooling, but that's a hypothesis, not a benchmarked result. |
+| 2 | JS/TS not CI-gated | Exists but isn't CI-gated or published to npm yet; lacks the compiler-enforced exhaustiveness that Kotlin, Java, and Swift (via SKIE) get. |
 
 <Spacer />
 
