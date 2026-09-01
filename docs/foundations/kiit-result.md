@@ -292,9 +292,17 @@ val d = Validations.of(form, errorsFound)
 
 ### Philosophy
 
-Most Result types treat success as inert: just a value. Here `Success.status: Passed` distinguishes "succeeded," "succeeded but pending," and "succeeded but excluded," instead of flattening them all to `true`. `E` stays fully generic rather than locked to kiit-codes' `Err`, so `Try<T>`, `Option<T>`, `Outcome<T>`, and `Validated<T>` can all share one `Result<T, E>` instead of needing separate types. The tradeoff: nothing ties `Failure.status` to `Failure.error` at compile time, and that's deliberate, not an oversight. The ergonomic path (`restricted(err)`, and every other builder) already pairs them correctly by default; bypassing the builders and setting an unrelated `status` explicitly is the one way they can disagree.
+kiit-result's design comes down to five ideas:
 
-There are two ways to build a value, a plain constructor and `Builder<E>`, because they serve different situations: the constructor is for no-ceremony construction with no `Builder` in scope, `Builder<E>` is the status-aware convenience path when implementing `Outcomes`/`Options`/`Tries` or a custom class.
+| # | Idea | Description |
+|---:|---|---|
+| 1 | **Status** | Most Result types treat success as inert, just a value. Here, `Success.status: Passed` distinguishes "succeeded," "succeeded but pending," and "succeeded but excluded," instead of flattening every success down to a bare `true`. This is the one idea without a direct precedent in Rust, Swift, or kotlin-result, and the reason kiit-result exists as its own type rather than reusing one of those. |
+| 2 | **Aliases** | `E` stays fully generic rather than locked to kiit-codes' `Err`, so `Outcome<T>`, `Try<T>`, `Option<T>`, and `Validated<T>` can all share one `Result<T, E>` instead of needing four separate types. Each alias just fixes `E` to the error shape a given situation calls for, with a matching builder already wired up. |
+| 3 | **Builders** | Builders like `restricted(err)`, `invalid(err)`, and `rejected(err)` pick the matching `status` for you, so a `Failure`'s `status` and its `error` normally can't disagree. Nothing enforces this at compile time, and that's deliberate, not an oversight: bypassing the builders and setting an unrelated `status` explicitly is the one way they can drift apart. |
+| 4 | **Action** | An optional `Action` records which operation produced or wrapped a `Result`, and chaining links a new one to whatever was already there. It's the one idea that isn't about `status` at all, useful for tracing which layer failed inside a nested call chain without reaching for a separate tracing library. |
+| 5 | **AI Benefits** | The same closed `status` vocabulary shows up on both branches, so a model reading or generating code against kiit-result has one exhaustive pattern to match against, on `Success` and `Failure` alike, rather than a bespoke shape per library. |
+
+There are also two ways to build a value, a plain constructor and `Builder<E>`, because they serve different situations: the constructor is for no-ceremony construction with no `Builder` in scope, `Builder<E>` is the status-aware convenience path when implementing `Outcomes`/`Options`/`Tries` or a custom class.
 
 <Spacer />
 
@@ -353,10 +361,9 @@ Swift's standard library `Result` is deliberately minimal: `map`/`mapError`/`fla
 
 | # | Limitation | Details |
 |---:|---|---|
-| 1 | Single maintainer | Apache 2.0, source available, no second maintainer or organizational backing yet |
-| 2 | JS/TS is partial | `@JsExport`ed but not covered by CI or published to npm. TypeScript can't compiler-enforce exhaustiveness the way Kotlin/Java/Swift can |
-| 3 | Swift distribution unbuilt | Not yet distributed via SPM/XCFramework. See [Swift Interop](#swift-interop) |
-| 4 | AI-angle claims unproven | Better accuracy/searchability from a closed vocabulary is the claimed benefit, not something measured |
+| 1 | Swift distribution unbuilt | Not yet distributed via SPM/XCFramework. See [Swift Interop](#swift-interop) |
+| 2 | AI-angle claims unproven | Better accuracy/searchability from a closed vocabulary is the claimed benefit, not something measured |
+| 3 | JS/TS is partial | `@JsExport`ed but not covered by CI or published to npm. TypeScript can't compiler-enforce exhaustiveness the way Kotlin/Java/Swift can |
 
 <Spacer />
 
@@ -364,10 +371,9 @@ Swift's standard library `Result` is deliberately minimal: `map`/`mapError`/`fla
 
 | # | Excluded | Reasoning |
 |---:|---|---|
-| 1 | Coroutine module | kiit-result's deferred `Raise<E>`/`bind()` roadmap item is a different approach to multi-step composition, not a coroutine port |
+| 1 | Coroutine module | Cancellation-safety and concurrent composition are a different problem from sequential, status-aware composition. kiit-result's deferred `Raise<E>`/`bind()` roadmap item addresses the latter |
 | 2 | `zip`/`tryMap`-style iterable mirrors | Large in volume, buildable from `combine` if actually needed. Not worth the surface area yet |
 | 3 | Numeric status code | Dropped, mirroring kiit-codes' own removal. Invites the wrong inference (looks like an HTTP code, isn't); get a protocol code on demand via `CodesToHttp`/`CodesToGrpc` |
-| 4 | `operate`, `contains`, `toSuccess`/`toFailure` | Removed after review. Each was fully redundant with an existing operator (`flatMap`, `exists`, and the `Success`/`Failure` constructors respectively), with no real usage and no precedent in Rust or kotlin-result |
 
 <BackToTop />
 
