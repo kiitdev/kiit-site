@@ -436,6 +436,200 @@ asTry.onFailure { ex -> println("caught: ${ex.message}") }
 
 <Spacer />
 
+### Ops: Getters
+
+Every accessor for pulling a value or error out of a `Result` lives in this family — nullable, defaulted, or throwing, depending on how the failure case should be handled. `getOrNull`/`getErrorOrNull` hand back `null`; `getOr`/`getOrElse` hand back a fallback (literal or computed from the error); `getOrThrow`/`getErrorOrThrow`/`getOrRethrow` throw instead, differing only in what gets thrown.
+
+```kotlin
+val ok: Outcome<Int> = success(42)
+val bad: Outcome<Int> = unserved("boom")
+
+// 42
+ok.getOrNull()
+// null
+bad.getOrNull()
+
+// "boom"
+bad.getErrorOrNull()?.message
+// null
+ok.getErrorOrNull()
+
+// 42
+ok.getOr(-1)
+// -1
+bad.getOr(-1)
+
+// 42
+ok.getOrElse { -1 }
+// fallback computed from the error
+bad.getOrElse { err -> err.message.length }
+
+// 42
+ok.getOrThrow()
+// throws, built from status + error
+bad.getOrThrow()
+
+// the Err, since this is a Failure
+bad.getErrorOrThrow()
+// throws, since this is a Success
+ok.getErrorOrThrow()
+
+val ok2: Try<Int> = Success(42)
+val bad2: Try<Int> = Failure(IllegalStateException("boom"))
+// 42
+ok2.getOrRethrow()
+// rethrows the original IllegalStateException, unchanged
+bad2.getOrRethrow()
+```
+
+<Spacer />
+
+### Ops: Core
+
+The everyday operators for composing and inspecting a `Result` without leaving its own shape: `map` transforms the success value, `flatMap` chains another `Result`-returning step, `exists` checks the value without unwrapping it, and `onSuccess`/`onFailure` run a side effect on whichever branch matches.
+
+```kotlin
+val ok: Outcome<Int> = success(42)
+val bad: Outcome<Int> = unserved("boom")
+
+// Success("42 dollars")
+ok.map { "$it dollars" }
+// unchanged Failure, map skips it
+bad.map { "$it dollars" }
+
+// Success(43)
+ok.flatMap { Success(it + 1) }
+// unchanged Failure, flatMap short-circuits
+bad.flatMap { Success(it + 1) }
+
+// true
+ok.exists { it > 0 }
+// false, a Failure never satisfies exists
+bad.exists { it > 0 }
+
+// runs the block, returns ok unchanged
+ok.onSuccess { println("got $it") }
+// skipped, returns bad unchanged
+bad.onFailure { err -> println("failed: ${err.message}") }
+```
+
+<Spacer />
+
+### Ops: Lists
+
+Operators on `List<Result<T, E>>` for working with a batch of results at once — checking whether they all/any succeeded, sequencing them into one `Result`, or splitting them into separate success/error lists.
+
+```kotlin
+val results = listOf(success(1), success(2), success(3))
+val mixed = listOf(success(1), unserved<Int>("boom"), success(3))
+
+// true, every item succeeded
+results.allSuccess()
+// false, one Failure present
+mixed.allSuccess()
+
+// false
+results.allFailure()
+// false, not all failed either
+mixed.allFailure()
+
+// true
+results.anySuccess()
+// true, at least one succeeded
+mixed.anySuccess()
+
+// false
+results.anyFailure()
+// true
+mixed.anyFailure()
+
+// Success([1, 2, 3])
+results.combine()
+// Failure("boom"), short-circuits on the first Failure
+mixed.combine()
+
+// (listOf(1, 2, 3), emptyList())
+results.partition()
+// (listOf(1, 3), listOf(Err("boom")))
+mixed.partition()
+```
+
+<Spacer />
+
+### Ops: Transforms
+
+Operators that reshape a `Result` into something else entirely: `fold` collapses both branches into one plain value, `recover` unconditionally turns a `Failure` into a `Success`, and `flatten` collapses a nested `Result`.
+
+```kotlin
+val ok: Outcome<Int> = success(42)
+val bad: Outcome<Int> = unserved("boom")
+
+// "value: 42"
+ok.fold({ "value: $it" }, { "error: ${it.message}" })
+// "error: boom"
+bad.fold({ "value: $it" }, { "error: ${it.message}" })
+
+// unchanged Success, recover only touches Failure
+ok.recover { -1 }
+// Success(-1), Failure turned into Success
+bad.recover { -1 }
+
+val nested: Result<Result<Int, Err>, Err> = Success(Success(42))
+// Success(42), one level unwrapped
+nested.flatten()
+```
+
+<Spacer />
+
+### Ops: Misc
+
+The rest of the operator surface: branch-specific transforms and combinators (`mapError`, `existsError`, `orElse`, `or`, `and`), attaching a status or `Action` after construction (`withStatus`/`withAction`), and `transform` for mapping either branch into a brand-new `Result`.
+
+```kotlin
+val ok: Outcome<Int> = success(42)
+val bad: Outcome<Int> = unserved("boom")
+
+// unchanged Success, mapError only touches Failure
+ok.mapError { Err.of("wrapped: ${it.message}") }
+// Failure with a wrapped Err
+bad.mapError { Err.of("wrapped: ${it.message}") }
+
+// false, a Success never satisfies existsError
+ok.existsError { it.message == "boom" }
+// true
+bad.existsError { it.message == "boom" }
+
+// unchanged Success, orElse only touches Failure
+ok.orElse { Success(-1) }
+// Success(-1), recovered via a new Result
+bad.orElse { Success(-1) }
+
+// Success(42), or keeps the first Success
+ok.or(Success(-1))
+// Success(-1), or falls through to the fallback
+bad.or(Success(-1))
+
+// Success(-1), and swaps in the second Result when the first succeeds
+ok.and(Success(-1))
+// unchanged Failure, and short-circuits
+bad.and(Success(-1))
+
+// Success(42) with a new status
+ok.withStatus(Succeeded.CREATED, Restricted.DENIED)
+// Failure("boom") with a new status
+bad.withStatus(Succeeded.CREATED, Restricted.DENIED)
+
+// Success(42) tagged with an Action
+ok.withAction(Action("chargeCard"))
+
+// Success("value: 42")
+ok.transform({ Success("value: $it") }, { Success("error: ${it.message}") })
+// Success("error: boom")
+bad.transform({ Success("value: $it") }, { Success("error: ${it.message}") })
+```
+
+<Spacer />
+
 ### Swift Interop
 
 Not yet distributed via SPM/XCFramework — the framework is `.framework`-only today, built locally. Companion-less members like `Outcomes`/`Options`/`Tries` get clean `.shared` access out of the box, and this module uses [SKIE](https://skie.touchlab.co/) for real, compiler-enforced Swift exhaustiveness over `Success`/`Failure` — a genuinely flat switch, simpler than kiit-codes' nested `Status` case, since `Result<T, E>` is only one sealed level deep:
