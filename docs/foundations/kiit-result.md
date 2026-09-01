@@ -13,9 +13,9 @@ import ConceptTermLink from '@site/src/components/ConceptTermLink';
 
 <PageTitle title="kiit-result" logo="/img/modules/kiit-result-logo.png" />
 
-<p className="kiit-tagline">A Kotlin Result&lt;T, E&gt; type where Success holds a value and Failure holds an error, each also carrying a status from kiit-codes' taxonomy.</p>
+<p className="kiit-tagline">A Kotlin Result&lt;T, E&gt; type with a kiit-codes status on every branch, not just failure.</p>
 
-Optionally attach an Action to trace which operation produced a result across nested or chained calls.
+Success holds a value, Failure holds an error, and either can carry an Action recording which operation produced it, useful for tracing across nested or chained calls.
 
 {/* TODO: Header Diagram — export assets/kiit-result.drawio (kiit-result repo) to
      kiit-site/static/img/kiit-result/kiit-result-overview.png once finalized. */}
@@ -34,10 +34,10 @@ Modeling an operation this way means answering four separable questions, not one
 
 | Source | What it contributes |
 |---|---|
-| Scala | `Either`/`Try`, precedent for a flexible-error-type Result distinct from a bare `Option` |
-| Rust | `Result<T, E>`'s two-branch monadic shape, and most of the operator vocabulary (`map`, `and_then`, `unwrap`) |
-| kotlin-result | Kotlin-idiomatic naming for that same operator set (`getOr`, `recover`, `combine`, `partition`) |
-| kiit-codes | The closed status taxonomy fused onto both branches, kiit-result's actual differentiator from every Result type above |
+| [Scala](https://www.scala-lang.org/api/current/scala/util/Either.html) | `Either`/`Try`, precedent for a flexible-error-type Result distinct from a bare `Option` |
+| [Rust](https://doc.rust-lang.org/std/result/enum.Result.html) | `Result<T, E>`'s two-branch monadic shape, and most of the operator vocabulary (`map`, `and_then`, `unwrap`) |
+| [kotlin-result](https://github.com/michaelbull/kotlin-result) | Kotlin-idiomatic naming for that same operator set (`getOr`, `recover`, `combine`, `partition`) |
+| [kiit-codes](https://www.kiit.dev/docs/kiit-codes) | The closed status taxonomy fused onto both branches, kiit-result's actual differentiator from every Result type above |
 
 <Spacer />
 
@@ -53,7 +53,7 @@ kiit-result has been extracted from the Kiit toolkit and polished as a standalon
 |---:|---|---|
 | 1 | Repository | [github.com/kiitdev/kiit-result](https://github.com/kiitdev/kiit-result) |
 | 2 | Maven Central | [dev.kiit:kiit-result](https://central.sonatype.com/artifact/dev.kiit/kiit-result) |
-| 3 | npm | Not yet published. JS/TS is a partial, non-CI-gated pass, see [Limitations](#limitations) |
+| 3 | npm | Not yet published. JS/TS is a partial pass not covered by CI, see [Limitations](#limitations) |
 | 4 | Related module | [kiit-codes](https://github.com/kiitdev/kiit-codes), the status taxonomy this library builds on |
 | 5 | Samples | `samples/sample-kotlin`, `sample-java`, `sample-swift`, `sample-ts` in the repo |
 
@@ -132,6 +132,7 @@ See [`samples/sample-kotlin`](https://github.com/kiitdev/kiit-result/tree/main/s
 | **Operators** | `map`/`flatMap`/`fold`/`recover`/..., the composition surface | <MoreLink label="More" href="#operators" /> |
 | **Builders** | Status-aware factory methods for `Success`/`Failure` | <MoreLink label="More" href="#builders" /> |
 | **Conversions** | `toOutcome()`/`toTry()`, crossing between error-type shapes | <MoreLink label="More" href="#conversions" /> |
+| **Status** | kiit-codes' `Passed`/`Failed` taxonomy, attached to every `Result` | <MoreLink label="More" href="#status" /> |
 
 {/* TODO: Concepts diagram — export the Result<T,E> branching / Status taxonomy / Aliases
     panel from assets/kiit-result.drawio (kiit-result repo) to
@@ -155,6 +156,22 @@ Result<T, E>.action : Action? (optional, both branches)
 2. <ConceptTermLink href="https://github.com/kiitdev/kiit-result/blob/main/kiit-result/src/commonMain/kotlin/kiit/result/Result.kt#L461">Failure</ConceptTermLink>: holds an `error: E`, defaults its `status` to `Unserved.UNEXPECTED`.
 
 `result.message` is a convenience accessor equal to `result.status.message` on either branch.
+
+<Spacer />
+
+### Status
+
+Every `Result` carries a `status`, not just `Failure`. `Success<T>.status` is a `Passed`, `Failure<E>.status` is a `Failed`, each with four further subtypes:
+
+| | Subtypes |
+|---|---|
+| **`Passed`** | `Succeeded`, `Pending`, `Excluded`, `Information` |
+| **`Failed`** | `Restricted`, `Invalid`, `Rejected`, `Unserved` |
+
+This hierarchy belongs to kiit-codes, not kiit-result. See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#taxonomy) for the full set of groups and codes. <MoreLink label="Using it" href="#using-status" />
+
+{/* TODO: Status diagram — Passed/Failed taxonomy panel, either a new export or reused from
+    kiit-codes/assets/kiit-codes-overview-pub.png's taxonomy panel. */}
 
 <Spacer />
 
@@ -335,7 +352,7 @@ Swift's standard library `Result` is deliberately minimal: `map`/`mapError`/`fla
 | # | Limitation | Details |
 |---:|---|---|
 | 1 | Single maintainer | Apache 2.0, source available, no second maintainer or organizational backing yet |
-| 2 | JS/TS is partial | `@JsExport`ed but not CI-gated or published to npm. TypeScript can't compiler-enforce exhaustiveness the way Kotlin/Java/Swift can |
+| 2 | JS/TS is partial | `@JsExport`ed but not covered by CI or published to npm. TypeScript can't compiler-enforce exhaustiveness the way Kotlin/Java/Swift can |
 | 3 | Swift distribution unbuilt | Not yet distributed via SPM/XCFramework. See [Swift Interop](#swift-interop) |
 | 4 | AI-angle claims unproven | Better accuracy/searchability from a closed vocabulary is the claimed benefit, not something measured |
 
@@ -456,9 +473,9 @@ when (result) {
 
 <Spacer />
 
-### Status
+### Using Status
 
-`result.status` is itself a closed hierarchy: `Passed` or `Failed` at the top, each with four further subtypes. Nesting a `when` inside a `when` gets exhaustiveness at both levels. Capture `result.status` into a local `val` first, so the compiler can smart-cast it reliably inside the nested `when` too.
+`result.status` is itself a closed hierarchy: `Passed` or `Failed` at the top, each with four further subtypes. Nesting a `when` inside a `when` gets exhaustiveness at both levels. Capture `result.status` into a local `val` first, so the compiler can smart-cast it reliably inside the nested `when` too. See [Concepts > Status](#status) for the full set of subtypes.
 
 ```kotlin
 when (val status = result.status) {
@@ -702,7 +719,7 @@ bad.transform({ Success("value: $it") }, { Success("error: ${it.message}") })
 
 ### Alias: Outcome&lt;T&gt;
 
-`Outcome<T> = Result<T, Err>` pairs a value with kiit-codes' `Err` on failure, the most commonly used alias. `Outcomes` is the ready-made `Builder` implementation for it.
+`Outcome<T> = Result<T, Err>` pairs a value with kiit-codes' `Err` on failure, the most commonly used alias. `Outcomes` is the ready-made `Builder` implementation for it. See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#err) for `Err`'s full shape (`ErrorInfo`/`ErrorField`/`ErrorList`).
 
 ```kotlin
 import kiit.result.Outcomes
@@ -827,7 +844,6 @@ Generic type params require `AnyObject` (box `Int`/`String` as `KotlinInt`/`NSSt
 |---|---|
 | **How is this different from Kotlin's own `kotlin.Result`?** | stdlib `Result` has one type param and always uses `Throwable` as the error; it isn't a sealed hierarchy meant for pattern matching. kiit-result is a real two-branch sealed type with a flexible error type and a status on both branches. |
 | **Isn't `Option<T> = Result<T, Unit>` a strange use of the name "Option"?** | A deliberate lineage, not a misuse. The same historical role as Rust/Scala/Arrow's `Option`, reimagined so absence carries a `status` explaining why instead of a bare `None`. `Options.some(value)`/`Options.none()` make that explicit. |
-| **Is this tied to HTTP or web APIs?** | No. It's a universal classification usable at any layer (service call, job step, CLI command), validated against HTTP and gRPC as an external sanity check, not derived from either. |
 
 <Spacer />
 
@@ -836,11 +852,9 @@ Generic type params require `AnyObject` (box `Int`/`String` as `KotlinInt`/`NSSt
 | Question | Answer |
 |---|---|
 | **Why is there no `conflict()` builder?** | It was just `rejected()` with `Rejected.CONFLICT` as the default status, not its own category. Use `rejected(status = Rejected.CONFLICT)`. |
-| **Why did `denied`/`ignored` become `restricted`/`excluded`?** | To match kiit-codes' actual group names (`Restricted`, `Excluded`) instead of carrying forward older, inconsistent naming. |
 | **Why does `excluded()` build a `Success`, not a `Failure`?** | `Excluded` is a `Passed` group in kiit-codes. An intentionally skipped, deduplicated, or disqualified item isn't a failure. |
 | **Why is `Builder<E>` split into `PassedBuilder`/`FailedBuilder`?** | Keeps each interface's surface scoped to one branch, the same reason kiit-codes keeps each group's constants on its own companion rather than one shared object. |
 | **Do I have to pick a specific `Status` every time I use a builder?** | No. The group builders all apply a sensible default when none is supplied. An explicit status is only needed when the default doesn't fit (`restricted(status = Restricted.LOCKED)`). Routine use never requires touching `Status` directly. |
-| **Whatever happened to the numeric status code?** | Dropped, mirroring kiit-codes' own removal. An earlier version had one, and it invited the wrong inference (looks like an HTTP code, isn't). Get a protocol code on demand via `CodesToHttp`/`CodesToGrpc`. |
 
 <Spacer />
 
@@ -849,8 +863,7 @@ Generic type params require `AnyObject` (box `Int`/`String` as `KotlinInt`/`NSSt
 | Question | Answer |
 |---|---|
 | **Can I use my own error type and ignore kiit-codes?** | Only partially. `E` is generic (use `Throwable`, `String`, a domain type), but `Success.status`/`Failure.status` are hard-typed to kiit-codes' `Passed`/`Failed`. There's no way to use `Result<T, E>` without a kiit-codes status on every branch. |
-| **What if my team already has its own status conventions?** | Not an overnight replacement. Existing statuses can map into the taxonomy incrementally. |
-| **Does this actually work on JS and iOS today?** | kiit-result's production history is JVM/Android. JS and iOS/Swift are new targets with no production history yet, not just "unexercised" versions of something proven. JS/TS is a deliberately partial pass (`@JsExport`ed, not CI-gated or published to npm, since TypeScript can't compiler-enforce exhaustiveness). iOS uses SKIE for real, compiler-enforced Swift exhaustiveness, a materially better story than JS, including plain Kotlin `object`s (`Outcomes`/`Options`/`Tries`) getting clean `.shared` access with no extra work. |
+| **Does this actually work on JS and iOS today?** | kiit-result's production history is JVM/Android. JS and iOS/Swift are new targets with no production history yet, not just "unexercised" versions of something proven. JS/TS is a deliberately partial pass (`@JsExport`ed, not covered by CI or published to npm, since TypeScript can't compiler-enforce exhaustiveness). iOS uses SKIE for real, compiler-enforced Swift exhaustiveness, a materially better story than JS, including plain Kotlin `object`s (`Outcomes`/`Options`/`Tries`) getting clean `.shared` access with no extra work. |
 
 <Spacer />
 
