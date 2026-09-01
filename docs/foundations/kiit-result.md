@@ -233,9 +233,12 @@ A `List<Result<T, E>>` adds its own operators: `combine()` sequences the list in
 ```kotlin
 import kiit.result.Options
 
-val a = Options.some(42)                     // Option<Int> — present
-val b = Options.none<Int>()                  // Option<Int> — absent, Rejected.NOT_EXISTS
-val c = Options.none<Int>(Rejected.CONFLICT) // Option<Int> — absent, custom status
+// Option<Int> — present
+val a = Options.some(42)
+// Option<Int> — absent, Rejected.NOT_EXISTS
+val b = Options.none<Int>()
+// Option<Int> — absent, custom status
+val c = Options.none<Int>(Rejected.CONFLICT)
 ```
 
 `Outcomes`/`Options`/`Tries` are the three ready-made `Builder` implementations, one per common error type. `Validations` is a fourth, purpose-built for collecting multiple errors at once instead of catching an exception:
@@ -246,12 +249,14 @@ import kiit.result.Options
 import kiit.result.Tries
 import kiit.result.Validations
 
-val a = Outcomes.attempt { riskyCall() }        // Outcome<T>    — catches Throwable, wraps as Err
-val b = Options.of { riskyCall() }              // Option<T>     — catches Throwable, discards detail
-val c = Tries.attempt { riskyCall() }           // Try<T>        — catches Throwable, re-derives status
-                                                 //                 from a thrown kiit-codes StatusException
-val d = Validations.of(form, errorsFound)       // Validated<T>  — Success if errorsFound is empty,
-                                                 //                 otherwise a single Failure carrying all of them
+// Outcome<T>: catches Throwable, wraps as Err
+val a = Outcomes.attempt { riskyCall() }
+// Option<T>: catches Throwable, discards detail
+val b = Options.of { riskyCall() }
+// Try<T>: catches Throwable, re-derives status from a thrown kiit-codes StatusException
+val c = Tries.attempt { riskyCall() }
+// Validated<T>: Success if errorsFound is empty, otherwise a single Failure carrying all of them
+val d = Validations.of(form, errorsFound)
 ```
 
 <Spacer />
@@ -433,6 +438,71 @@ asTry.onFailure { ex -> println("caught: ${ex.message}") }
 **Probably not necessary if:**
 1. Exceptions already communicate everything needed, and the monadic-return-value style isn't wanted.
 2. Only status classification is needed, not a `Result` wrapper. See kiit-codes on its own.
+
+<Spacer />
+
+### Branching
+
+`Result` is sealed with exactly two subtypes, so a `when` over it is exhaustive without a `default`/`else` branch, on Kotlin, and on Java 21's pattern-matching `switch` too.
+
+```kotlin
+val result: Outcome<User> = userService.create("alice", "alice@example.com")
+
+when (result) {
+    is Success -> println("created ${result.value.id}")
+    is Failure -> println("failed: ${result.error.message}")
+}
+```
+
+<Spacer />
+
+### Status
+
+`result.status` is itself a closed hierarchy: `Passed` or `Failed` at the top, each with four further subtypes. Nesting a `when` inside a `when` gets exhaustiveness at both levels. Capture `result.status` into a local `val` first, so the compiler can smart-cast it reliably inside the nested `when` too.
+
+```kotlin
+when (val status = result.status) {
+    is Passed -> when (status) {
+        is Succeeded -> println("succeeded: ${status.name}")
+        is Pending -> println("pending: ${status.name}")
+        is Excluded -> println("excluded: ${status.name}")
+        is Information -> println("info: ${status.name}")
+    }
+    is Failed -> when (status) {
+        is Restricted -> println("restricted: ${status.name}")
+        is Invalid -> println("invalid: ${status.name}")
+        is Rejected -> println("rejected: ${status.name}")
+        is Unserved -> println("unserved: ${status.name}")
+    }
+}
+```
+
+<Spacer />
+
+### Using Action
+
+Attach an `Action` when a result is produced, then read it back for logging or tracing. Chaining links a new `Action` to whatever one was already there, so a caller several layers up can see the whole path an operation took. `map`/`mapError` carry an existing `Action` forward automatically; `flatMap` doesn't, since the new `Result` comes from caller-supplied code, so reattach it explicitly there if it needs to carry through.
+
+```kotlin
+fun createUser(id: String, email: String): Outcome<User> =
+    userService.create(id, email)
+        .withAction(Action(action = "createUser", xid = "req-42", data = mapOf("email" to email)))
+
+val result = createUser("u1", "alice@example.com")
+// "createUser"
+result.action?.action
+// "req-42"
+result.action?.xid
+// {"email": "alice@example.com"}
+result.action?.data
+
+// chaining: a new Action's `previous` links back to whatever Action was already there
+val outer = result.withAction(Action(action = "processOrder"))
+// "processOrder", the current operation
+outer.action?.action
+// "createUser", the operation this one wrapped
+outer.action?.previous?.action
+```
 
 <Spacer />
 
