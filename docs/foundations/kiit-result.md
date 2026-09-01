@@ -700,6 +700,92 @@ bad.transform({ Success("value: $it") }, { Success("error: ${it.message}") })
 
 <Spacer />
 
+### Alias: Outcome&lt;T&gt;
+
+`Outcome<T> = Result<T, Err>` pairs a value with kiit-codes' `Err` on failure, the most commonly used alias. `Outcomes` is the ready-made `Builder` implementation for it.
+
+```kotlin
+import kiit.result.Outcomes
+
+fun parseAge(input: String): Outcome<Int> =
+    input.toIntOrNull()?.let { Outcomes.success(it) } ?: Outcomes.invalid("not a number")
+
+val ok: Outcome<Int> = parseAge("42")
+val bad: Outcome<Int> = parseAge("nope")
+
+// 42
+ok.getOrNull()
+// "not a number"
+bad.getErrorOrNull()?.message
+```
+
+<Spacer />
+
+### Alias: Try&lt;T&gt;
+
+`Try<T> = Result<T, Throwable>` uses an exception as the error type, for crossing an exception-only boundary. `Tries.attempt` catches a throwing computation and wraps whatever it throws.
+
+```kotlin
+import kiit.result.Tries
+
+fun parseAge(input: String): Try<Int> = Tries.attempt { input.toInt() }
+
+val ok: Try<Int> = parseAge("42")
+val bad: Try<Int> = parseAge("nope")
+
+// 42
+ok.getOrNull()
+// NumberFormatException: For input string: "nope"
+bad.getErrorOrNull()
+```
+
+<Spacer />
+
+### Alias: Option&lt;T&gt;
+
+`Option<T> = Result<T, Unit>` reimagines the historical `Option`/`Maybe` role on `Result`, so absence carries a `status` explaining why instead of a bare `None`. `Options.some`/`Options.none` are the entry points.
+
+```kotlin
+import kiit.result.Options
+
+fun findUser(id: String): Option<User> =
+    users[id]?.let { Options.some(it) } ?: Options.none()
+
+val found: Option<User> = findUser("u1")
+val missing: Option<User> = findUser("ghost")
+
+// the User, if found
+found.getOrNull()
+// Rejected.NOT_EXISTS, the default "absent" status
+missing.status
+```
+
+<Spacer />
+
+### Alias: Validated&lt;T&gt;
+
+`Validated<T> = Result<T, Err.ErrorList>` collects multiple errors instead of stopping at the first, for validating a whole form or request at once. `Validations.of` builds one from a value plus whatever errors were already found.
+
+```kotlin
+import kiit.codes.Err
+import kiit.result.Validations
+
+data class SignupForm(val email: String, val password: String)
+
+fun validateSignup(form: SignupForm): Validated<SignupForm> {
+    val errors = mutableListOf<Err>()
+    if (form.email.isBlank()) errors.add(Err.on("email", form.email, "Email is required"))
+    if (form.password.length < 8) errors.add(Err.on("password", form.password, "Password is too short"))
+    return Validations.of(form, errors)
+}
+
+val result: Validated<SignupForm> = validateSignup(SignupForm("", "short"))
+// 2, both fields failed
+result.getErrorOrNull()?.errors?.size
+```
+
+<Spacer />
+
 ### Swift Interop
 
 Not yet distributed via SPM/XCFramework. The framework is `.framework`-only today, built locally. Companion-less members like `Outcomes`/`Options`/`Tries` get clean `.shared` access out of the box, and this module uses [SKIE](https://skie.touchlab.co/) for real, compiler-enforced Swift exhaustiveness over `Success`/`Failure`, a genuinely flat switch simpler than kiit-codes' nested `Status` case, since `Result<T, E>` is only one sealed level deep:
