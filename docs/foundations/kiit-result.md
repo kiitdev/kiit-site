@@ -23,9 +23,9 @@ Success holds a value, Failure holds an error, and either can carry an Action re
 
 ### Goals
 
-Returning `null` for "not found" loses the reason, and throwing for expected, recoverable failures (validation, a conflict, an unauthorized caller) is expensive and easy to over- or under-catch. kiit-result is a `Result<T, E>` that composes the usual monadic operations with kiit-codes' closed status taxonomy instead of a bespoke or numeric status of its own. `Success` carries a `Passed` status, `Failure` carries a `Failed` status, and builders map each common case to its matching category (`restricted()` gives `Restricted.DENIED`, `invalid()` gives `Invalid.INVALID_VALUE`) without hand-rolling a status object at every call site.
+Returning `null` for "not found" loses the reason, and throwing for expected, recoverable failures (validation, a conflict, an unauthorized caller) is expensive and easy to over- or under-catch. kiit-result's `Result<T, E>` fixes this with a `status` on both branches, not just `Failure`, so a caller knows the kind of success or failure, not just whether one happened. `Outcome<T>`, `Try<T>`, `Option<T>`, and `Validated<T>` all share this one `Result<T, E>` instead of needing four separate types, each just fixing `E` to the error shape a situation calls for.
 
-Modeling an operation this way means answering four separable questions, not one: did it work (`Success<T>` or `Failure<E>`), what kind of outcome was it (`status: Status`), what went wrong specifically (the `Failure` branch's `error: E`), and what was being done and under what circumstances (an optional `action: Action?`).
+Builders like `restricted()` and `invalid()` pick the matching status automatically, so a `Failure`'s status and its error normally can't disagree without deliberately bypassing them. An optional `Action` records which operation produced or wrapped a result, useful for tracing across nested calls. The same closed status vocabulary on every branch also gives a model reading or generating code one exhaustive pattern to match against, on `Success` and `Failure` alike, rather than a bespoke shape per library. See [Philosophy](#philosophy) for the full rationale.
 
 <Spacer />
 
@@ -536,8 +536,8 @@ outer.action?.previous?.action
 The everyday operators for composing and inspecting a `Result` without leaving its own shape: `map` transforms the success value, `flatMap` chains another `Result`-returning step, `exists` checks the value without unwrapping it, and `onSuccess`/`onFailure` run a side effect on whichever branch matches.
 
 ```kotlin
-val ok: Outcome<Int> = success(42)
-val bad: Outcome<Int> = unserved("boom")
+val ok: Outcome<Int> = Outcomes.success(42)
+val bad: Outcome<Int> = Outcomes.unserved("boom")
 
 // Success("42 dollars")
 ok.map { "$it dollars" }
@@ -567,8 +567,8 @@ bad.onFailure { err -> println("failed: ${err.message}") }
 Every accessor for pulling a value or error out of a `Result` lives in this family, nullable, defaulted, or throwing, depending on how the failure case should be handled. `getOrNull`/`getErrorOrNull` hand back `null`; `getOr`/`getOrElse` hand back a fallback (literal or computed from the error); `getOrThrow`/`getErrorOrThrow`/`getOrRethrow` throw instead, differing only in what gets thrown.
 
 ```kotlin
-val ok: Outcome<Int> = success(42)
-val bad: Outcome<Int> = unserved("boom")
+val ok: Outcome<Int> = Outcomes.success(42)
+val bad: Outcome<Int> = Outcomes.unserved("boom")
 
 // 42
 ok.getOrNull()
@@ -615,8 +615,8 @@ bad2.getOrRethrow()
 Operators on `List<Result<T, E>>` for working with a batch of results at once: checking whether they all/any succeeded, sequencing them into one `Result`, or splitting them into separate success/error lists.
 
 ```kotlin
-val results = listOf(success(1), success(2), success(3))
-val mixed = listOf(success(1), unserved<Int>("boom"), success(3))
+val results = listOf(Outcomes.success(1), Outcomes.success(2), Outcomes.success(3))
+val mixed = listOf(Outcomes.success(1), Outcomes.unserved<Int>("boom"), Outcomes.success(3))
 
 // true, every item succeeded
 results.allSuccess()
@@ -656,8 +656,8 @@ mixed.partition()
 Operators that reshape a `Result` into something else entirely: `fold` collapses both branches into one plain value, `recover` unconditionally turns a `Failure` into a `Success`, and `flatten` collapses a nested `Result`.
 
 ```kotlin
-val ok: Outcome<Int> = success(42)
-val bad: Outcome<Int> = unserved("boom")
+val ok: Outcome<Int> = Outcomes.success(42)
+val bad: Outcome<Int> = Outcomes.unserved("boom")
 
 // "value: 42"
 ok.fold({ "value: $it" }, { "error: ${it.message}" })
@@ -681,8 +681,8 @@ nested.flatten()
 The rest of the operator surface: branch-specific transforms and combinators (`mapError`, `existsError`, `orElse`, `or`, `and`), attaching a status or `Action` after construction (`withStatus`/`withAction`), and `transform` for mapping either branch into a brand-new `Result`.
 
 ```kotlin
-val ok: Outcome<Int> = success(42)
-val bad: Outcome<Int> = unserved("boom")
+val ok: Outcome<Int> = Outcomes.success(42)
+val bad: Outcome<Int> = Outcomes.unserved("boom")
 
 // unchanged Success, mapError only touches Failure
 ok.mapError { Err.of("wrapped: ${it.message}") }
@@ -721,6 +721,54 @@ ok.withAction(Action("chargeCard"))
 ok.transform({ Success("value: $it") }, { Success("error: ${it.message}") })
 // Success("error: boom")
 bad.transform({ Success("value: $it") }, { Success("error: ${it.message}") })
+```
+
+<Spacer />
+
+### Builders
+
+`Outcomes` (and `Options`/`Tries`/`Validations`, one per alias) implement `PassedBuilder<E>`/`FailedBuilder<E>`, so every group below is called the same way regardless of which alias it's building. See [Concepts > Builders](#builders) for the full overload list and the default status each one applies.
+
+**Passed group** (`success`/`pending`/`excluded`/`information`), building a `Success`:
+
+```kotlin
+// Success(42), default status Succeeded.SUCCESS
+Outcomes.success(42)
+// Success(42), custom message
+Outcomes.success(42, "cache warm")
+// Success(42), explicit status
+Outcomes.success(42, Succeeded.CREATED)
+
+// Success(0), a queued/not-yet-complete success
+Outcomes.pending(0)
+// Success(42), intentionally skipped, not a failure
+Outcomes.excluded(42, "already processed")
+// Success(Unit), an FYI-only outcome
+Outcomes.information(Unit, "cache miss, refetched")
+```
+
+**Failed group** (`restricted`/`invalid`/`rejected`/`unserved`), building a `Failure`:
+
+```kotlin
+// Failure, default status Restricted.DENIED
+Outcomes.restricted("not an admin")
+// Failure, explicit status
+Outcomes.restricted(Restricted.LOCKED)
+// Failure, wrapping an existing Err
+Outcomes.invalid(Err.on("email", "bad@", "must contain a domain"))
+// Failure, wrapping a thrown exception
+Outcomes.rejected(IllegalStateException("duplicate id"), Rejected.CONFLICT)
+// Failure, default status Unserved.UNEXPECTED
+Outcomes.unserved("downstream timed out")
+```
+
+`Options.some`/`Options.none` are the `Option<T>`-specific pair on top of the same groups:
+
+```kotlin
+// Option<Int>, present
+Options.some(42)
+// Option<Int>, absent, Rejected.NOT_EXISTS
+Options.none<Int>()
 ```
 
 <Spacer />
