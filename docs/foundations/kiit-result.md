@@ -15,7 +15,7 @@ import ConceptTermLink from '@site/src/components/ConceptTermLink';
 
 <p className="kiit-tagline">A Kotlin Result&lt;T, E&gt; type with a kiit-codes status on every branch, not just failure.</p>
 
-Success holds a value, Failure holds an error, and either can carry an Action recording which operation produced it, useful for tracing across nested or chained calls.
+Every `Success` and `Failure` carries a status from kiit-codes' closed taxonomy, unlike Rust's `Result`, Swift's `Result`, or other Kotlin `Result` types, where success is just a bare value. `Outcome<T>` is the ready-made alias for everyday use, paired with `Try<T>`, `Option<T>`, and `Validated<T>` for exceptions, absence, and validation.
 
 ![Kiit Result overview](/img/kiit-result/kiit-result-overview.png)
 
@@ -88,20 +88,30 @@ dependencies {
 ### Example
 
 ```kotlin
-import kiit.codes.Invalid
+import kiit.codes.Err
 import kiit.codes.Rejected
+import kiit.codes.Restricted
 import kiit.result.Outcome
 import kiit.result.Outcomes
 
 class UserService {
     private val users = mutableMapOf<String, User>()
 
-    fun create(id: String, email: String): Outcome<User> {
-        if (email.isBlank()) return Outcomes.invalid(Invalid.BAD_REQUEST)
-        if (users.containsKey(id)) return Outcomes.rejected(Rejected.CONFLICT)
-        val user = User(id, email)
-        users[id] = user
-        return Outcomes.success(user)
+    // Alias Outcome<User> = Result<User, Err>
+    // Err is an error type from kiit-codes.
+    fun create(id: String, email: String): Outcome<User> = when {
+        // Restricted: a reserved id, not allowed
+        id == "admin" -> Outcomes.restricted(Restricted.DENIED)
+        // Invalid: bad input
+        email.isBlank() -> Outcomes.invalid(Err.on("email", email, "email is required"))
+        // Rejected: already exists
+        users.containsKey(id) -> Outcomes.rejected(Rejected.CONFLICT)
+        // Succeeded: created
+        else -> {
+            val user = User(id, email)
+            users[id] = user
+            Outcomes.success(user)
+        }
     }
 }
 ```
@@ -299,11 +309,47 @@ kiit-result's design comes down to five ideas:
 |---:|---|---|
 | 1 | **Status** | Most Result types treat success as inert, just a value. Here, `Success.status: Passed` distinguishes "succeeded," "succeeded but pending," and "succeeded but excluded," instead of flattening every success down to a bare `true`. This is the one idea without a direct precedent in Rust, Swift, or kotlin-result, and the reason kiit-result exists as its own type rather than reusing one of those. |
 | 2 | **Aliases** | `E` stays fully generic rather than locked to kiit-codes' `Err`, so `Outcome<T>`, `Try<T>`, `Option<T>`, and `Validated<T>` can all share one `Result<T, E>` instead of needing four separate types. Each alias just fixes `E` to the error shape a given situation calls for, with a matching builder already wired up. |
-| 3 | **Builders** | Builders like `restricted(err)`, `invalid(err)`, and `rejected(err)` pick the matching `status` for you, so a `Failure`'s `status` and its `error` normally can't disagree. Nothing enforces this at compile time, and that's deliberate, not an oversight: bypassing the builders and setting an unrelated `status` explicitly is the one way they can drift apart. |
+| 3 | **Builders** | Builders like `restricted(err)`, `invalid(err)`, and `rejected(err)` pick a sensible default `status` for you, so the common case needs no separate classification step. `status` and `error` are independent facts about the same `Failure`, not a pair that has to agree, see [Relationship](#relationship). |
 | 4 | **Action** | An optional `Action` records which operation produced or wrapped a `Result`, and chaining links a new one to whatever was already there. It's the one idea that isn't about `status` at all, useful for tracing which layer failed inside a nested call chain without reaching for a separate tracing library. |
 | 5 | **AI Benefits** | The same closed `status` vocabulary shows up on both branches, so a model reading or generating code against kiit-result has one exhaustive pattern to match against, on `Success` and `Failure` alike, rather than a bespoke shape per library. |
 
 There are also two ways to build a value, a plain constructor and `Builder<E>`, because they serve different situations: the constructor is for no-ceremony construction with no `Builder` in scope, `Builder<E>` is the status-aware convenience path when implementing `Outcomes`/`Options`/`Tries` or a custom class.
+
+<Spacer />
+
+### Relationship
+
+`error: E` and `status: Status` are both attributes of the same `Failure`, not two views of one fact that need to agree. Each answers a different question about the same occurrence:
+
+1. **`status`**: what kind of outcome this is, for branching, protocol mapping (`CodesToHttp`/`CodesToGrpc`), and log severity.
+2. **`error`**: what happened, in whatever detail the situation calls for, a message, a field, a wrapped exception, or a domain-specific type.
+
+The clearest comparison is an HTTP response: a `500` can carry "database timeout" or "null pointer in payment processing," and nobody considers it a defect that HTTP doesn't validate the body against the code. The status answers how a caller should behave; the body answers what a human needs to debug it. `status` and `error` play the same two roles here.
+
+Deriving `status` from `error`'s content would also remove a real degree of freedom: the same `Err` can legitimately be `Restricted` in one call site and `Rejected` in another, depending on what the calling code is actually deciding, not a fact recoverable from the error text alone.
+
+The one exception is [`Tries.of`](#conversions), which *does* derive `status` from `error`, specifically when the thrown `Throwable` is itself a kiit-codes `StatusException`. That particular error type already carries its own category by construction, so there's a real fact to derive. Otherwise, classification is a deliberate, independent choice, not something `error`'s content could determine on its own.
+
+<Spacer />
+
+### Errors
+
+`Err` is kiit-codes' own error representation, not kiit-result's, the default `E` for `Outcome<T>` (`Result<T, Err>`). It's a closed hierarchy with three shapes:
+
+1. **`ErrorInfo`**: a message with an optional cause, the general-purpose default.
+2. **`ErrorField`**: a message tied to a specific `field`/`value`, for validation-style errors.
+3. **`ErrorList`**: wraps multiple `Err`s into one, what `Validated<T>` collects into.
+
+Every `Err` carries a `message: String`, a `cause: Throwable?`, and a `ref: Any?` for attaching arbitrary context.
+
+| Builder | Produces |
+|---|---|
+| `Err.of(message)` | `ErrorInfo` from a plain message |
+| `Err.on(field, value, message)` | `ErrorField` with a value |
+| `Err.on(field, message)` | `ErrorField` without a value, for a sensitive field like a password |
+| `Err.ex(throwable)` | `ErrorInfo` wrapping a caught exception |
+
+See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#err) for the full API, including `Err.build`/`Err.obj`/`Err.list`. `Err` and `status` are independent facts about the same `Failure`, not a pair that has to agree, see [Relationship](#relationship).
 
 <Spacer />
 
@@ -385,7 +431,7 @@ A single `UserService` grows through each step below, no prior Concepts or Desig
 ### Create
 
 ```kotlin
-import kiit.codes.Invalid
+import kiit.codes.Err
 import kiit.codes.Rejected
 import kiit.result.Outcome
 import kiit.result.Outcomes
@@ -395,17 +441,19 @@ data class User(val id: String, val email: String)
 class UserService {
     private val users = mutableMapOf<String, User>()
 
-    fun create(id: String, email: String): Outcome<User> {
-        if (email.isBlank()) return Outcomes.invalid(Invalid.BAD_REQUEST)
-        if (users.containsKey(id)) return Outcomes.rejected(Rejected.CONFLICT)
-        val user = User(id, email)
-        users[id] = user
-        return Outcomes.success(user)
+    fun create(id: String, email: String): Outcome<User> = when {
+        email.isBlank() -> Outcomes.invalid(Err.on("email", email, "email is required"))
+        users.containsKey(id) -> Outcomes.rejected(Rejected.CONFLICT)
+        else -> {
+            val user = User(id, email)
+            users[id] = user
+            Outcomes.success(user)
+        }
     }
 }
 ```
 
-`create` returns an `Outcome<User>` (`Result<User, Err>`) instead of throwing for either expected failure. `invalid`/`rejected`/`success` are `Outcomes` builder methods (`FailedBuilder`/`PassedBuilder` under the hood). Each pre-fills the right kiit-codes status.
+`create` returns an `Outcome<User>` (`Result<User, Err>`) instead of throwing for either expected failure. `invalid`/`rejected`/`success` are `Outcomes` builder methods (`FailedBuilder`/`PassedBuilder` under the hood). Each pre-fills the right kiit-codes status, and `invalid` here carries a real `Err` instead of a bare status.
 
 <Spacer />
 
@@ -844,6 +892,8 @@ Outcomes.rejected(IllegalStateException("duplicate id"), Rejected.CONFLICT)
 Outcomes.unserved("downstream timed out")
 ```
 
+An explicit status override (`Restricted.LOCKED`, `Rejected.CONFLICT`) is a classification decision, not something checked against the error's content, `status` and `error` are independent facts about the same `Failure`. See [Relationship](#relationship) for why.
+
 `Options.some`/`Options.none` are the `Option<T>`-specific pair on top of the same groups:
 
 ```kotlin
@@ -976,8 +1026,8 @@ Generic type params require `AnyObject` (box `Int`/`String` as `KotlinInt`/`NSSt
 |---|---|
 | **Why not just use Arrow's `Either`/`Validated` or kotlin-result?** | Those give a monad with zero built-in taxonomy. The meaning is supplied by each team itself. kiit-result is the same kind of monad fused to kiit-codes' taxonomy, for consistency across a codebase without every team inventing its own status vocabulary. A different bet, not a "better generic Result." |
 | **Why does `Success` carry a status too, not just `Failure`?** | Most Result types treat success as inert, just a value. Here `Success.status: Passed` distinguishes "succeeded," "succeeded but pending," and "succeeded but excluded" instead of flattening them all to `true`. |
-| **Why is `E` still fully generic instead of locked to kiit-codes' `Err`?** | So `Try<T>`, `Option<T>`, `Outcome<T>`, and `Validated<T>` can all share one `Result<T, E>` rather than needing separate types. The cost: nothing ties `Failure.status` to `Failure.error` at compile time, and that's deliberate, not an oversight. |
-| **Doesn't decoupling `status` from `error` risk them disagreeing?** | Yes, narrowly, only if the builders are bypassed or `status` is explicitly overridden against an unrelated `error`. The ergonomic path (`restricted(err)`, etc.) already pairs them correctly by default. |
+| **Why is `E` still fully generic instead of locked to kiit-codes' `Err`?** | So `Try<T>`, `Option<T>`, `Outcome<T>`, and `Validated<T>` can all share one `Result<T, E>` rather than needing separate types. |
+| **Doesn't `status` need to match `error`, semantically?** | No, they answer different questions about the same `Failure`: `status` is what kind of outcome this is, `error` is what happened. Neither is derived from the other, the same way an HTTP response's status code isn't derived from its body text. See [Relationship](#relationship) for the full reasoning. |
 | **Why two ways to build a value (constructor vs. `Builder<E>`) instead of one?** | They serve different situations: the constructor is for no-ceremony construction with no `Builder` in scope; `Builder<E>` is the status-aware convenience path when implementing `Outcomes`/`Options`/`Tries` or a custom class. |
 
 <Spacer />
@@ -1016,7 +1066,7 @@ Generic type params require `AnyObject` (box `Int`/`String` as `KotlinInt`/`NSSt
 | Question | Answer |
 |---|---|
 | **Is the "built for AI" angle just marketing?** | Same answer kiit-codes gives, extended to the `Result` layer. The design choices are justified on ordinary engineering grounds first: exhaustive branching, a small fixed vocabulary, fewer decisions per call site. AI tooling benefits from the same properties any consistent codebase does, but the library stands on its own without that framing. |
-| **What's the actual theory?** | A closed `Success`/`Failure` split with a fixed, named-category vocabulary gives an AI generating or reading code a small, predictable set of shapes to reach for, instead of guessing at ad hoc exception types or boolean flags. Kotlin's compiler-enforced exhaustive `when` also means a branch can't be silently missed, by a human or a model. Better accuracy, searchability, and standardization are the claimed benefits, not proven, and intentionally modest about that. |
+| **What's the actual theory, specific to kiit-result rather than any Result type?** | Exhaustive `Success`/`Failure` matching is common to any closed Result type, Rust and kotlin-result already give a model that. What's specific here is the shared `status` vocabulary on *both* branches, not just `Failure`: a model reading or generating code has one small, named set of categories to reach for either way, instead of ad hoc exception types on one side and nothing on the other. That said, this only covers the mechanical part, that a branch or a status subtype can't be silently missed. *Which* category actually fits a given error is still a judgment call nothing in the type system, or a model, can verify. See [Relationship](#relationship) for why that's by design, not a gap this could close. |
 
 <Spacer />
 
