@@ -15,7 +15,7 @@ import ConceptTermLink from '@site/src/components/ConceptTermLink';
 
 <p className="kiit-tagline">A Kotlin Result&lt;T, E&gt; type with a kiit-codes status on every branch, not just failure.</p>
 
-Success holds a value, Failure holds an error, and either can carry an Action recording which operation produced it, useful for tracing across nested or chained calls.
+Every `Success` and `Failure` carries a status from kiit-codes' closed taxonomy, unlike Rust's `Result`, Swift's `Result`, or other Kotlin `Result` types, where success is just a bare value. `Outcome<T>` is the ready-made alias for everyday use, paired with `Try<T>`, `Option<T>`, and `Validated<T>` for exceptions, absence, and validation.
 
 ![Kiit Result overview](/img/kiit-result/kiit-result-overview.png)
 
@@ -88,20 +88,28 @@ dependencies {
 ### Example
 
 ```kotlin
-import kiit.codes.Invalid
+import kiit.codes.Err
 import kiit.codes.Rejected
+import kiit.codes.Restricted
 import kiit.result.Outcome
 import kiit.result.Outcomes
 
 class UserService {
     private val users = mutableMapOf<String, User>()
 
-    fun create(id: String, email: String): Outcome<User> {
-        if (email.isBlank()) return Outcomes.invalid(Invalid.BAD_REQUEST)
-        if (users.containsKey(id)) return Outcomes.rejected(Rejected.CONFLICT)
-        val user = User(id, email)
-        users[id] = user
-        return Outcomes.success(user)
+    fun create(id: String, email: String): Outcome<User> = when {
+        // Restricted: a reserved id, not allowed
+        id == "admin" -> Outcomes.restricted(Restricted.DENIED)
+        // Invalid: bad input
+        email.isBlank() -> Outcomes.invalid(Err.on("email", email, "email is required"))
+        // Rejected: already exists
+        users.containsKey(id) -> Outcomes.rejected(Rejected.CONFLICT)
+        // Succeeded: created
+        else -> {
+            val user = User(id, email)
+            users[id] = user
+            Outcomes.success(user)
+        }
     }
 }
 ```
@@ -322,6 +330,27 @@ The one exception is [`Tries.of`](#conversions), which *does* derive `status` fr
 
 <Spacer />
 
+### Errors
+
+`Err` is kiit-codes' own error representation, not kiit-result's, the default `E` for `Outcome<T>` (`Result<T, Err>`). It's a closed hierarchy with three shapes:
+
+1. **`ErrorInfo`**: a message with an optional cause, the general-purpose default.
+2. **`ErrorField`**: a message tied to a specific `field`/`value`, for validation-style errors.
+3. **`ErrorList`**: wraps multiple `Err`s into one, what `Validated<T>` collects into.
+
+Every `Err` carries a `message: String`, a `cause: Throwable?`, and a `ref: Any?` for attaching arbitrary context.
+
+| Builder | Produces |
+|---|---|
+| `Err.of(message)` | `ErrorInfo` from a plain message |
+| `Err.on(field, value, message)` | `ErrorField` with a value |
+| `Err.on(field, message)` | `ErrorField` without a value, for a sensitive field like a password |
+| `Err.ex(throwable)` | `ErrorInfo` wrapping a caught exception |
+
+See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#err) for the full API, including `Err.build`/`Err.obj`/`Err.list`. `Err` and `status` are independent facts about the same `Failure`, not a pair that has to agree, see [Relationship](#relationship).
+
+<Spacer />
+
 ### Comparisons
 
 kiit-result's operators aren't novel in themselves. Nearly every one has a direct precedent in Rust's `Result`, kotlin-result, or both. The actual differentiator is the status taxonomy fused onto both branches, not the operator surface:
@@ -400,7 +429,7 @@ A single `UserService` grows through each step below, no prior Concepts or Desig
 ### Create
 
 ```kotlin
-import kiit.codes.Invalid
+import kiit.codes.Err
 import kiit.codes.Rejected
 import kiit.result.Outcome
 import kiit.result.Outcomes
@@ -410,17 +439,19 @@ data class User(val id: String, val email: String)
 class UserService {
     private val users = mutableMapOf<String, User>()
 
-    fun create(id: String, email: String): Outcome<User> {
-        if (email.isBlank()) return Outcomes.invalid(Invalid.BAD_REQUEST)
-        if (users.containsKey(id)) return Outcomes.rejected(Rejected.CONFLICT)
-        val user = User(id, email)
-        users[id] = user
-        return Outcomes.success(user)
+    fun create(id: String, email: String): Outcome<User> = when {
+        email.isBlank() -> Outcomes.invalid(Err.on("email", email, "email is required"))
+        users.containsKey(id) -> Outcomes.rejected(Rejected.CONFLICT)
+        else -> {
+            val user = User(id, email)
+            users[id] = user
+            Outcomes.success(user)
+        }
     }
 }
 ```
 
-`create` returns an `Outcome<User>` (`Result<User, Err>`) instead of throwing for either expected failure. `invalid`/`rejected`/`success` are `Outcomes` builder methods (`FailedBuilder`/`PassedBuilder` under the hood). Each pre-fills the right kiit-codes status.
+`create` returns an `Outcome<User>` (`Result<User, Err>`) instead of throwing for either expected failure. `invalid`/`rejected`/`success` are `Outcomes` builder methods (`FailedBuilder`/`PassedBuilder` under the hood). Each pre-fills the right kiit-codes status, and `invalid` here carries a real `Err` instead of a bare status.
 
 <Spacer />
 
