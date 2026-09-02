@@ -13,9 +13,9 @@ import ConceptTermLink from '@site/src/components/ConceptTermLink';
 
 <PageTitle title="kiit-result" logo="/img/modules/kiit-result-logo.png" />
 
-<p className="kiit-tagline">A Kotlin Result&lt;T, E&gt; type with a kiit-codes status on every branch, not just failure.</p>
+<p className="kiit-tagline">A Kotlin Result&lt;T, E&gt; that also tells you the kind of success and failure.</p>
 
-Every `Success` and `Failure` carries a status from kiit-codes' closed taxonomy, unlike Rust's `Result`, Swift's `Result`, or other Kotlin `Result` types, where success is just a bare value. `Outcome<T>` is the ready-made alias for everyday use, paired with `Try<T>`, `Option<T>`, and `Validated<T>` for exceptions, absence, and validation.
+Every `Success` and `Failure` carries a status classifying the kind of outcome, unlike Rust's `Result`, Swift's `Result`, or other Kotlin `Result` types, where success is just a bare value. A `Success` might be a plain success, a pending operation, or an intentional skip; a `Failure` might be unauthorized, invalid input, or a conflict. That status comes from kiit-codes, an already-established taxonomy reused here instead of inventing a new one. `Outcome<T>` is the ready-made alias for everyday use, paired with `Try<T>`, `Option<T>`, and `Validated<T>` for exceptions, absence, and validation.
 
 ![Kiit Result overview](/img/kiit-result/kiit-result-overview.png)
 
