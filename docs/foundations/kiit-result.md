@@ -179,7 +179,11 @@ Every `Result` carries a `status`, not just `Failure`. `Success<T>.status` is a 
 | **`Passed`** | `Succeeded`, `Pending`, `Excluded`, `Information` |
 | **`Failed`** | `Restricted`, `Invalid`, `Rejected`, `Unserved` |
 
-A `Success` isn't always "fully done": it can be `Pending` (queued) or `Excluded` (intentionally skipped) and still be a `Success`, not a lesser kind of failure. `Success<T>` means the outcome is a `Passed` status, not "the operation completed."
+:::info[Status]
+1. **Not "done"**: `Success<T>` means a `Passed` status, not "the operation completed"
+2. **Still a success**: `Pending` (queued) or `Excluded` (intentionally skipped) are a `Success`, not a lesser kind of failure.
+3. **Independent facts**: `status` and `error` are independent fields of `Failure`, and don't have to agree. See [Relationship](#relationship).
+:::
 
 This hierarchy belongs to kiit-codes, not kiit-result. See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#taxonomy) for the full set of groups and codes. <MoreLink label="Using it" href="#using-status" />
 
