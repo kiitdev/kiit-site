@@ -1110,6 +1110,99 @@ result.getErrorOrNull()?.errors?.size
 
 <Spacer />
 
+### Domain Errors
+
+`E` doesn't have to be `Err`, a plain string, or an exception, it can be your own sealed hierarchy enumerating every possible outcome of an operation, each variant pairing with its own kiit-codes status via a small `HasStatus` interface, instead of choosing a status per call site. There are two approaches to this:
+
+1. **Approach 1, preferred**: a separate sealed type per branch. The signature itself, `Result<CreateUserSuccess, CreateUserError>`, tells a caller every value and every error an operation can produce, without reading its body.
+2. **Approach 2**: one sealed type spanning both branches, deciding `Success` or `Failure` at runtime from its own status. Useful when every outcome, passed or failed, genuinely belongs to one concept, at the cost of that signature-level clarity.
+
+:::note[HasStatus]
+1. **Not yet in kiit-codes**: `HasStatus<S : Status>` currently lives in `kiit.result`, alongside where `HasErrors` already lives in kiit-codes, its intended long-term home.
+2. **Wiring isn't automatic**: `success(value)`/`failure(error)` read a domain type's own `.status`; the plain `Success(value)`/`Failure(error)` constructors still default status independently, see [Relationship](#relationship).
+:::
+
+**Approach 1: Preferred.** Two sealed hierarchies, each carrying its own status:
+
+```kotlin
+import kiit.codes.Failed
+import kiit.codes.Passed
+import kiit.codes.Unserved
+import kiit.result.HasStatus
+import kiit.result.Result
+import kiit.result.failure
+import kiit.result.success
+
+// Succeeded codes
+val USER_CREATED = Passed.Succeeded(name = "USER_CREATED", message = "User account created", origin = "users")
+val QUEUED_FOR_REVIEW = Passed.Pending(name = "QUEUED_FOR_REVIEW", message = "Flagged for manual review", origin = "users")
+
+// Failed codes
+val EMAIL_TAKEN = Failed.Rejected(name = "EMAIL_TAKEN", message = "Email is already registered", origin = "users")
+val INVALID_EMAIL = Failed.Invalid(name = "INVALID_EMAIL", message = "Email format is invalid", origin = "users")
+val UNAUTHORIZED_CREATE = Failed.Restricted(name = "UNAUTHORIZED_CREATE", message = "Not authorized to create users", origin = "users")
+
+// Sealed domain success: every way this operation can succeed
+sealed class CreateUserSuccess(override val status: Passed) : HasStatus<Passed> {
+    data class Created(val email: String) : CreateUserSuccess(USER_CREATED)
+    data class QueuedForReview(val email: String) : CreateUserSuccess(QUEUED_FOR_REVIEW)
+}
+
+// Sealed domain error: every way this operation can fail
+sealed class CreateUserError(override val status: Failed) : HasStatus<Failed> {
+    data class EmailTaken(val email: String) : CreateUserError(EMAIL_TAKEN)
+    data class InvalidEmail(val email: String) : CreateUserError(INVALID_EMAIL)
+    object Unauthorized : CreateUserError(UNAUTHORIZED_CREATE)
+    data class DatabaseUnavailable(val cause: Throwable) : CreateUserError(Unserved.UNEXPECTED)
+}
+
+fun createUser(
+    email: String,
+    isAuthorized: Boolean,
+    needsReview: Boolean,
+): Result<CreateUserSuccess, CreateUserError> = when {
+    !isAuthorized -> failure(CreateUserError.Unauthorized)
+    !email.contains("@") -> failure(CreateUserError.InvalidEmail(email))
+    needsReview -> success(CreateUserSuccess.QueuedForReview(email))
+    else -> success(CreateUserSuccess.Created(email))
+}
+```
+
+The signature alone answers "what can this return": a `CreateUserSuccess` variant or a `CreateUserError` variant, nothing else. `success()`/`failure()` read each variant's own `.status`, so `createUser(...).status` is always the right kiit-codes category for whichever variant came back.
+
+**Approach 2.** When every outcome, passed or failed, genuinely belongs to one enumeration, a single sealed type can cover both branches, with `build()` inspecting its status at runtime instead of `success()`/`failure()` choosing a branch at compile time:
+
+```kotlin
+import kiit.codes.Failed
+import kiit.codes.Passed
+import kiit.codes.Status
+import kiit.result.HasStatus
+import kiit.result.Result
+import kiit.result.build
+
+// Succeeded code
+val ORDER_PLACED = Passed.Succeeded(name = "ORDER_PLACED", message = "Order placed", origin = "orders")
+// Failed code
+val ORDER_OUT_OF_STOCK = Failed.Rejected(name = "ORDER_OUT_OF_STOCK", message = "Item is out of stock", origin = "orders")
+
+// Sealed domain result: spans both branches, status decides Success vs Failure at runtime
+sealed class PlaceOrderResult(override val status: Status) : HasStatus<Status> {
+    data class Placed(val orderId: String) : PlaceOrderResult(ORDER_PLACED)
+    data class OutOfStock(val sku: String) : PlaceOrderResult(ORDER_OUT_OF_STOCK)
+}
+
+fun placeOrder(sku: String, inStock: Boolean): Result<PlaceOrderResult, PlaceOrderResult> =
+    build(if (inStock) PlaceOrderResult.Placed(orderId = "ord-1") else PlaceOrderResult.OutOfStock(sku))
+```
+
+:::danger[Combined Type]
+1. **Loses signature clarity**: `Result<T, T>` doesn't tell what success or failure look like, both branches the same type.
+2. **Easy to misuse**: A `Placed` variant can be on the `Failure` side, or vice versa, if `build()` is bypassed.
+3. **Prefer separate types**: Use this combined type when every outcome, passed/failed, is one concept, not by default.
+:::
+
+<Spacer />
+
 ### Swift Interop
 
 Not yet distributed via SPM/XCFramework. The framework is `.framework`-only today, built locally. Companion-less members like `Outcomes`/`Options`/`Tries` get clean `.shared` access out of the box, and this module uses [SKIE](https://skie.touchlab.co/) for real, compiler-enforced Swift exhaustiveness over `Success`/`Failure`, a genuinely flat switch simpler than kiit-codes' nested `Status` case, since `Result<T, E>` is only one sealed level deep:
@@ -1161,7 +1254,7 @@ Generic type params require `AnyObject` (box `Int`/`String` as `KotlinInt`/`NSSt
 | **Why is there no `conflict()` builder?** | It was just `rejected()` with `Rejected.CONFLICT` as the default status, not its own category. Use `rejected(status = Rejected.CONFLICT)`. |
 | **Why does `excluded()` build a `Success`, not a `Failure`?** | `Excluded` is a `Passed` group in kiit-codes. An intentionally skipped, deduplicated, or disqualified item isn't a failure. |
 | **Why is `Builder<E>` split into `PassedBuilder`/`FailedBuilder`?** | Keeps each interface's surface scoped to one branch, the same reason kiit-codes keeps each group's constants on its own companion rather than one shared object. |
-| **Do I have to pick a specific `Status` every time I use a builder?** | No. The group builders all apply a sensible default when none is supplied. An explicit status is only needed when the default doesn't fit (`restricted(status = Restricted.LOCKED)`). Routine use never requires touching `Status` directly. |
+| **What if I don't care about `Status`?** | You don't have to manage it. Builders apply a sensible default when none is supplied (`Outcomes.rejected("duplicate")` defaults to `Rejected.RULE_VIOLATION`), so routine use never requires touching `Status` directly, the same gradual-adoption path as [Philosophy](#philosophy)'s Start Simple. |
 
 <Spacer />
 
