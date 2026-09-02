@@ -580,7 +580,7 @@ asTry.onFailure { ex -> println("caught: ${ex.message}") }
 2. **Pipelines**: `map`/`flatMap` chains compose without manual null/exception checks at each step.
 3. **Validation**: `Validated<T>` (`Result<T, Err.ErrorList>`) collects multiple errors via `Validations`.
 4. **Exception boundaries**: `toTry()`/`Tries.of` interop with `StatusException` when a caller only understands exceptions.
-5. **HTTP/gRPC responses**: `result.status` converts via kiit-codes' `CodesToHttp`/`CodesToGrpc`.
+5. **HTTP/gRPC responses**: `result.status` converts via kiit-codes' `CodesToHttp`/`CodesToGrpc`. See [HTTP/gRPC Responses](#httpgrpc-responses).
 
 **Good fit if:**
 1. Explicit, monadic return values instead of throw/catch for expected failures are wanted.
@@ -649,6 +649,25 @@ when (val status = result.status) {
         is Unserved -> println("unserved: ${status.name}")
     }
 }
+```
+
+<Spacer />
+
+### HTTP/gRPC Responses
+
+`Result` doesn't own transport mapping, that's kiit-codes' job. Map `result.status` through `CodesToHttp`/`CodesToGrpc` at the boundary where you actually need a status code, keeping the two concerns separate. See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#protocols) for the full mapping tables.
+
+```kotlin
+import kiit.codes.CodesToGrpc
+import kiit.codes.CodesToHttp
+
+val http = CodesToHttp()
+val grpc = CodesToGrpc()
+
+// 201, from Succeeded.CREATED's override
+http.toCode(result.status)
+// 7, PERMISSION_DENIED, the Restricted group's default
+grpc.toCode(result.status)
 ```
 
 <Spacer />
@@ -1266,6 +1285,7 @@ Generic type params require `AnyObject` (box `Int`/`String` as `KotlinInt`/`NSSt
 | Question | Answer |
 |---|---|
 | **Can I use my own error type and ignore kiit-codes?** | Only partially. `E` is generic (use `Throwable`, `String`, a domain type), but `Success.status`/`Failure.status` are hard-typed to kiit-codes' `Passed`/`Failed`. There's no way to use `Result<T, E>` without a kiit-codes status on every branch. |
+| **How do I turn a `Result` into an HTTP/gRPC response?** | `Result` doesn't own transport mapping, that's kiit-codes' job. Map `result.status` through `CodesToHttp`/`CodesToGrpc` at the boundary where you actually need a status code, keeping the two concerns separate. See [HTTP/gRPC Responses](#httpgrpc-responses) and the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#protocols). |
 | **Does this actually work on JS and iOS today?** | kiit-result's production history is JVM/Android. JS and iOS/Swift are new targets with no production history yet, not just "unexercised" versions of something proven. JS/TS is a deliberately partial pass (`@JsExport`ed, not covered by CI or published to npm, since TypeScript can't compiler-enforce exhaustiveness). iOS uses SKIE for real, compiler-enforced Swift exhaustiveness, a materially better story than JS, including plain Kotlin `object`s (`Outcomes`/`Options`/`Tries`) getting clean `.shared` access with no extra work. |
 
 <Spacer />
