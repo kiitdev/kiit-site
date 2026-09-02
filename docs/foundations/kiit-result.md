@@ -29,11 +29,6 @@ kiit-result's `Result<T, E>` exists so a caller knows the kind of success or fai
 
 A set of builder functions pick the right status for you: call `restricted()` for an unauthorized caller, `invalid()` for bad input, and so on, so the status matches the error without having to build one by hand. See [Philosophy](#philosophy) for the full rationale.
 
-:::tip[Start Simple]
-1. **Start here**: Adopt `Result<T, E>` on its own first, everything else here is optional.
-2. **Adopt gradually**: Add `Status`, `Aliases`, `Builders`, or `Action` only when they solve a real problem you have.
-:::
-
 <Spacer />
 
 ### Inspiration
@@ -363,18 +358,25 @@ val d = Validations.of(form, errorsFound)
 
 ### Philosophy
 
-kiit-result's design comes down to six ideas:
+kiit-result's design comes down to five ideas. Each builds on the one before it: `Status` classifies an outcome, `Builders` make that classification practical to produce, `Aliases` adapt the whole thing to common application shapes, `Action` adds optional context on top, and `Scope` states what's deliberately left out.
 
 | # | Idea | Description |
 |---:|---|---|
 | 1 | **Status** | Most Result types treat success as inert, just a value. Here, `Success.status: Passed` distinguishes "succeeded," "succeeded but pending," and "succeeded but excluded," instead of flattening every success down to a bare `true` (see [Status](#status) for the full set of kinds on each side). This is the one idea without a direct precedent in Rust, Swift, or kotlin-result, and the reason kiit-result exists as its own type rather than reusing one of those. |
-| 2 | **Aliases** | `E` stays fully generic rather than locked to kiit-codes' `Err`, so `Outcome<T>`, `Try<T>`, `Option<T>`, and `Validated<T>` can all share one `Result<T, E>` instead of needing four separate types. Each alias just fixes `E` to the error shape a given situation calls for, with a matching builder already wired up. |
-| 3 | **Builders** | Builders like `restricted(err)`, `invalid(err)`, and `rejected(err)` pick a sensible default `status` for you, so the common case needs no separate classification step. `status` and `error` are independent facts about the same `Failure`, not a pair that has to agree, see [Relationship](#relationship). |
+| 2 | **Builders** | Builders like `restricted(err)`, `invalid(err)`, and `rejected(err)` pick a sensible default `status` for you, so the common case needs no separate classification step. `status` and `error` are independent facts about the same `Failure`, not a pair that has to agree, see [Relationship](#relationship). |
+| 3 | **Aliases** | `E` stays fully generic rather than locked to kiit-codes' `Err`, so `Outcome<T>`, `Try<T>`, `Option<T>`, and `Validated<T>` can all share one `Result<T, E>` instead of needing four separate types. Each alias just fixes `E` to the error shape a given situation calls for, with a matching builder already wired up. |
 | 4 | **Action** | An optional `Action` records which operation produced or wrapped a `Result`, and chaining links a new one to whatever was already there. It's the one idea that isn't about `status` at all, lightweight context for identifying which layer produced or failed a result inside a nested call chain. |
-| 5 | **AI Benefits** | The same closed `status` vocabulary shows up on both branches, so a model reading or generating code against kiit-result has one exhaustive pattern to match against, on `Success` and `Failure` alike, rather than a bespoke shape per library. |
-| 6 | **Scope** | kiit-result aims for a reasonable learning curve on everyday application code, not a category-theory-complete FP toolkit. `Option`/`Try`/`Outcome`/`Validated` are practical specializations of one `Result<T, E>`, familiar names with pragmatic semantics. Full category-theory abstractions (applicatives, monad transformers) are a different, valid goal, just not this library's. |
+| 5 | **Scope** | kiit-result aims for a reasonable learning curve on everyday application code, not a category-theory-complete FP toolkit. `Option`/`Try`/`Outcome`/`Validated` are practical specializations of one `Result<T, E>`, familiar names with pragmatic semantics. Full category-theory abstractions (applicatives, monad transformers) are a different, valid goal, just not this library's. |
+
+The same closed `status` vocabulary also shows up on both branches, a side benefit worth naming: a model reading or generating code against kiit-result has one exhaustive pattern to match against, on `Success` and `Failure` alike, rather than a bespoke shape per library.
 
 There are also two ways to build a value: prefer `Builder<E>` (via `Outcomes`/`Options`/`Tries`) for everyday construction; the plain constructor is a no-ceremony escape hatch for when no `Builder` is in scope, not the default path.
+
+:::tip[Start Simple]
+1. **Status first**: `Result<T, E>` with `Status` alone covers most needs, everything below is additive.
+2. **Builders next**: Reach for `Outcomes`/`Options`/`Tries` once constructing values by hand gets repetitive.
+3. **Then as needed**: `Aliases` and `Action` are optional layers, adopt each only when it solves a real problem, in the same order they build on each other above.
+:::
 
 <Spacer />
 
