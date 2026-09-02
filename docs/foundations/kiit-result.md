@@ -619,7 +619,6 @@ An `Action` is optional context on top of everything so far, which operation pro
 ```kotlin
 import kiit.result.Action
 
-// now attaching an Action recording which operation produced this
 fun createUser(id: String, email: String): Outcome<User> =
     when {
         email.isBlank() -> Outcomes.invalid(Err.on("email", email, "email is required"))
@@ -629,7 +628,9 @@ fun createUser(id: String, email: String): Outcome<User> =
             users[id] = user
             Outcomes.success(user, Succeeded.CREATED)
         }
-    }.withAction(Action(action = ::createUser.name, data = mapOf("email" to email)))
+    }
+        // now attaching an Action recording which operation produced this
+        .withAction(Action(action = ::createUser.name, data = mapOf("email" to email)))
 
 val result = createUser("bob", "bob@example.com")
 result.action?.action
