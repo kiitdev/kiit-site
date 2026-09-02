@@ -164,7 +164,7 @@ Result<T, E>.action : Action? (optional, both branches)
 1. <ConceptTermLink href="https://github.com/kiitdev/kiit-result/blob/main/kiit-result/src/commonMain/kotlin/kiit/result/Result.kt#L429">Success</ConceptTermLink>: holds a `value: T`, defaults its `status` to `Succeeded.SUCCESS`.
 2. <ConceptTermLink href="https://github.com/kiitdev/kiit-result/blob/main/kiit-result/src/commonMain/kotlin/kiit/result/Result.kt#L461">Failure</ConceptTermLink>: holds an `error: E`, defaults its `status` to `Unserved.UNEXPECTED`.
 
-`result.message` is a convenience accessor equal to `result.status.message` on either branch.
+`Success<T>` doesn't always mean "complete," see [Status](#status) for the full set of `Passed` kinds. `result.message` is a convenience accessor equal to `result.status.message` on either branch.
 
 ![Kiit Result structure](/img/kiit-result/kiit-result-structure.png)
 
@@ -178,6 +178,8 @@ Every `Result` carries a `status`, not just `Failure`. `Success<T>.status` is a 
 |---|---|
 | **`Passed`** | `Succeeded`, `Pending`, `Excluded`, `Information` |
 | **`Failed`** | `Restricted`, `Invalid`, `Rejected`, `Unserved` |
+
+A `Success` isn't always "fully done": it can be `Pending` (queued) or `Excluded` (intentionally skipped) and still be a `Success`, not a lesser kind of failure. `Success<T>` means the outcome is a `Passed` status, not "the operation completed."
 
 This hierarchy belongs to kiit-codes, not kiit-result. See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#taxonomy) for the full set of groups and codes. <MoreLink label="Using it" href="#using-status" />
 
@@ -202,12 +204,28 @@ Attach it via `result.withAction(action, chain = true)`. Chaining links to whate
 
 ### Aliases
 
+`Option<T>`, `Try<T>`, `Outcome<T>`, and `Validated<T>` are practical specializations of one `Result<T, E>`, each just fixing `E` to a common error shape, not four separate types.
+
 ![Kiit Result aliases](/img/kiit-result/kiit-result-aliases.png)
 
 1. **<ConceptTermLink href="https://github.com/kiitdev/kiit-result/blob/main/kiit-result/src/commonMain/kotlin/kiit/result/Aliases.kt#L31">Outcome</ConceptTermLink>**: kiit-codes' `Err` as the error type, the most commonly used alias.
 2. **<ConceptTermLink href="https://github.com/kiitdev/kiit-result/blob/main/kiit-result/src/commonMain/kotlin/kiit/result/Aliases.kt#L38">Validated</ConceptTermLink>**: For validation, collecting multiple errors instead of stopping at the first.
 3. **<ConceptTermLink href="https://github.com/kiitdev/kiit-result/blob/main/kiit-result/src/commonMain/kotlin/kiit/result/Aliases.kt#L24">Try</ConceptTermLink>**: Exception as the error type, the shape used when crossing an exception-only boundary.
 4. **<ConceptTermLink href="https://github.com/kiitdev/kiit-result/blob/main/kiit-result/src/commonMain/kotlin/kiit/result/Aliases.kt#L17">Option</ConceptTermLink>**: The historical `Option`/`Maybe` role (Rust/Scala/Arrow), reimagined so absence carries a `status` explaining why, not just a bare `None`. `Options.some(value)`/`Options.none()` are the entry points.
+
+:::info
+1. **Intention**: `Validated<T>` collects every error found instead of stopping at the first, for validating a whole form or request at once.
+2. **Just an alias**: `Validated<T> = Result<T, Err.ErrorList>` is a type alias on `Result<T, E>`, not a separate applicative type.
+3. **Reinterpretation**: Category-theory's `Validated` is typically its own accumulating-applicative abstraction, distinct from `Either`. Here it's a practical specialization of the same monadic `Result`, not that abstraction.
+:::
+
+:::info
+1. **Intention**: `Option<T>` expresses presence of a value, not just success/failure.
+2. **Presence**: `Success<T>` means the value is present.
+3. **Absence**: `Failure<Unit>` means it's absent, a **failure of presence**.
+4. **Reinterpretation**: A deliberate reinterpretation of `Option`/`Maybe`, not literal category-theory semantics.
+5. **Practicality**: Familiar names, practical semantics, these aliases don't attempt to replicate category-theory abstractions.
+:::
 
 <Spacer />
 
@@ -303,15 +321,16 @@ val d = Validations.of(form, errorsFound)
 
 ### Philosophy
 
-kiit-result's design comes down to five ideas:
+kiit-result's design comes down to six ideas:
 
 | # | Idea | Description |
 |---:|---|---|
-| 1 | **Status** | Most Result types treat success as inert, just a value. Here, `Success.status: Passed` distinguishes "succeeded," "succeeded but pending," and "succeeded but excluded," instead of flattening every success down to a bare `true`. This is the one idea without a direct precedent in Rust, Swift, or kotlin-result, and the reason kiit-result exists as its own type rather than reusing one of those. |
+| 1 | **Status** | Most Result types treat success as inert, just a value. Here, `Success.status: Passed` distinguishes "succeeded," "succeeded but pending," and "succeeded but excluded," instead of flattening every success down to a bare `true` (see [Status](#status) for the full set of kinds on each side). This is the one idea without a direct precedent in Rust, Swift, or kotlin-result, and the reason kiit-result exists as its own type rather than reusing one of those. |
 | 2 | **Aliases** | `E` stays fully generic rather than locked to kiit-codes' `Err`, so `Outcome<T>`, `Try<T>`, `Option<T>`, and `Validated<T>` can all share one `Result<T, E>` instead of needing four separate types. Each alias just fixes `E` to the error shape a given situation calls for, with a matching builder already wired up. |
 | 3 | **Builders** | Builders like `restricted(err)`, `invalid(err)`, and `rejected(err)` pick a sensible default `status` for you, so the common case needs no separate classification step. `status` and `error` are independent facts about the same `Failure`, not a pair that has to agree, see [Relationship](#relationship). |
 | 4 | **Action** | An optional `Action` records which operation produced or wrapped a `Result`, and chaining links a new one to whatever was already there. It's the one idea that isn't about `status` at all, useful for tracing which layer failed inside a nested call chain without reaching for a separate tracing library. |
 | 5 | **AI Benefits** | The same closed `status` vocabulary shows up on both branches, so a model reading or generating code against kiit-result has one exhaustive pattern to match against, on `Success` and `Failure` alike, rather than a bespoke shape per library. |
+| 6 | **Scope** | kiit-result aims for a reasonable learning curve on everyday application code, not a category-theory-complete FP toolkit. `Option`/`Try`/`Outcome`/`Validated` are practical specializations of one `Result<T, E>`, familiar names with pragmatic semantics. Full category-theory abstractions (applicatives, monad transformers) are a different, valid goal, just not this library's. |
 
 There are also two ways to build a value, a plain constructor and `Builder<E>`, because they serve different situations: the constructor is for no-ceremony construction with no `Builder` in scope, `Builder<E>` is the status-aware convenience path when implementing `Outcomes`/`Options`/`Tries` or a custom class.
 
@@ -321,7 +340,7 @@ There are also two ways to build a value, a plain constructor and `Builder<E>`, 
 
 `error: E` and `status: Status` are both attributes of the same `Failure`, not two views of one fact that need to agree. Each answers a different question about the same occurrence:
 
-1. **`status`**: what kind of outcome this is, for branching, protocol mapping (`CodesToHttp`/`CodesToGrpc`), and log severity.
+1. **`status`**: what kind of outcome this is (see [Status](#status) for the full set on each branch), for branching, protocol mapping (`CodesToHttp`/`CodesToGrpc`), and log severity.
 2. **`error`**: what happened, in whatever detail the situation calls for, a message, a field, a wrapped exception, or a domain-specific type.
 
 The clearest comparison is an HTTP response: a `500` can carry "database timeout" or "null pointer in payment processing," and nobody considers it a defect that HTTP doesn't validate the body against the code. The status answers how a caller should behave; the body answers what a human needs to debug it. `status` and `error` play the same two roles here.
@@ -954,6 +973,13 @@ bad.getErrorOrNull()
 
 `Option<T> = Result<T, Unit>` reimagines the historical `Option`/`Maybe` role on `Result`, so absence carries a `status` explaining why instead of a bare `None`. `Options.some`/`Options.none` are the entry points.
 
+:::info
+1. **Intention**: `Option<T>` expresses presence of a value, not just success/failure.
+2. **Presence**: `Success<T>` means a value is present, a **success in presence**.
+3. **Absence**: `Failure<Unit>` means a value absent, a **failure of presence**.
+4. **Reinterpretation**: A deliberate reinterpretation of `Option`/`Maybe`, not literal category-theory semantics.
+:::
+
 ```kotlin
 import kiit.result.Option
 import kiit.result.Options
@@ -975,6 +1001,12 @@ missing.status
 ### Alias: Validated&lt;T&gt;
 
 `Validated<T> = Result<T, Err.ErrorList>` collects multiple errors instead of stopping at the first, for validating a whole form or request at once. `Validations.of` builds one from a value plus whatever errors were already found.
+
+:::info
+1. **Intention**: `Validated<T>` collects every error instead of stopping at the first, for validating a whole request at once.
+2. **Just an alias**: This is just a type alias for `Result<T, Err.ErrorList>` is a type alias not a separate applicative type.
+3. **Reinterpretation**: Category-theory's `Validated` is typically its own accumulating-applicative abstraction, distinct from `Either`. Here it's a practical specialization of the same monadic `Result`, not that abstraction.
+:::
 
 ```kotlin
 import kiit.codes.Err
