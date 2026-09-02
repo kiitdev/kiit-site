@@ -212,7 +212,7 @@ This hierarchy belongs to kiit-codes, not kiit-result. See the [kiit-codes docs]
 
 Attach it via `result.withAction(action, chain = true)`. Chaining links to whatever action is already present by default, which is what makes it useful for pinpointing which layer failed inside a nested call chain. Once attached, `action` survives `map`/`mapError`/`toOutcome()`/`toTry()`, the same as `status` does.
 
-:::danger[Action]
+:::warning[Action]
 1. **Scope**: `Action` is a lightweight context bag (name, correlation id, attributes, previous link) by design.
 2. **Not observability**: This is not meant to replace tracing/telemetry systems (e.g. OpenTelemetry).
 3. **Use case**: Most useful for debugging or response structures, showing the operational context associated with a result.
@@ -385,7 +385,7 @@ There are also two ways to build a value: prefer `Builder<E>` (via `Outcomes`/`O
 1. **`status`**: what kind of outcome this is (see [Status](#status) for the full set on each branch), for branching, protocol mapping (`CodesToHttp`/`CodesToGrpc`), and log severity.
 2. **`error`**: what happened, in whatever detail the situation calls for, a message, a field, a wrapped exception, or a domain-specific type.
 
-The clearest comparison is an HTTP response: a `500` can carry "database timeout" or "null pointer in payment processing," and nobody considers it a defect that HTTP doesn't validate the body against the code. The status answers how a caller should behave; the body answers what a human needs to debug it. `status` and `error` play the same two roles here.
+The clearest comparison is an HTTP response: a `500` can carry "database timeout" or "null pointer in payment processing," and nobody considers it a defect that HTTP doesn't validate the body against the code. The status classifies the outcome; the body provides the specific details. `status` and `error` play the same two roles here.
 
 Deriving `status` from `error`'s content would also remove a real degree of freedom: the same `Err` can legitimately be `Restricted` in one call site and `Rejected` in another, depending on what the calling code is actually deciding, not a fact recoverable from the error text alone.
 
@@ -653,7 +653,7 @@ when (val status = result.status) {
 
 Attach an `Action` when a result is produced, then read it back for logging or debugging. Chaining links a new `Action` to whatever one was already there, so a caller several layers up can see the whole path an operation took. `map`/`mapError` carry an existing `Action` forward automatically; `flatMap` doesn't, since the new `Result` comes from caller-supplied code, so reattach it explicitly there if it needs to carry through.
 
-:::danger[Action]
+:::warning[Action]
 1. **Scope**: `Action` is a lightweight context bag (name, correlation id, attributes, previous link) by design.
 2. **Not observability**: This is not meant to replace tracing/telemetry systems (e.g. OpenTelemetry).
 3. **Use case**: Most useful for debugging or response structures, showing the operational context associated with a result.
