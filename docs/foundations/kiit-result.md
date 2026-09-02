@@ -1051,7 +1051,6 @@ bad.getErrorOrNull()
 
 `Option<T> = Result<T, Unit>` reimagines the historical `Option`/`Maybe` role on `Result`, so absence carries a `status` explaining why instead of a bare `None`. `Options.some`/`Options.none` are the entry points.
 
-
 :::info[Option&lt;T&gt;]
 1. **Intention**: `Option<T>` expresses presence of a value, not just success/failure.
 2. **Presence**: `Success<T>` means the value is present, a **success of presence**.
