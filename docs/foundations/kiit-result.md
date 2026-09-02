@@ -221,8 +221,8 @@ Attach it via `result.withAction(action, chain = true)`. Chaining links to whate
 
 :::info[Option&lt;T&gt;]
 1. **Intention**: `Option<T>` expresses presence of a value, not just success/failure.
-2. **Presence**: `Success<T>` means the value is present, a **success in presence**.
-3. **Absence**: `Failure<Unit>` means the value is absent, a **failure in presence**.
+2. **Presence**: `Success<T>` means the value is present, a **success of presence**.
+3. **Absence**: `Failure<Unit>` means the value is absent, a **failure of presence**.
 4. **Adaptation**: A deliberate adaptation of `Option`/`Maybe`, not literal category-theory semantics.
 5. **Practicality**: Familiar names, practical semantics, these aliases don't attempt to replicate category-theory abstractions.
 :::
@@ -995,8 +995,8 @@ bad.getErrorOrNull()
 
 :::info[Option&lt;T&gt;]
 1. **Intention**: `Option<T>` expresses presence of a value, not just success/failure.
-2. **Presence**: `Success<T>` means the value is present, a **success in presence**.
-3. **Absence**: `Failure<Unit>` means the value is absent, a **failure in presence**.
+2. **Presence**: `Success<T>` means the value is present, a **success of presence**.
+3. **Absence**: `Failure<Unit>` means the value is absent, a **failure of presence**.
 4. **Adaptation**: A deliberate adaptation of `Option`/`Maybe`, not literal category-theory semantics.
 5. **Practicality**: Familiar names, practical semantics, these aliases don't attempt to replicate category-theory abstractions.
 :::
