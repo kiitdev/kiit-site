@@ -930,19 +930,32 @@ Options.none<Int>()
 
 `Outcome<T> = Result<T, Err>` pairs a value with kiit-codes' `Err` on failure, the most commonly used alias. `Outcomes` is the ready-made `Builder` implementation for it. See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#err) for `Err`'s full shape (`ErrorInfo`/`ErrorField`/`ErrorList`).
 
+:::success[Outcome&lt;T&gt;]
+1. **Intention**: `Outcome<T>` pairs a value with kiit-codes' `Err` on failure, the most commonly used alias.
+2. **Less boilerplate**: Fixing the error type to `Err` means callers don't have to define a custom error type for `Result`.
+3. **Ready-made builder**: `Outcomes` implements `Builder<Err>`, so convenient builders come for free.
+:::
+
 ```kotlin
+import kiit.codes.Err
 import kiit.result.Outcome
 import kiit.result.Outcomes
 
-fun parseAge(input: String): Outcome<Int> =
-    input.toIntOrNull()?.let { Outcomes.success(it) } ?: Outcomes.invalid("not a number")
+fun parseAge(input: String): Outcome<Int> {
+    val age = input.toIntOrNull()
+    return when {
+        age == null -> Outcomes.invalid(Err.on("age", input, "must be a number"))
+        age < 0 -> Outcomes.invalid(Err.on("age", input, "must not be negative"))
+        else -> Outcomes.success(age)
+    }
+}
 
 val ok: Outcome<Int> = parseAge("42")
 val bad: Outcome<Int> = parseAge("nope")
 
 // 42
 ok.getOrNull()
-// "not a number"
+// must be a number
 bad.getErrorOrNull()?.message
 ```
 
@@ -951,6 +964,12 @@ bad.getErrorOrNull()?.message
 ### Alias: Try&lt;T&gt;
 
 `Try<T> = Result<T, Throwable>` uses an exception as the error type, for crossing an exception-only boundary. `Tries.attempt` catches a throwing computation and wraps whatever it throws.
+
+:::warning[Try&lt;T&gt;]
+1. **Intention**: `Try<T>` uses a `Throwable` as the error type, for compatibility with exception-based code.
+2. **Compatibility**: Use this for interoperating with code that only uses exceptions, without a manual `try`/`catch`.
+3. **Drop-in for `kotlin.Result`**: Replaces Kotlin's `kotlin.Result<T>`, while adding `status` and kiit-result's operators.
+:::
 
 ```kotlin
 import kiit.result.Try
@@ -974,7 +993,7 @@ bad.getErrorOrNull()
 `Option<T> = Result<T, Unit>` reimagines the historical `Option`/`Maybe` role on `Result`, so absence carries a `status` explaining why instead of a bare `None`. `Options.some`/`Options.none` are the entry points.
 
 
-:::info
+:::info[Option&lt;T&gt;]
 1. **Intention**: `Option<T>` expresses presence of a value, not just success/failure.
 2. **Presence**: `Success<T>` means the value is present, a **success in presence**.
 3. **Absence**: `Failure<Unit>` means the value is absent, a **failure in presence**.
@@ -1004,7 +1023,7 @@ missing.status
 
 `Validated<T> = Result<T, Err.ErrorList>` collects multiple errors instead of stopping at the first, for validating a whole form or request at once. `Validations.of` builds one from a value plus whatever errors were already found.
 
-:::info
+:::info[Validated&lt;T&gt;]
 1. **Intention**: `Validated<T>` collects every error instead of stopping at the first, for validating a whole request at once.
 2. **Just an alias**: Just a type alias on `Result<T, E>`, not a separate applicative type.
 3. **Adaptation**: Category-theory's `Validated` is typically its own accumulating-applicative abstraction, distinct from `Either`. Here it's a practical specialization of the same monadic `Result`, not that abstraction.
