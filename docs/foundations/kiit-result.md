@@ -27,7 +27,7 @@ kiit-result's `Result<T, E>` exists so a caller knows the kind of success or fai
 
 `Outcome<T>`, `Try<T>`, `Option<T>`, and `Validated<T>` are simply aliases on this one type, ensuring a consistent approach. Each just sets the error shape for its respective use case.
 
-A set of builder functions pick the right status for you: call `restricted()` for an unauthorized caller, `invalid()` for bad input, and so on, so the status matches the error without having to build one by hand. An optional `Action` can ride along too, recording which operation produced a result so a failure several layers deep is easy to trace back to its source. The same small, fixed vocabulary on every branch also makes code easier for a model to read or generate correctly, one predictable shape instead of a bespoke one per library. See [Philosophy](#philosophy) for the full rationale.
+A set of builder functions pick the right status for you: call `restricted()` for an unauthorized caller, `invalid()` for bad input, and so on, so the status matches the error without having to build one by hand. An optional `Action` can ride along too, recording which operation produced a result so a failure several layers deep is easy to identify. The same small, fixed vocabulary on every branch also makes code easier for a model to read or generate correctly, one predictable shape instead of a bespoke one per library. See [Philosophy](#philosophy) for the full rationale.
 
 <Spacer />
 
@@ -192,11 +192,17 @@ This hierarchy belongs to kiit-codes, not kiit-result. See the [kiit-codes docs]
 <ConceptTermLink href="https://github.com/kiitdev/kiit-result/blob/main/kiit-result/src/commonMain/kotlin/kiit/result/Action.kt#L22">Action</ConceptTermLink> names the operation that produced or wrapped a `Result`. It carries:
 
 1. `action: String`: the operation name, required.
-2. `xid: String?`: an optional correlation id for tracing.
+2. `xid: String?`: an optional correlation id for context.
 3. `data: Map<String, String>`: optional free-form attributes.
 4. `previous: Action?`: an optional link to the action this one was chained from.
 
 Attach it via `result.withAction(action, chain = true)`. Chaining links to whatever action is already present by default, which is what makes it useful for pinpointing which layer failed inside a nested call chain. Once attached, `action` survives `map`/`mapError`/`toOutcome()`/`toTry()`, the same as `status` does.
+
+:::danger[Action]
+1. **Scope**: `Action` is a lightweight context bag (name, correlation id, attributes, previous link) by design.
+2. **Not observability**: This is not meant to replace tracing/telemetry systems (e.g. OpenTelemetry).
+3. **Use case**: Most useful for debugging or response structures, showing the operational context associated with a result.
+:::
 
 ![Kiit Result action](/img/kiit-result/kiit-result-action.png)
 
@@ -328,7 +334,7 @@ kiit-result's design comes down to six ideas:
 | 1 | **Status** | Most Result types treat success as inert, just a value. Here, `Success.status: Passed` distinguishes "succeeded," "succeeded but pending," and "succeeded but excluded," instead of flattening every success down to a bare `true` (see [Status](#status) for the full set of kinds on each side). This is the one idea without a direct precedent in Rust, Swift, or kotlin-result, and the reason kiit-result exists as its own type rather than reusing one of those. |
 | 2 | **Aliases** | `E` stays fully generic rather than locked to kiit-codes' `Err`, so `Outcome<T>`, `Try<T>`, `Option<T>`, and `Validated<T>` can all share one `Result<T, E>` instead of needing four separate types. Each alias just fixes `E` to the error shape a given situation calls for, with a matching builder already wired up. |
 | 3 | **Builders** | Builders like `restricted(err)`, `invalid(err)`, and `rejected(err)` pick a sensible default `status` for you, so the common case needs no separate classification step. `status` and `error` are independent facts about the same `Failure`, not a pair that has to agree, see [Relationship](#relationship). |
-| 4 | **Action** | An optional `Action` records which operation produced or wrapped a `Result`, and chaining links a new one to whatever was already there. It's the one idea that isn't about `status` at all, useful for tracing which layer failed inside a nested call chain without reaching for a separate tracing library. |
+| 4 | **Action** | An optional `Action` records which operation produced or wrapped a `Result`, and chaining links a new one to whatever was already there. It's the one idea that isn't about `status` at all, lightweight context for identifying which layer produced or failed a result inside a nested call chain. |
 | 5 | **AI Benefits** | The same closed `status` vocabulary shows up on both branches, so a model reading or generating code against kiit-result has one exhaustive pattern to match against, on `Success` and `Failure` alike, rather than a bespoke shape per library. |
 | 6 | **Scope** | kiit-result aims for a reasonable learning curve on everyday application code, not a category-theory-complete FP toolkit. `Option`/`Try`/`Outcome`/`Validated` are practical specializations of one `Result<T, E>`, familiar names with pragmatic semantics. Full category-theory abstractions (applicatives, monad transformers) are a different, valid goal, just not this library's. |
 
@@ -416,7 +422,7 @@ Swift's standard library `Result` is deliberately minimal: `map`/`mapError`/`fla
 |---:|---|---|
 | 1 | Status on both branches | Every `Success`/`Failure` carries a status, not just failure. See [Structure](#structure) |
 | 2 | Flexible error type | `E` can be `String`, `Throwable`, `Err`, or a domain type. See [Aliases](#aliases) |
-| 3 | Operation tracing | Optional `Action` traces the operation across nested calls. See [Action](#action) |
+| 3 | Operation context | Optional `Action` records the operation across nested calls. See [Action](#action) |
 | 4 | Status-aware builders | `restricted`/`invalid`/... prepopulate the matching status. See [Builders](#builders) |
 | 5 | Exception-boundary conversions | `toTry()`/`Tries.of` cross into and out of exceptions. See [Conversions](#conversions) |
 | 6 | List-combining operators | `combine`/`partition`/... work on a batch of `Result`s. See [Operators](#operators) |
@@ -603,7 +609,7 @@ when (val status = result.status) {
 
 ### Using Action
 
-Attach an `Action` when a result is produced, then read it back for logging or tracing. Chaining links a new `Action` to whatever one was already there, so a caller several layers up can see the whole path an operation took. `map`/`mapError` carry an existing `Action` forward automatically; `flatMap` doesn't, since the new `Result` comes from caller-supplied code, so reattach it explicitly there if it needs to carry through.
+Attach an `Action` when a result is produced, then read it back for logging or debugging. Chaining links a new `Action` to whatever one was already there, so a caller several layers up can see the whole path an operation took. `map`/`mapError` carry an existing `Action` forward automatically; `flatMap` doesn't, since the new `Result` comes from caller-supplied code, so reattach it explicitly there if it needs to carry through.
 
 ```kotlin
 import kiit.result.Action
