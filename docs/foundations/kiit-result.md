@@ -272,6 +272,11 @@ A `List<Result<T, E>>` adds its own operators: `combine()` sequences the list in
 
 `Builder`/`PassedBuilder`/`FailedBuilder` live in `kiit.result.builders`. Extensible machinery to implement (directly, or via `Outcomes`/`Options`/`Tries`), not something most callers import directly. `Outcomes`/`Options`/`Tries`/`Validations` stay in `kiit.result` alongside `Result`/`Success`/`Failure`, since those are the ready-made, everyday API.
 
+:::tip[Builders]
+1. **Prefer builders**: Use `restricted()`/`invalid()`/... (via `Outcomes`/`Options`/`Tries`) for everyday construction.
+2. **Constructor is advanced**: The raw `Success`/`Failure` constructor is a no-ceremony escape hatch, not the default path.
+:::
+
 | Builder | Status group | Default Code |
 |---|---|---|
 | `success(value)` | `Passed.Succeeded` | `Succeeded.SUCCESS` |
@@ -283,7 +288,24 @@ A `List<Result<T, E>>` adds its own operators: `combine()` sequences the list in
 | `rejected(...)` | `Failed.Rejected` | `Rejected.RULE_VIOLATION` |
 | `unserved(...)` | `Failed.Unserved` | `Unserved.UNEXPECTED` |
 
-`excluded()` builds a **`Success`**, not a `Failure`. An intentionally excluded item (deduplicated, disqualified, filtered out) is a kiit-codes `Passed.Excluded` status, not a failure. There's no separate `conflict()`, it's `rejected(status = Rejected.CONFLICT)`, since a conflict is just a specific `Rejected` outcome, not its own category.
+```kotlin
+import kiit.codes.Err
+import kiit.codes.Rejected
+import kiit.result.Outcomes
+
+// Success(42), default status Succeeded.SUCCESS
+val ok = Outcomes.success(42)
+// Failure, default status Rejected.RULE_VIOLATION
+val bad = Outcomes.rejected("duplicate entry")
+// Failure, explicit status, default message
+val conflict = Outcomes.rejected(Rejected.CONFLICT)
+// Failure, plain message wrapped as Err, explicit status
+val withMessage = Outcomes.rejected(Err.of("duplicate entry"), Rejected.CONFLICT)
+// Failure, field-specific Err, explicit status
+val withField = Outcomes.rejected(
+    Err.on("email", "a@b.com", "already registered"), Rejected.CONFLICT
+)
+```
 
 `Options` also adds `some(value)`/`none(...)` on top of the generic builders above, a discoverable `Some`/`None`-style pair for `Option<T>` specifically. `none()` defaults to `Rejected.NOT_EXISTS`, distinct from the generic `Unserved.UNEXPECTED` fallback:
 
@@ -342,7 +364,7 @@ kiit-result's design comes down to six ideas:
 | 5 | **AI Benefits** | The same closed `status` vocabulary shows up on both branches, so a model reading or generating code against kiit-result has one exhaustive pattern to match against, on `Success` and `Failure` alike, rather than a bespoke shape per library. |
 | 6 | **Scope** | kiit-result aims for a reasonable learning curve on everyday application code, not a category-theory-complete FP toolkit. `Option`/`Try`/`Outcome`/`Validated` are practical specializations of one `Result<T, E>`, familiar names with pragmatic semantics. Full category-theory abstractions (applicatives, monad transformers) are a different, valid goal, just not this library's. |
 
-There are also two ways to build a value, a plain constructor and `Builder<E>`, because they serve different situations: the constructor is for no-ceremony construction with no `Builder` in scope, `Builder<E>` is the status-aware convenience path when implementing `Outcomes`/`Options`/`Tries` or a custom class.
+There are also two ways to build a value: prefer `Builder<E>` (via `Outcomes`/`Options`/`Tries`) for everyday construction; the plain constructor is a no-ceremony escape hatch for when no `Builder` is in scope, not the default path.
 
 <Spacer />
 
@@ -580,6 +602,12 @@ when (result) {
 ### Using Status
 
 `result.status` is itself a closed hierarchy: `Passed` or `Failed` at the top, each with four further subtypes. Nesting a `when` inside a `when` gets exhaustiveness at both levels. Capture `result.status` into a local `val` first, so the compiler can smart-cast it reliably inside the nested `when` too. See [Concepts > Status](#status) for the full set of subtypes.
+
+:::info[Status]
+1. **Not "done"**: `Success<T>` means a `Passed` status, not "the operation completed"
+2. **Still a success**: `Pending` (queued) or `Excluded` (intentionally skipped) are a `Success`, not a lesser kind of failure.
+3. **Independent facts**: `status` and `error` are independent fields of `Failure`, and don't have to agree. See [Relationship](#relationship).
+:::
 
 ```kotlin
 import kiit.codes.Excluded
@@ -886,6 +914,11 @@ bad.transform({ Success("value: $it") }, { Success("error: ${it.message}") })
 
 `Outcomes` (and `Options`/`Tries`/`Validations`, one per alias) implement `PassedBuilder<E>`/`FailedBuilder<E>`, so every group below is called the same way regardless of which alias it's building. See [Concepts > Builders](#builders) for the full overload list and the default status each one applies.
 
+:::tip[Builders]
+1. **Prefer builders**: Use `restricted()`/`invalid()`/... (via `Outcomes`/`Options`/`Tries`) for everyday construction.
+2. **Constructor is advanced**: The raw `Success`/`Failure` constructor is a no-ceremony escape hatch, not the default path.
+:::
+
 **Passed group** (`success`/`pending`/`excluded`/`information`), building a `Success`:
 
 ```kotlin
@@ -1097,7 +1130,7 @@ Generic type params require `AnyObject` (box `Int`/`String` as `KotlinInt`/`NSSt
 | **Why does `Success` carry a status too, not just `Failure`?** | Most Result types treat success as inert, just a value. Here `Success.status: Passed` distinguishes "succeeded," "succeeded but pending," and "succeeded but excluded" instead of flattening them all to `true`. |
 | **Why is `E` still fully generic instead of locked to kiit-codes' `Err`?** | So `Try<T>`, `Option<T>`, `Outcome<T>`, and `Validated<T>` can all share one `Result<T, E>` rather than needing separate types. |
 | **Doesn't `status` need to match `error`, semantically?** | No, they answer different questions about the same `Failure`: `status` is what kind of outcome this is, `error` is what happened. Neither is derived from the other, the same way an HTTP response's status code isn't derived from its body text. See [Relationship](#relationship) for the full reasoning. |
-| **Why two ways to build a value (constructor vs. `Builder<E>`) instead of one?** | They serve different situations: the constructor is for no-ceremony construction with no `Builder` in scope; `Builder<E>` is the status-aware convenience path when implementing `Outcomes`/`Options`/`Tries` or a custom class. |
+| **Why two ways to build a value (constructor vs. `Builder<E>`) instead of one?** | `Builder<E>` (via `Outcomes`/`Options`/`Tries`) is the preferred, everyday path. The plain constructor is a no-ceremony escape hatch for when no `Builder` is in scope, an advanced path, not the default. |
 
 <Spacer />
 
