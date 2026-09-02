@@ -759,6 +759,15 @@ ok.onSuccess { println("got $it") }
 bad.onFailure { err -> println("failed: ${err.message}") }
 ```
 
+Every operator here is `inline`, so a `suspend` function call works fine inside their lambdas, sequential coroutine composition needs no special handling:
+
+```kotlin
+// fetchOrder and chargeCard are themselves suspend functions
+suspend fun processOrder(orderId: String): Outcome<Receipt> =
+    Outcomes.attempt { fetchOrder(orderId) }
+        .flatMap { order -> chargeCard(order) }
+```
+
 <Spacer />
 
 ### Ops: Getters
@@ -1283,6 +1292,7 @@ Generic type params require `AnyObject` (box `Int`/`String` as `KotlinInt`/`NSSt
 | **How is this different from Kotlin's own `kotlin.Result`?** | stdlib `Result` has one type param and always uses `Throwable` as the error; it isn't a sealed hierarchy meant for pattern matching. kiit-result is a real two-branch sealed type with a flexible error type and a status on both branches. |
 | **Isn't `Option<T> = Result<T, Unit>` a strange use of the name "Option"?** | It's a deliberate adaptation: the same historical role as Rust/Scala/Arrow's `Option`, reimagined so absence carries a `status` explaining why instead of a bare `None`. `Options.some(value)`/`Options.none()` make that explicit. |
 | **Does this replace exceptions?** | No. `Result<T, E>` is for expected, application-level outcomes; exceptions still belong at exception boundaries and for genuinely exceptional conditions. `Try<T>` and the conversions (`toTry()`/`Tries.of`) exist to interoperate between the two, not replace one with the other. See [Cross an exception boundary](#cross-an-exception-boundary). |
+| **Does `Result` support coroutines?** | Yes, for sequential composition: `Result<T, E>` is just a return type, so any `suspend fun` can return one, and since `map`/`flatMap`/`fold`/etc. are all `inline`, a `suspend` call works fine inside their lambdas too, no special handling needed. Coroutine-specific *concurrent* composition and cancellation-safety machinery, running steps in parallel and cancelling siblings on failure, is a different problem, deliberately out of scope, see the [Coroutine module](#exclusions) exclusion. |
 
 <Spacer />
 
