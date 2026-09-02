@@ -97,6 +97,8 @@ import kiit.result.Outcomes
 class UserService {
     private val users = mutableMapOf<String, User>()
 
+    // Alias Outcome<User> = Result<User, Err>
+    // Err is an error type from kiit-codes.
     fun create(id: String, email: String): Outcome<User> = when {
         // Restricted: a reserved id, not allowed
         id == "admin" -> Outcomes.restricted(Restricted.DENIED)
