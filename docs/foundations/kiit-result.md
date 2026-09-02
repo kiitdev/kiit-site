@@ -213,17 +213,17 @@ Attach it via `result.withAction(action, chain = true)`. Chaining links to whate
 3. **<ConceptTermLink href="https://github.com/kiitdev/kiit-result/blob/main/kiit-result/src/commonMain/kotlin/kiit/result/Aliases.kt#L24">Try</ConceptTermLink>**: Exception as the error type, the shape used when crossing an exception-only boundary.
 4. **<ConceptTermLink href="https://github.com/kiitdev/kiit-result/blob/main/kiit-result/src/commonMain/kotlin/kiit/result/Aliases.kt#L17">Option</ConceptTermLink>**: The historical `Option`/`Maybe` role (Rust/Scala/Arrow), reimagined so absence carries a `status` explaining why, not just a bare `None`. `Options.some(value)`/`Options.none()` are the entry points.
 
-:::info
-1. **Intention**: `Validated<T>` collects every error found instead of stopping at the first, for validating a whole form or request at once.
-2. **Just an alias**: `Validated<T> = Result<T, Err.ErrorList>` is a type alias on `Result<T, E>`, not a separate applicative type.
-3. **Reinterpretation**: Category-theory's `Validated` is typically its own accumulating-applicative abstraction, distinct from `Either`. Here it's a practical specialization of the same monadic `Result`, not that abstraction.
+:::info[Validated&lt;T&gt;]
+1. **Intention**: `Validated<T>` collects every error instead of stopping at the first, for validating a whole request at once.
+2. **Just an alias**: Just a type alias on `Result<T, E>`, not a separate applicative type.
+3. **Adaptation**: Category-theory's `Validated` is typically its own accumulating-applicative abstraction, distinct from `Either`. Here it's a practical specialization of the same monadic `Result`, not that abstraction.
 :::
 
-:::info
+:::info[Option&lt;T&gt;]
 1. **Intention**: `Option<T>` expresses presence of a value, not just success/failure.
-2. **Presence**: `Success<T>` means the value is present.
-3. **Absence**: `Failure<Unit>` means it's absent, a **failure of presence**.
-4. **Reinterpretation**: A deliberate reinterpretation of `Option`/`Maybe`, not literal category-theory semantics.
+2. **Presence**: `Success<T>` means the value is present, a **success in presence**.
+3. **Absence**: `Failure<Unit>` means the value is absent, a **failure in presence**.
+4. **Adaptation**: A deliberate adaptation of `Option`/`Maybe`, not literal category-theory semantics.
 5. **Practicality**: Familiar names, practical semantics, these aliases don't attempt to replicate category-theory abstractions.
 :::
 
@@ -973,11 +973,13 @@ bad.getErrorOrNull()
 
 `Option<T> = Result<T, Unit>` reimagines the historical `Option`/`Maybe` role on `Result`, so absence carries a `status` explaining why instead of a bare `None`. `Options.some`/`Options.none` are the entry points.
 
+
 :::info
 1. **Intention**: `Option<T>` expresses presence of a value, not just success/failure.
-2. **Presence**: `Success<T>` means a value is present, a **success in presence**.
-3. **Absence**: `Failure<Unit>` means a value absent, a **failure of presence**.
-4. **Reinterpretation**: A deliberate reinterpretation of `Option`/`Maybe`, not literal category-theory semantics.
+2. **Presence**: `Success<T>` means the value is present, a **success in presence**.
+3. **Absence**: `Failure<Unit>` means the value is absent, a **failure in presence**.
+4. **Adaptation**: A deliberate adaptation of `Option`/`Maybe`, not literal category-theory semantics.
+5. **Practicality**: Familiar names, practical semantics, these aliases don't attempt to replicate category-theory abstractions.
 :::
 
 ```kotlin
@@ -1004,8 +1006,8 @@ missing.status
 
 :::info
 1. **Intention**: `Validated<T>` collects every error instead of stopping at the first, for validating a whole request at once.
-2. **Just an alias**: This is just a type alias for `Result<T, Err.ErrorList>` is a type alias not a separate applicative type.
-3. **Reinterpretation**: Category-theory's `Validated` is typically its own accumulating-applicative abstraction, distinct from `Either`. Here it's a practical specialization of the same monadic `Result`, not that abstraction.
+2. **Just an alias**: Just a type alias on `Result<T, E>`, not a separate applicative type.
+3. **Adaptation**: Category-theory's `Validated` is typically its own accumulating-applicative abstraction, distinct from `Either`. Here it's a practical specialization of the same monadic `Result`, not that abstraction.
 :::
 
 ```kotlin
