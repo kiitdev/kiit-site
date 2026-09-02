@@ -611,6 +611,12 @@ when (val status = result.status) {
 
 Attach an `Action` when a result is produced, then read it back for logging or debugging. Chaining links a new `Action` to whatever one was already there, so a caller several layers up can see the whole path an operation took. `map`/`mapError` carry an existing `Action` forward automatically; `flatMap` doesn't, since the new `Result` comes from caller-supplied code, so reattach it explicitly there if it needs to carry through.
 
+:::danger[Action]
+1. **Scope**: `Action` is a lightweight context bag (name, correlation id, attributes, previous link) by design.
+2. **Not observability**: This is not meant to replace tracing/telemetry systems (e.g. OpenTelemetry).
+3. **Use case**: Most useful for debugging or response structures, showing the operational context associated with a result.
+:::
+
 ```kotlin
 import kiit.result.Action
 import kiit.result.Outcome
