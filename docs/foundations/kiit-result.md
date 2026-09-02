@@ -541,15 +541,17 @@ import kiit.codes.Invalid
 import kiit.codes.Rejected
 import kiit.codes.Succeeded
 
-fun createUser(id: String, email: String): Result<User, Err> = when {
-    email.isBlank() -> Failure(Err.on("email", email, "email is required"), Invalid.BAD_REQUEST)
-    users.containsKey(id) -> Failure(Err.of("user already exists"), Rejected.CONFLICT)
-    else -> {
-        val user = User(id, email)
-        users[id] = user
-        Success(user, Succeeded.CREATED)
+fun createUser(id: String, email: String): Result<User, Err> =
+    // now attaching an explicit status to each branch
+    when {
+        email.isBlank() -> Failure(Err.on("email", email, "email is required"), Invalid.BAD_REQUEST)
+        users.containsKey(id) -> Failure(Err.of("user already exists"), Rejected.CONFLICT)
+        else -> {
+            val user = User(id, email)
+            users[id] = user
+            Success(user, Succeeded.CREATED)
+        }
     }
-}
 ```
 
 `status` and `error`/value are independent facts about the same branch, see [Relationship](#relationship). See [Concepts > Status](#status) for the full set of kinds on each side.
@@ -563,15 +565,17 @@ Picking a status by hand for every branch gets repetitive once a function has mo
 ```kotlin
 import kiit.result.Outcomes
 
-fun createUser(id: String, email: String): Result<User, Err> = when {
-    email.isBlank() -> Outcomes.invalid(Err.on("email", email, "email is required"))
-    users.containsKey(id) -> Outcomes.rejected(Err.of("user already exists"), Rejected.CONFLICT)
-    else -> {
-        val user = User(id, email)
-        users[id] = user
-        Outcomes.success(user, Succeeded.CREATED)
+fun createUser(id: String, email: String): Result<User, Err> =
+    // now using Outcomes builders instead of manual Success/Failure calls
+    when {
+        email.isBlank() -> Outcomes.invalid(Err.on("email", email, "email is required"))
+        users.containsKey(id) -> Outcomes.rejected(Err.of("user already exists"), Rejected.CONFLICT)
+        else -> {
+            val user = User(id, email)
+            users[id] = user
+            Outcomes.success(user, Succeeded.CREATED)
+        }
     }
-}
 ```
 
 `Outcomes.invalid(err)` defaults to `Invalid.INVALID_VALUE` when no status is given, close enough here to leave out; `rejected`/`success` still pass theirs explicitly since `CONFLICT`/`CREATED` are more specific than those methods' own defaults (`Rejected.RULE_VIOLATION`/`Succeeded.SUCCESS`). See [Concepts > Builders](#builders) for the full method list.
@@ -585,6 +589,7 @@ Every version of `createUser` above has actually been returning an `Outcome<User
 ```kotlin
 import kiit.result.Outcome
 
+// same code, now returning Outcome<User> instead of Result<User, Err>
 fun createUser(id: String, email: String): Outcome<User> = when {
     email.isBlank() -> Outcomes.invalid(Err.on("email", email, "email is required"))
     users.containsKey(id) -> Outcomes.rejected(Err.of("user already exists"), Rejected.CONFLICT)
@@ -614,6 +619,7 @@ An `Action` is optional context on top of everything so far, which operation pro
 ```kotlin
 import kiit.result.Action
 
+// now attaching an Action recording which operation produced this
 fun createUser(id: String, email: String): Outcome<User> =
     when {
         email.isBlank() -> Outcomes.invalid(Err.on("email", email, "email is required"))
@@ -642,6 +648,7 @@ result.action?.action
 import kiit.codes.CodesToHttp
 
 val conflict = createUser("bob", "bob@example.com")
+// map the result's status to an HTTP status code
 val httpCode = CodesToHttp().toCode(conflict.status)
 // 409, from Rejected.CONFLICT's own default
 ```
@@ -1245,17 +1252,16 @@ result.getErrorOrNull()?.errors?.size
 2. **Approach 2**: one sealed type spanning both branches, deciding `Success` or `Failure` at runtime from its own status. Useful when every outcome, passed or failed, genuinely belongs to one concept, at the cost of that signature-level clarity.
 
 :::note[HasStatus]
-1. **Not yet in kiit-codes**: `HasStatus<S : Status>` currently lives in `kiit.result`, alongside where `HasErrors` already lives in kiit-codes, its intended long-term home.
-2. **Wiring isn't automatic**: `success(value)`/`failure(error)` read a domain type's own `.status`; the plain `Success(value)`/`Failure(error)` constructors still default status independently, see [Relationship](#relationship).
+Wiring isn't automatic: `success(value)`/`failure(error)` read a domain type's own `.status`; the plain `Success(value)`/`Failure(error)` constructors still default status independently, see [Relationship](#relationship).
 :::
 
 **Approach 1: Preferred.** Two sealed hierarchies, each carrying its own status:
 
 ```kotlin
 import kiit.codes.Failed
+import kiit.codes.HasStatus
 import kiit.codes.Passed
 import kiit.codes.Unserved
-import kiit.result.HasStatus
 import kiit.result.Result
 import kiit.result.failure
 import kiit.result.success
@@ -1301,9 +1307,9 @@ The signature alone answers "what can this return": a `CreateUserSuccess` varian
 
 ```kotlin
 import kiit.codes.Failed
+import kiit.codes.HasStatus
 import kiit.codes.Passed
 import kiit.codes.Status
-import kiit.result.HasStatus
 import kiit.result.Result
 import kiit.result.build
 
