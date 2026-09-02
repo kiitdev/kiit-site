@@ -27,7 +27,12 @@ kiit-result's `Result<T, E>` exists so a caller knows the kind of success or fai
 
 `Outcome<T>`, `Try<T>`, `Option<T>`, and `Validated<T>` are simply aliases on this one type, ensuring a consistent approach. Each just sets the error shape for its respective use case.
 
-A set of builder functions pick the right status for you: call `restricted()` for an unauthorized caller, `invalid()` for bad input, and so on, so the status matches the error without having to build one by hand. An optional `Action` can ride along too, recording which operation produced a result so a failure several layers deep is easy to identify. The same small, fixed vocabulary on every branch also makes code easier for a model to read or generate correctly, one predictable shape instead of a bespoke one per library. See [Philosophy](#philosophy) for the full rationale.
+A set of builder functions pick the right status for you: call `restricted()` for an unauthorized caller, `invalid()` for bad input, and so on, so the status matches the error without having to build one by hand. See [Philosophy](#philosophy) for the full rationale.
+
+:::tip[Start Simple]
+1. **Start here**: Adopt `Result<T, E>` on its own first, everything else here is optional.
+2. **Adopt gradually**: Add `Status`, `Aliases`, `Builders`, or `Action` only when they solve a real problem you have.
+:::
 
 <Spacer />
 
@@ -36,9 +41,9 @@ A set of builder functions pick the right status for you: call `restricted()` fo
 | Source | What it contributes |
 |---|---|
 | [Scala](https://www.scala-lang.org/api/current/scala/util/Either.html) | `Either`/`Try`, precedent for a flexible-error-type Result distinct from a bare `Option` |
-| [Rust](https://doc.rust-lang.org/std/result/enum.Result.html) | `Result<T, E>`'s two-branch monadic shape, and most of the operator vocabulary (`map`, `and_then`, `unwrap`) |
+| [Rust](https://doc.rust-lang.org/std/result/enum.Result.html) | `Result<T, E>`'s two-branch monadic shape, and most of the operators (`map`, `and_then`, `unwrap`) |
 | [kotlin-result](https://github.com/michaelbull/kotlin-result) | Kotlin-idiomatic naming for that same operator set (`getOr`, `recover`, `combine`, `partition`) |
-| [kiit-codes](https://www.kiit.dev/docs/kiit-codes) | The closed status taxonomy fused onto both branches, kiit-result's actual differentiator from every Result type above |
+| [kiit-codes](https://www.kiit.dev/docs/kiit-codes) | The closed status taxonomy on both branches, kiit-result's actual differentiator from every Result type |
 
 <Spacer />
 
@@ -142,6 +147,11 @@ See [`samples/sample-kotlin`](https://github.com/kiitdev/kiit-result/tree/main/s
 | **Builders** | Status-aware factory methods for `Success`/`Failure` | <MoreLink label="More" href="#builders" /> |
 | **Conversions** | `toOutcome()`/`toTry()`, crossing between error-type shapes | <MoreLink label="More" href="#conversions" /> |
 | **Status** | kiit-codes' `Passed`/`Failed` taxonomy, attached to every `Result` | <MoreLink label="More" href="#status" /> |
+
+:::tip[Start Simple]
+1. **Start here**: Adopt `Result<T, E>` on its own first, the rest of the table above is optional.
+2. **Adopt gradually**: Add `Status`, `Aliases`, `Builders`, or `Action` only when they solve a real problem you have.
+:::
 
 {/* TODO: Concepts diagram — export the Result<T,E> branching / Status taxonomy / Aliases
     panel from assets/kiit-result.drawio (kiit-result repo) to
