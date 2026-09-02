@@ -968,7 +968,7 @@ bad.getErrorOrNull()?.message
 :::warning[Try&lt;T&gt;]
 1. **Intention**: `Try<T>` uses a `Throwable` as the error type, for compatibility with exception-based code.
 2. **Compatibility**: Use this for interoperating with code that only uses exceptions, without a manual `try`/`catch`.
-3. **Drop-in for `kotlin.Result`**: Replaces Kotlin's `kotlin.Result<T>`, while adding `status` and kiit-result's operators.
+3. **Alternative**: Replaces Kotlin's `kotlin.Result<T>`, while adding `status` and kiit-result's operators.
 :::
 
 ```kotlin
