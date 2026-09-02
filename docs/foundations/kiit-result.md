@@ -801,6 +801,8 @@ outer.action?.action
 outer.action?.previous?.action
 ```
 
+`::createUser.name`/`::processOrder.name` read each function's own name via a property reference instead of a hand-typed string, compile-safe against a rename that a plain string would silently miss.
+
 <Spacer />
 
 ### Ops: Core
