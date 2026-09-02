@@ -1246,6 +1246,7 @@ Generic type params require `AnyObject` (box `Int`/`String` as `KotlinInt`/`NSSt
 |---|---|
 | **How is this different from Kotlin's own `kotlin.Result`?** | stdlib `Result` has one type param and always uses `Throwable` as the error; it isn't a sealed hierarchy meant for pattern matching. kiit-result is a real two-branch sealed type with a flexible error type and a status on both branches. |
 | **Isn't `Option<T> = Result<T, Unit>` a strange use of the name "Option"?** | It's a deliberate adaptation: the same historical role as Rust/Scala/Arrow's `Option`, reimagined so absence carries a `status` explaining why instead of a bare `None`. `Options.some(value)`/`Options.none()` make that explicit. |
+| **Does this replace exceptions?** | No. `Result<T, E>` is for expected, application-level outcomes; exceptions still belong at exception boundaries and for genuinely exceptional conditions. `Try<T>` and the conversions (`toTry()`/`Tries.of`) exist to interoperate between the two, not replace one with the other. See [Cross an exception boundary](#cross-an-exception-boundary). |
 
 <Spacer />
 
