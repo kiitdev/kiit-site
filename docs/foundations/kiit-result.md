@@ -767,7 +767,7 @@ val grpc = CodesToGrpc()
 // result = userService.create("alice", "alice@example.com"), from Branching above
 // 201, from Succeeded.CREATED's override
 http.toCode(result.status)
-// 7, PERMISSION_DENIED, the Restricted group's default
+// 0, OK, every Passed status maps to 0
 grpc.toCode(result.status)
 ```
 
