@@ -494,7 +494,7 @@ This tutorial uses a single `createUser` function that grows through each step b
 
 ### Result&lt;T,E&gt;
 
-Before anything else, this is the mechanism everything below builds on: a `Success<T>` or a `Failure<E>`, built directly, no status picked, no builder, no alias in play yet.
+Before anything else, this is the mechanism everything below builds on: a `Success<T>` or a `Failure<E>`, built directly, using the default status, with no builder or alias in play yet.
 
 ```kotlin
 import kiit.codes.Err
