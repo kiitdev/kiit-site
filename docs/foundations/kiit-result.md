@@ -501,6 +501,7 @@ import kiit.codes.Err
 import kiit.result.Failure
 import kiit.result.Result
 import kiit.result.Success
+import kiit.result.flatMap
 import kiit.result.map
 import kiit.result.onFailure
 import kiit.result.onSuccess
@@ -518,17 +519,29 @@ fun createUser(id: String, email: String): Result<User, Err> = when {
         Success(user)
     }
 }
-```
 
-```kotlin
-createUser("alice", "alice@example.com")
-    .map { it.email }
-    .onSuccess { println("registered: $it") }
+val result = createUser("alice", "alice@example.com")
+
+// 1. Check: branch directly on the two shapes a Result<T, E> has
+when (result) {
+    is Success -> println("registered: ${result.value.email}")
+    is Failure -> println("could not register: ${result.error.message}")
+}
+
+// 2. Operations: map/flatMap transform the value without leaving that shape
+result.map { it.email }
+// Success("alice@example.com")
+result.flatMap { user -> Success(user.email) }
+// Success("alice@example.com")
+
+// 3. onSuccess/onFailure: run a side effect, return the Result unchanged either way
+result
+    .onSuccess { user -> println("registered: ${user.email}") }
     .onFailure { err -> println("could not register: ${err.message}") }
 // registered: alice@example.com
 ```
 
-`Success`/`Failure` are the only two shapes a `Result<T, E>` has. `map` only touches the `Success` branch, `onSuccess`/`onFailure` run a side effect and return the `Result` unchanged either way. Every step below adds one more layer on top of exactly this, nothing underneath it changes.
+`Success`/`Failure` are the only two shapes a `Result<T, E>` has, direct enough to `when`-branch on. `map`/`flatMap` transform the value without leaving that shape. `onSuccess`/`onFailure` run a side effect and return the `Result` unchanged either way. Every step below adds one more layer on top of exactly this, nothing underneath it changes.
 
 <Spacer />
 
@@ -721,6 +734,7 @@ import kiit.codes.Restricted
 import kiit.codes.Succeeded
 import kiit.codes.Unserved
 
+// result = userService.create("alice", "alice@example.com"), from Branching above
 when (val status = result.status) {
     is Passed -> when (status) {
         is Succeeded -> println("succeeded: ${status.name}")
@@ -750,6 +764,7 @@ import kiit.codes.CodesToHttp
 val http = CodesToHttp()
 val grpc = CodesToGrpc()
 
+// result = userService.create("alice", "alice@example.com"), from Branching above
 // 201, from Succeeded.CREATED's override
 http.toCode(result.status)
 // 7, PERMISSION_DENIED, the Restricted group's default
