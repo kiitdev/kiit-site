@@ -23,7 +23,7 @@ Every `Success` and `Failure` carries a status classifying the kind of outcome, 
 
 ### Goals
 
-kiit-result's `Result<T, E>` exists so a caller knows the kind of success or failure, not just whether one happened. A `status` rides on both branches, not just `Failure`, closing a gap that `null` and thrown exceptions both leave unfilled: neither can say why something failed, or that it succeeded but was excluded, say, because of a duplicate.
+kiit-result's `Result<T, E>` exists so a caller knows the kind of success or failure, not just whether one happened. A `status` rides on both branches, not just `Failure`, closing a gap that `null` and thrown exceptions both leave unfilled: neither can say why something failed, or distinguish a completed success from an acceptable exclusion such as a duplicate.
 
 `Outcome<T>`, `Try<T>`, `Option<T>`, and `Validated<T>` are simply aliases on this one type, ensuring a consistent approach. Each just sets the error shape for its respective use case.
 
