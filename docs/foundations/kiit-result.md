@@ -29,11 +29,6 @@ kiit-result's `Result<T, E>` exists so a caller knows the kind of success or fai
 
 A set of builder functions pick the right status for you: call `restricted()` for an unauthorized caller, `invalid()` for bad input, and so on, so the status matches the error without having to build one by hand. See [Philosophy](#philosophy) for the full rationale.
 
-:::tip[Start Simple]
-1. **Start here**: Adopt `Result<T, E>` on its own first, everything else here is optional.
-2. **Adopt gradually**: Add `Status`, `Aliases`, `Builders`, or `Action` only when they solve a real problem you have.
-:::
-
 <Spacer />
 
 ### Inspiration
@@ -193,6 +188,7 @@ Every `Result` carries a `status`, not just `Failure`. `Success<T>.status` is a 
 1. **Not "done"**: `Success<T>` means a `Passed` status, not "the operation completed"
 2. **Still a success**: `Pending` (queued) or `Excluded` (intentionally skipped) are a `Success`, not a lesser kind of failure.
 3. **Independent facts**: `status` and `error` are independent fields of `Failure`, and don't have to agree. See [Relationship](#relationship).
+4. **Optional to manage**: Builders apply a sensible default status when none is supplied, so nothing else is required.
 :::
 
 This hierarchy belongs to kiit-codes, not kiit-result. See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#taxonomy) for the full set of groups and codes. <MoreLink label="Using it" href="#using-status" />
@@ -212,7 +208,7 @@ This hierarchy belongs to kiit-codes, not kiit-result. See the [kiit-codes docs]
 
 Attach it via `result.withAction(action, chain = true)`. Chaining links to whatever action is already present by default, which is what makes it useful for pinpointing which layer failed inside a nested call chain. Once attached, `action` survives `map`/`mapError`/`toOutcome()`/`toTry()`, the same as `status` does.
 
-:::danger[Action]
+:::warning[Action]
 1. **Scope**: `Action` is a lightweight context bag (name, correlation id, attributes, previous link) by design.
 2. **Not observability**: This is not meant to replace tracing/telemetry systems (e.g. OpenTelemetry).
 3. **Use case**: Most useful for debugging or response structures, showing the operational context associated with a result.
@@ -363,18 +359,25 @@ val d = Validations.of(form, errorsFound)
 
 ### Philosophy
 
-kiit-result's design comes down to six ideas:
+kiit-result's design comes down to five ideas. Each builds on the one before it: `Status` classifies an outcome, `Builders` make that classification practical to produce, `Aliases` adapt the whole thing to common application shapes, `Action` adds optional context on top, and `Scope` states what's deliberately left out.
 
 | # | Idea | Description |
 |---:|---|---|
 | 1 | **Status** | Most Result types treat success as inert, just a value. Here, `Success.status: Passed` distinguishes "succeeded," "succeeded but pending," and "succeeded but excluded," instead of flattening every success down to a bare `true` (see [Status](#status) for the full set of kinds on each side). This is the one idea without a direct precedent in Rust, Swift, or kotlin-result, and the reason kiit-result exists as its own type rather than reusing one of those. |
-| 2 | **Aliases** | `E` stays fully generic rather than locked to kiit-codes' `Err`, so `Outcome<T>`, `Try<T>`, `Option<T>`, and `Validated<T>` can all share one `Result<T, E>` instead of needing four separate types. Each alias just fixes `E` to the error shape a given situation calls for, with a matching builder already wired up. |
-| 3 | **Builders** | Builders like `restricted(err)`, `invalid(err)`, and `rejected(err)` pick a sensible default `status` for you, so the common case needs no separate classification step. `status` and `error` are independent facts about the same `Failure`, not a pair that has to agree, see [Relationship](#relationship). |
+| 2 | **Builders** | Builders like `restricted(err)`, `invalid(err)`, and `rejected(err)` pick a sensible default `status` for you, so the common case needs no separate classification step. `status` and `error` are independent facts about the same `Failure`, not a pair that has to agree, see [Relationship](#relationship). |
+| 3 | **Aliases** | `E` stays fully generic rather than locked to kiit-codes' `Err`, so `Outcome<T>`, `Try<T>`, `Option<T>`, and `Validated<T>` can all share one `Result<T, E>` instead of needing four separate types. Each alias just fixes `E` to the error shape a given situation calls for, with a matching builder already wired up. `Outcome<T>` is the default reach for most code; `Try<T>` is for exception boundaries and compatibility specifically, not discouraged, just situational. |
 | 4 | **Action** | An optional `Action` records which operation produced or wrapped a `Result`, and chaining links a new one to whatever was already there. It's the one idea that isn't about `status` at all, lightweight context for identifying which layer produced or failed a result inside a nested call chain. |
-| 5 | **AI Benefits** | The same closed `status` vocabulary shows up on both branches, so a model reading or generating code against kiit-result has one exhaustive pattern to match against, on `Success` and `Failure` alike, rather than a bespoke shape per library. |
-| 6 | **Scope** | kiit-result aims for a reasonable learning curve on everyday application code, not a category-theory-complete FP toolkit. `Option`/`Try`/`Outcome`/`Validated` are practical specializations of one `Result<T, E>`, familiar names with pragmatic semantics. Full category-theory abstractions (applicatives, monad transformers) are a different, valid goal, just not this library's. |
+| 5 | **Scope** | kiit-result aims for a reasonable learning curve on everyday application code, not a category-theory-complete FP toolkit. `Option`/`Try`/`Outcome`/`Validated` are practical specializations of one `Result<T, E>`, familiar names with pragmatic semantics. Full category-theory abstractions (applicatives, monad transformers) are a different, valid goal, just not this library's. |
+
+The same closed `status` vocabulary also shows up on both branches, a side benefit worth naming: a model reading or generating code against kiit-result has one exhaustive pattern to match against, on `Success` and `Failure` alike, rather than a bespoke shape per library.
 
 There are also two ways to build a value: prefer `Builder<E>` (via `Outcomes`/`Options`/`Tries`) for everyday construction; the plain constructor is a no-ceremony escape hatch for when no `Builder` is in scope, not the default path.
+
+:::tip[Start Simple]
+1. **Status first**: `Result<T, E>` with `Status` alone covers most needs, everything below is additive.
+2. **Builders next**: Reach for `Outcomes`/`Options`/`Tries` once constructing values by hand gets repetitive.
+3. **Then as needed**: `Aliases` and `Action` are optional layers, adopt each only when it solves a real problem, in the same order they build on each other above.
+:::
 
 <Spacer />
 
@@ -385,7 +388,7 @@ There are also two ways to build a value: prefer `Builder<E>` (via `Outcomes`/`O
 1. **`status`**: what kind of outcome this is (see [Status](#status) for the full set on each branch), for branching, protocol mapping (`CodesToHttp`/`CodesToGrpc`), and log severity.
 2. **`error`**: what happened, in whatever detail the situation calls for, a message, a field, a wrapped exception, or a domain-specific type.
 
-The clearest comparison is an HTTP response: a `500` can carry "database timeout" or "null pointer in payment processing," and nobody considers it a defect that HTTP doesn't validate the body against the code. The status answers how a caller should behave; the body answers what a human needs to debug it. `status` and `error` play the same two roles here.
+The clearest comparison is an HTTP response: a `500` can carry "database timeout" or "null pointer in payment processing," and nobody considers it a defect that HTTP doesn't validate the body against the code. The status classifies the outcome; the body provides the specific details. `status` and `error` play the same two roles here.
 
 Deriving `status` from `error`'s content would also remove a real degree of freedom: the same `Err` can legitimately be `Restricted` in one call site and `Rejected` in another, depending on what the calling code is actually deciding, not a fact recoverable from the error text alone.
 
@@ -487,85 +490,184 @@ Swift's standard library `Result` is deliberately minimal: `map`/`mapError`/`fla
 
 ## Tutorial
 
-A single `UserService` grows through each step below, no prior Concepts or Design knowledge required.
+This tutorial uses a single `createUser` function that grows through each step below, layering on exactly the five ideas from [Philosophy](#philosophy) in order, then closing with a [Responses](#responses-httpgrpc) mapping. No prior Concepts or Design knowledge required.
 
-### Create
+### Result&lt;T,E&gt;
+
+Before anything else, this is the mechanism everything below builds on: a `Success<T>` or a `Failure<E>`, built directly, no status picked, no builder, no alias in play yet.
 
 ```kotlin
 import kiit.codes.Err
-import kiit.codes.Rejected
-import kiit.result.Outcome
-import kiit.result.Outcomes
+import kiit.result.Failure
+import kiit.result.Result
+import kiit.result.Success
+import kiit.result.flatMap
+import kiit.result.map
+import kiit.result.onFailure
+import kiit.result.onSuccess
 
 data class User(val id: String, val email: String)
 
-class UserService {
-    private val users = mutableMapOf<String, User>()
+private val users = mutableMapOf<String, User>()
 
-    fun create(id: String, email: String): Outcome<User> = when {
-        email.isBlank() -> Outcomes.invalid(Err.on("email", email, "email is required"))
-        users.containsKey(id) -> Outcomes.rejected(Rejected.CONFLICT)
+fun createUser(id: String, email: String): Result<User, Err> = when {
+    email.isBlank() -> Failure(Err.on("email", email, "email is required"))
+    users.containsKey(id) -> Failure(Err.of("user already exists"))
+    else -> {
+        val user = User(id, email)
+        users[id] = user
+        Success(user)
+    }
+}
+
+val result = createUser("alice", "alice@example.com")
+
+// 1. Check: branch directly on the two shapes a Result<T, E> has
+when (result) {
+    is Success -> println("registered: ${result.value.email}")
+    is Failure -> println("could not register: ${result.error.message}")
+}
+
+// 2. Operations: map/flatMap transform the value without leaving that shape
+result.map { it.email }
+// Success("alice@example.com")
+result.flatMap { user -> Success(user.email) }
+// Success("alice@example.com")
+
+// 3. onSuccess/onFailure: run a side effect, return the Result unchanged either way
+result
+    .onSuccess { user -> println("registered: ${user.email}") }
+    .onFailure { err -> println("could not register: ${err.message}") }
+// registered: alice@example.com
+```
+
+`Success`/`Failure` are the only two shapes a `Result<T, E>` has, direct enough to `when`-branch on. `map`/`flatMap` transform the value without leaving that shape. `onSuccess`/`onFailure` run a side effect and return the `Result` unchanged either way. Every step below adds one more layer on top of exactly this, nothing underneath it changes.
+
+<Spacer />
+
+### Add the Status
+
+`Success(user)` and `Failure(err)` above already carry a `Status`, just an unpicked default (`Succeeded.SUCCESS`, `Unserved.UNEXPECTED`). Naming it turns each branch into something a caller can classify and act on, not just succeed or fail:
+
+```kotlin
+import kiit.codes.Invalid
+import kiit.codes.Rejected
+import kiit.codes.Succeeded
+
+fun createUser(id: String, email: String): Result<User, Err> =
+    // now attaching an explicit status to each branch
+    when {
+        email.isBlank() -> Failure(Err.on("email", email, "email is required"), Invalid.BAD_REQUEST)
+        users.containsKey(id) -> Failure(Err.of("user already exists"), Rejected.CONFLICT)
         else -> {
             val user = User(id, email)
             users[id] = user
-            Outcomes.success(user)
+            Success(user, Succeeded.CREATED)
         }
+    }
+```
+
+`status` and `error`/value are independent facts about the same branch, see [Relationship](#relationship). See [Concepts > Status](#status) for the full set of kinds on each side.
+
+<Spacer />
+
+### Add the Builders
+
+Picking a status by hand for every branch gets repetitive once a function has more than one or two. `Outcomes` bundles the common cases into one call, each pre-filled with a sensible default status:
+
+```kotlin
+import kiit.result.Outcomes
+
+fun createUser(id: String, email: String): Result<User, Err> =
+    // now using Outcomes builders instead of manual Success/Failure calls
+    when {
+        email.isBlank() -> Outcomes.invalid(Err.on("email", email, "email is required"))
+        users.containsKey(id) -> Outcomes.rejected(Err.of("user already exists"), Rejected.CONFLICT)
+        else -> {
+            val user = User(id, email)
+            users[id] = user
+            Outcomes.success(user, Succeeded.CREATED)
+        }
+    }
+```
+
+`Outcomes.invalid(err)` defaults to `Invalid.INVALID_VALUE` when no status is given, close enough here to leave out; `rejected`/`success` still pass theirs explicitly since `CONFLICT`/`CREATED` are more specific than those methods' own defaults (`Rejected.RULE_VIOLATION`/`Succeeded.SUCCESS`). See [Concepts > Builders](#builders) for the full method list.
+
+<Spacer />
+
+### Add the Alias
+
+Every version of `createUser` above has actually been returning an `Outcome<User>` the whole time, `Outcome<T>` is just `Result<T, Err>` named for its own common case. Swapping the signature is the entire change:
+
+```kotlin
+import kiit.result.Outcome
+
+// same code, now returning Outcome<User> instead of Result<User, Err>
+fun createUser(id: String, email: String): Outcome<User> = when {
+    email.isBlank() -> Outcomes.invalid(Err.on("email", email, "email is required"))
+    users.containsKey(id) -> Outcomes.rejected(Err.of("user already exists"), Rejected.CONFLICT)
+    else -> {
+        val user = User(id, email)
+        users[id] = user
+        Outcomes.success(user, Succeeded.CREATED)
     }
 }
 ```
 
-`create` returns an `Outcome<User>` (`Result<User, Err>`) instead of throwing for either expected failure. `invalid`/`rejected`/`success` are `Outcomes` builder methods (`FailedBuilder`/`PassedBuilder` under the hood). Each pre-fills the right kiit-codes status, and `invalid` here carries a real `Err` instead of a bare status.
-
-<Spacer />
-
-### Fetch and compose
+`Outcome<T>` is the default reach for most application code (see [Philosophy](#philosophy)). At an exception boundary, `Try<T>` is the alias for that instead:
 
 ```kotlin
-import kiit.codes.Invalid
-import kiit.result.Outcome
-import kiit.result.Outcomes
-
-fun fetch(id: String): Outcome<User> = users[id]?.let { Outcomes.success(it) } ?: Outcomes.invalid(Invalid.NOT_FOUND)
-```
-
-```kotlin
-userService.create("alice", "alice@example.com")
-    .map { it.email }
-    .onSuccess { println("registered: $it") }
-    .onFailure { err -> println("could not register: ${err.message}") }
-```
-
-`map` only touches the `Success` branch. `onSuccess`/`onFailure` run a side effect and return the `Result` unchanged, so the chain reads top-to-bottom regardless of which branch it's actually on.
-
-<Spacer />
-
-### Authorize
-
-```kotlin
-import kiit.codes.Restricted
-import kiit.result.Outcome
-import kiit.result.Outcomes
-import kiit.result.flatMap
-
-fun authorize(id: String, requesterId: String): Outcome<User> =
-    fetch(id).flatMap { user ->
-        if (user.id != requesterId) Outcomes.restricted(Restricted.UNAUTHORIZED) else Outcomes.success(user)
-    }
-```
-
-`flatMap` chains a second `Result`-returning step onto the first. `fetch`'s `Failure` (a missing user) short-circuits past `authorize`'s own check entirely, so the `Restricted.UNAUTHORIZED` branch is only reached once a user was actually found.
-
-<Spacer />
-
-### Cross an exception boundary
-
-```kotlin
-// Wraps a Failure<Err> into a Failure<StatusException> from kiit-codes
-val asTry = userService.fetch("missing").toTry()
+val asTry = createUser("alice", "alice@example.com").toTry()
 asTry.onFailure { ex -> println("caught: ${ex.message}") }
 ```
 
-`toTry()` is the escape hatch for a caller that only understands exceptions. See [Conversions](#conversions) for the full mapping, and [Philosophy](#philosophy) for why `E` stays generic instead of locking every `Result` to one error shape.
+`toTry()` converts a `Failure<Err>` into a `Failure<StatusException>`, the escape hatch for a caller that only understands exceptions. See [Conversions](#conversions) for the full mapping.
+
+<Spacer />
+
+### Add the Action
+
+An `Action` is optional context on top of everything so far, which operation produced this particular `Result`, useful once `createUser` is called from more than one place:
+
+```kotlin
+import kiit.result.Action
+
+fun createUser(id: String, email: String): Outcome<User> =
+    when {
+        email.isBlank() -> Outcomes.invalid(Err.on("email", email, "email is required"))
+        users.containsKey(id) -> Outcomes.rejected(Err.of("user already exists"), Rejected.CONFLICT)
+        else -> {
+            val user = User(id, email)
+            users[id] = user
+            Outcomes.success(user, Succeeded.CREATED)
+        }
+    }
+        // now attaching an Action recording which operation produced this
+        .withAction(Action(action = ::createUser.name, data = mapOf("email" to email)))
+
+val result = createUser("bob", "bob@example.com")
+result.action?.action
+// "createUser"
+```
+
+`::createUser.name` reads the function's own name via a property reference instead of a hand-typed string, so a rename can't leave a stale `action` behind. `Action` doesn't change `status` or the `error`/value at all, it's a lightweight, separate record. See [Using Action](#using-action) for chaining across nested calls.
+
+<Spacer />
+
+### Add the Response (HTTP/gRPC)
+
+`createUser`'s `status` is now specific enough to map straight onto a transport response. `Result` itself stays out of that mapping, kiit-codes' `CodesToHttp`/`CodesToGrpc` do it instead:
+
+```kotlin
+import kiit.codes.CodesToHttp
+
+val conflict = createUser("bob", "bob@example.com")
+// map the result's status to an HTTP status code
+val httpCode = CodesToHttp().toCode(conflict.status)
+// 409, from Rejected.CONFLICT's own default
+```
+
+See [Responses (HTTP/gRPC)](#responses-httpgrpc) for the full body shape, and [Domain Errors](#domain-errors) for giving `createUser` its own custom status codes instead of kiit-codes' built-in ones.
 
 <BackToTop />
 
@@ -577,7 +679,7 @@ asTry.onFailure { ex -> println("caught: ${ex.message}") }
 2. **Pipelines**: `map`/`flatMap` chains compose without manual null/exception checks at each step.
 3. **Validation**: `Validated<T>` (`Result<T, Err.ErrorList>`) collects multiple errors via `Validations`.
 4. **Exception boundaries**: `toTry()`/`Tries.of` interop with `StatusException` when a caller only understands exceptions.
-5. **HTTP/gRPC responses**: `result.status` converts via kiit-codes' `CodesToHttp`/`CodesToGrpc`.
+5. **HTTP/gRPC responses**: `result.status` converts via kiit-codes' `CodesToHttp`/`CodesToGrpc`. See [Responses (HTTP/gRPC)](#responses-httpgrpc).
 
 **Good fit if:**
 1. Explicit, monadic return values instead of throw/catch for expected failures are wanted.
@@ -617,6 +719,7 @@ when (result) {
 1. **Not "done"**: `Success<T>` means a `Passed` status, not "the operation completed"
 2. **Still a success**: `Pending` (queued) or `Excluded` (intentionally skipped) are a `Success`, not a lesser kind of failure.
 3. **Independent facts**: `status` and `error` are independent fields of `Failure`, and don't have to agree. See [Relationship](#relationship).
+4. **Optional to manage**: Builders apply a sensible default status when none is supplied, so nothing else is required.
 :::
 
 ```kotlin
@@ -631,6 +734,7 @@ import kiit.codes.Restricted
 import kiit.codes.Succeeded
 import kiit.codes.Unserved
 
+// result = userService.create("alice", "alice@example.com"), from Branching above
 when (val status = result.status) {
     is Passed -> when (status) {
         is Succeeded -> println("succeeded: ${status.name}")
@@ -649,11 +753,48 @@ when (val status = result.status) {
 
 <Spacer />
 
+### Responses (HTTP/gRPC)
+
+`Result` doesn't own transport mapping, that's kiit-codes' job. Map `result.status` through `CodesToHttp`/`CodesToGrpc` at the boundary where you actually need a status code, keeping the two concerns separate. See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#protocols) for the full mapping tables.
+
+```kotlin
+import kiit.codes.CodesToGrpc
+import kiit.codes.CodesToHttp
+
+val http = CodesToHttp()
+val grpc = CodesToGrpc()
+
+// result = userService.create("alice", "alice@example.com"), from Branching above
+// 201, from Succeeded.CREATED's override
+http.toCode(result.status)
+// 7, PERMISSION_DENIED, the Restricted group's default
+grpc.toCode(result.status)
+```
+
+The numeric code (`409` here) becomes the actual HTTP status; the body carries kiit-codes' own status detail plus any field-level errors, for example, `EMAIL_TAKEN` (a custom `Rejected` code, see [Domain Errors](#domain-errors)). Shape the body however fits your API, this is just one reasonable structure:
+
+```json
+{
+    "status": {
+        "success": false,
+        "name": "EMAIL_TAKEN",
+        "group": "Rejected",
+        "origin": "users",
+        "message": "Email is already registered"
+    },
+    "errors": [
+        { "field": "email", "message": "Duplicate email" }
+    ]
+}
+```
+
+<Spacer />
+
 ### Using Action
 
 Attach an `Action` when a result is produced, then read it back for logging or debugging. Chaining links a new `Action` to whatever one was already there, so a caller several layers up can see the whole path an operation took. `map`/`mapError` carry an existing `Action` forward automatically; `flatMap` doesn't, since the new `Result` comes from caller-supplied code, so reattach it explicitly there if it needs to carry through.
 
-:::danger[Action]
+:::warning[Action]
 1. **Scope**: `Action` is a lightweight context bag (name, correlation id, attributes, previous link) by design.
 2. **Not observability**: This is not meant to replace tracing/telemetry systems (e.g. OpenTelemetry).
 3. **Use case**: Most useful for debugging or response structures, showing the operational context associated with a result.
@@ -665,7 +806,7 @@ import kiit.result.Outcome
 
 fun createUser(id: String, email: String): Outcome<User> =
     userService.create(id, email)
-        .withAction(Action(action = "createUser", xid = "req-42", data = mapOf("email" to email)))
+        .withAction(Action(action = ::createUser.name, xid = "req-42", data = mapOf("email" to email)))
 
 val result = createUser("u1", "alice@example.com")
 // "createUser"
@@ -676,12 +817,14 @@ result.action?.xid
 result.action?.data
 
 // chaining: a new Action's `previous` links back to whatever Action was already there
-val outer = result.withAction(Action(action = "processOrder"))
+val outer = result.withAction(Action(action = ::processOrder.name))
 // "processOrder", the current operation
 outer.action?.action
 // "createUser", the operation this one wrapped
 outer.action?.previous?.action
 ```
+
+`::createUser.name`/`::processOrder.name` read each function's own name via a property reference instead of a hand-typed string, compile-safe against a rename that a plain string would silently miss.
 
 <Spacer />
 
@@ -717,6 +860,15 @@ bad.exists { it > 0 }
 ok.onSuccess { println("got $it") }
 // skipped, returns bad unchanged
 bad.onFailure { err -> println("failed: ${err.message}") }
+```
+
+Every operator here is `inline`, so a `suspend` function call works fine inside their lambdas, sequential coroutine composition needs no special handling:
+
+```kotlin
+// fetchOrder and chargeCard are themselves suspend functions
+suspend fun processOrder(orderId: String): Outcome<Receipt> =
+    Outcomes.attempt { fetchOrder(orderId) }
+        .flatMap { order -> chargeCard(order) }
 ```
 
 <Spacer />
@@ -1108,6 +1260,98 @@ result.getErrorOrNull()?.errors?.size
 
 <Spacer />
 
+### Domain Errors
+
+`E` doesn't have to be `Err`, a plain string, or an exception, it can be your own sealed domain error hierarchy, with each variant paired to its own kiit-codes status via a small `HasStatus` interface, instead of choosing one per call site. The same pattern applies to `T` when successful outcomes also need domain-specific variants. There are two approaches to combining the two:
+
+1. **Approach 1, preferred**: a separate sealed type per branch. The signature itself, `Result<CreateUserSuccess, CreateUserError>`, tells a caller every value and every error an operation can produce, without reading its body.
+2. **Approach 2**: one sealed type spanning both branches, deciding `Success` or `Failure` at runtime from its own status. Useful when every outcome, passed or failed, genuinely belongs to one concept, at the cost of that signature-level clarity.
+
+:::note[HasStatus]
+Wiring isn't automatic: `success(value)`/`failure(error)` read a domain type's own `.status`; the plain `Success(value)`/`Failure(error)` constructors still default status independently, see [Relationship](#relationship).
+:::
+
+**Approach 1: Preferred.** Two sealed hierarchies, each carrying its own status:
+
+```kotlin
+import kiit.codes.Failed
+import kiit.codes.HasStatus
+import kiit.codes.Passed
+import kiit.codes.Unserved
+import kiit.result.Result
+import kiit.result.failure
+import kiit.result.success
+
+// Succeeded codes
+val USER_CREATED = Passed.Succeeded(name = "USER_CREATED", message = "User account created", origin = "users")
+val QUEUED_FOR_REVIEW = Passed.Pending(name = "QUEUED_FOR_REVIEW", message = "Flagged for manual review", origin = "users")
+
+// Failed codes
+val EMAIL_TAKEN = Failed.Rejected(name = "EMAIL_TAKEN", message = "Email is already registered", origin = "users")
+val INVALID_EMAIL = Failed.Invalid(name = "INVALID_EMAIL", message = "Email format is invalid", origin = "users")
+val UNAUTHORIZED_CREATE = Failed.Restricted(name = "UNAUTHORIZED_CREATE", message = "Not authorized to create users", origin = "users")
+
+// Sealed domain success: every way this operation can succeed
+sealed class CreateUserSuccess(override val status: Passed) : HasStatus<Passed> {
+    data class Created(val email: String) : CreateUserSuccess(USER_CREATED)
+    data class QueuedForReview(val email: String) : CreateUserSuccess(QUEUED_FOR_REVIEW)
+}
+
+// Sealed domain error: every way this operation can fail
+sealed class CreateUserError(override val status: Failed) : HasStatus<Failed> {
+    data class EmailTaken(val email: String) : CreateUserError(EMAIL_TAKEN)
+    data class InvalidEmail(val email: String) : CreateUserError(INVALID_EMAIL)
+    object Unauthorized : CreateUserError(UNAUTHORIZED_CREATE)
+    data class DatabaseUnavailable(val cause: Throwable) : CreateUserError(Unserved.UNEXPECTED)
+}
+
+fun createUser(
+    email: String,
+    isAuthorized: Boolean,
+    needsReview: Boolean,
+): Result<CreateUserSuccess, CreateUserError> = when {
+    !isAuthorized -> failure(CreateUserError.Unauthorized)
+    !email.contains("@") -> failure(CreateUserError.InvalidEmail(email))
+    needsReview -> success(CreateUserSuccess.QueuedForReview(email))
+    else -> success(CreateUserSuccess.Created(email))
+}
+```
+
+The signature alone answers "what can this return": a `CreateUserSuccess` variant or a `CreateUserError` variant, nothing else. `success()`/`failure()` read each variant's own `.status`, so `createUser(...).status` is always the right kiit-codes category for whichever variant came back.
+
+**Approach 2.** When every outcome, passed or failed, genuinely belongs to one enumeration, a single sealed type can cover both branches, with `build()` inspecting its status at runtime instead of `success()`/`failure()` choosing a branch at compile time:
+
+```kotlin
+import kiit.codes.Failed
+import kiit.codes.HasStatus
+import kiit.codes.Passed
+import kiit.codes.Status
+import kiit.result.Result
+import kiit.result.build
+
+// Succeeded code
+val ORDER_PLACED = Passed.Succeeded(name = "ORDER_PLACED", message = "Order placed", origin = "orders")
+// Failed code
+val ORDER_OUT_OF_STOCK = Failed.Rejected(name = "ORDER_OUT_OF_STOCK", message = "Item is out of stock", origin = "orders")
+
+// Sealed domain result: spans both branches, status decides Success vs Failure at runtime
+sealed class PlaceOrderResult(override val status: Status) : HasStatus<Status> {
+    data class Placed(val orderId: String) : PlaceOrderResult(ORDER_PLACED)
+    data class OutOfStock(val sku: String) : PlaceOrderResult(ORDER_OUT_OF_STOCK)
+}
+
+fun placeOrder(sku: String, inStock: Boolean): Result<PlaceOrderResult, PlaceOrderResult> =
+    build(if (inStock) PlaceOrderResult.Placed(orderId = "ord-1") else PlaceOrderResult.OutOfStock(sku))
+```
+
+:::danger[Combined Type]
+1. **Loses signature clarity**: `Result<T, T>` doesn't tell what success or failure look like, both branches the same type.
+2. **Easy to misuse**: A `Placed` variant can be on the `Failure` side, or vice versa, if `build()` is bypassed.
+3. **Prefer separate types**: Use this combined type when every outcome, passed/failed, is one concept, not by default.
+:::
+
+<Spacer />
+
 ### Swift Interop
 
 Not yet distributed via SPM/XCFramework. The framework is `.framework`-only today, built locally. Companion-less members like `Outcomes`/`Options`/`Tries` get clean `.shared` access out of the box, and this module uses [SKIE](https://skie.touchlab.co/) for real, compiler-enforced Swift exhaustiveness over `Success`/`Failure`, a genuinely flat switch simpler than kiit-codes' nested `Status` case, since `Result<T, E>` is only one sealed level deep:
@@ -1148,7 +1392,9 @@ Generic type params require `AnyObject` (box `Int`/`String` as `KotlinInt`/`NSSt
 | Question | Answer |
 |---|---|
 | **How is this different from Kotlin's own `kotlin.Result`?** | stdlib `Result` has one type param and always uses `Throwable` as the error; it isn't a sealed hierarchy meant for pattern matching. kiit-result is a real two-branch sealed type with a flexible error type and a status on both branches. |
-| **Isn't `Option<T> = Result<T, Unit>` a strange use of the name "Option"?** | A deliberate lineage, not a misuse. The same historical role as Rust/Scala/Arrow's `Option`, reimagined so absence carries a `status` explaining why instead of a bare `None`. `Options.some(value)`/`Options.none()` make that explicit. |
+| **Isn't `Option<T> = Result<T, Unit>` a strange use of the name "Option"?** | It's a deliberate adaptation: the same historical role as Rust/Scala/Arrow's `Option`, reimagined so absence carries a `status` explaining why instead of a bare `None`. `Options.some(value)`/`Options.none()` make that explicit. |
+| **Does this replace exceptions?** | No. `Result<T, E>` is for expected, application-level outcomes; exceptions still belong at exception boundaries and for genuinely exceptional conditions. `Try<T>` and the conversions (`toTry()`/`Tries.of`) exist to interoperate between the two, not replace one with the other. See [Tutorial > Add the Alias](#add-the-alias). |
+| **Does `Result` support coroutines?** | Yes, for sequential composition: `Result<T, E>` is just a return type, so any `suspend fun` can return one, and since `map`/`flatMap`/`fold`/etc. are all `inline`, a `suspend` call works fine inside their lambdas too, no special handling needed. Coroutine-specific *concurrent* composition and cancellation-safety machinery, running steps in parallel and cancelling siblings on failure, is a different problem, deliberately out of scope, see the [Coroutine module](#exclusions) exclusion. |
 
 <Spacer />
 
@@ -1159,7 +1405,7 @@ Generic type params require `AnyObject` (box `Int`/`String` as `KotlinInt`/`NSSt
 | **Why is there no `conflict()` builder?** | It was just `rejected()` with `Rejected.CONFLICT` as the default status, not its own category. Use `rejected(status = Rejected.CONFLICT)`. |
 | **Why does `excluded()` build a `Success`, not a `Failure`?** | `Excluded` is a `Passed` group in kiit-codes. An intentionally skipped, deduplicated, or disqualified item isn't a failure. |
 | **Why is `Builder<E>` split into `PassedBuilder`/`FailedBuilder`?** | Keeps each interface's surface scoped to one branch, the same reason kiit-codes keeps each group's constants on its own companion rather than one shared object. |
-| **Do I have to pick a specific `Status` every time I use a builder?** | No. The group builders all apply a sensible default when none is supplied. An explicit status is only needed when the default doesn't fit (`restricted(status = Restricted.LOCKED)`). Routine use never requires touching `Status` directly. |
+| **What if I don't care about `Status`?** | You don't have to manage it. Builders apply a sensible default when none is supplied (`Outcomes.rejected("duplicate")` defaults to `Rejected.RULE_VIOLATION`), so routine use never requires touching `Status` directly, the same gradual-adoption path as [Philosophy](#philosophy)'s Start Simple. |
 
 <Spacer />
 
@@ -1168,6 +1414,7 @@ Generic type params require `AnyObject` (box `Int`/`String` as `KotlinInt`/`NSSt
 | Question | Answer |
 |---|---|
 | **Can I use my own error type and ignore kiit-codes?** | Only partially. `E` is generic (use `Throwable`, `String`, a domain type), but `Success.status`/`Failure.status` are hard-typed to kiit-codes' `Passed`/`Failed`. There's no way to use `Result<T, E>` without a kiit-codes status on every branch. |
+| **How do I turn a `Result` into an HTTP/gRPC response?** | `Result` doesn't own transport mapping, that's kiit-codes' job. Map `result.status` through `CodesToHttp`/`CodesToGrpc` at the boundary where you actually need a status code, keeping the two concerns separate. See [Responses (HTTP/gRPC)](#responses-httpgrpc) and the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#protocols). |
 | **Does this actually work on JS and iOS today?** | kiit-result's production history is JVM/Android. JS and iOS/Swift are new targets with no production history yet, not just "unexercised" versions of something proven. JS/TS is a deliberately partial pass (`@JsExport`ed, not covered by CI or published to npm, since TypeScript can't compiler-enforce exhaustiveness). iOS uses SKIE for real, compiler-enforced Swift exhaustiveness, a materially better story than JS, including plain Kotlin `object`s (`Outcomes`/`Options`/`Tries`) getting clean `.shared` access with no extra work. |
 
 <Spacer />
