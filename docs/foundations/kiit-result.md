@@ -597,7 +597,7 @@ fun createUser(id: String, email: String): Result<User, Err> =
 
 ### Add the Alias
 
-Every version of `createUser` above has actually been returning an `Outcome<User>` the whole time, `Outcome<T>` is just `Result<T, Err>` named for its own common case. Swapping the signature is the entire change:
+Every version of `createUser` above has actually been returning an `Outcome<User>` the whole time. `Outcome<T>` is just `Result<T, Err>` named for this common case. Swapping the signature is the entire change:
 
 ```kotlin
 import kiit.result.Outcome
