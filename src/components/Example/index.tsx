@@ -14,6 +14,7 @@ import files from '@site/src/examples/kiit-codes/files';
  *    placement and metadata, and each snippet's code is a plain-text file under src/examples/kiit-codes/<id>/.
  * 3. An unknown section/topic/name throws, so a typo fails `npm run build` instead of showing an empty page.
  * 4. Tabs use groupId="language", so the choice is shared with every other language tab on the page.
+ * 5. A code block title is shown only when a language has several blocks in the topic (Maven and Gradle for Java).
  */
 interface Snippet {
   lang: string;
@@ -82,9 +83,12 @@ export default function Example({section, topic, name}: {section: string; topic:
     throw new Error(`<Example>: "${key}" has no item named "${name}".`);
   }
 
-  const tabs = LANGUAGES.map((language) => ({...language, blocks: blocksFor(items, language.value)})).filter(
-    (tab) => tab.blocks.length > 0,
-  );
+  // A title is only shown when a language has several blocks (Maven and Gradle for Java), to tell them apart.
+  // With one block the Section and Topic headings already say what it is.
+  const tabs = LANGUAGES.map((language) => {
+    const blocks = blocksFor(items, language.value);
+    return {...language, blocks: blocks.length > 1 ? blocks : blocks.map((b) => ({...b, title: undefined}))};
+  }).filter((tab) => tab.blocks.length > 0);
   const defaultValue = tabs.find((tab) => tab.value === 'kotlin')?.value ?? tabs[0].value;
 
   return (

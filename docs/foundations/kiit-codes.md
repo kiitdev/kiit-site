@@ -86,16 +86,19 @@ export, iOS/Swift export via SKIE) have less track record and are still being ex
 
 <Example section="setup" topic="install" />
 
-Artifacts:
-
-1. [Maven Central](https://central.sonatype.com/artifact/dev.kiit/kiit-codes) (Kotlin and Java)
-2. [npm](https://www.npmjs.com/package/@kiitdev/codes) (TypeScript)
+| # | Language | Artifact |
+|---:|---|---|
+| 1 | Kotlin, Java | [Maven Central](https://central.sonatype.com/artifact/dev.kiit/kiit-codes) |
+| 2 | TypeScript | [npm](https://www.npmjs.com/package/@kiitdev/codes) |
+| 3 | Swift | Swift Package Manager, link to come |
 
 <Spacer />
 
 ### Imports
 
 What to import to use the library.
+
+<Example section="setup" topic="imports" />
 
 <Spacer />
 
