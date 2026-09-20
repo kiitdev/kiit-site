@@ -449,52 +449,6 @@ or a custom protocol of your own via `CodeLookup`.
 
 <BackToTop />
 
-## Design
-
-### Philosophy
-
-A closed taxonomy keeps generic handling, exhaustive matching, logging, and protocol mappings
-consistent everywhere a status is used. Codes stay open underneath so each domain can extend the
-taxonomy freely without forking it. This doesn't replace domain modeling: domain errors explain
-*what* happened in one domain, the taxonomy explains *what kind* of outcome it was, consistently,
-across every domain in an application. `Status` is a sealed interface rather than an enum
-specifically so consumers can add their own codes while still participating in the same
-taxonomy — an enum can't be extended this way.
-
-<Spacer />
-
-### Features
-
-| # | Feature | Description |
-|---:|---|---|
-| 1 | **[Status classification](#taxonomy)** | The core `Passed`/`Failed` split, with a fixed `Group` and an open `Code` beneath it for finer-grained classification. |
-| 2 | **[Extensibility](#usage)** | Add domain-specific codes within the same fixed groups, without forking the taxonomy or losing shared meaning. |
-| 3 | **[Protocol mappings](#protocols-1)** | Map statuses to and from HTTP, gRPC, or any custom protocol via `CodeLookup`/`CompositeLookup`. |
-| 4 | **[Validation](#usage)** | `Checked`, `Err`, and `collect` report every problem found at once, instead of stopping at the first. |
-| 5 | **[Typed exceptions](#usage)** | `StatusException` and `Failed.toException()` for boundaries that only understand exceptions. |
-| 6 | **Result integration** | The separate [kiit-result](https://github.com/kiitdev/kiit-result) module builds a `Result<T, E>` type on top of this same taxonomy. |
-
-<Spacer />
-
-### Limitations
-
-| # | Limitation | Details |
-|---:|---|---|
-| 1 | AI framing is unproven | Stable names and explicit classification are expected to reduce ambiguity for AI tooling, but that's a hypothesis, not a benchmarked result. |
-| 2 | JS/TS not CI-gated | Exists but isn't CI-gated or published to npm yet; lacks the compiler-enforced exhaustiveness that Kotlin, Java, and Swift (via SKIE) get. |
-
-<Spacer />
-
-### Exclusions
-
-| # | Excluded | Reasoning |
-|---:|---|---|
-| 1 | Retry logic or severity levels | Retryability cuts across groups rather than aligning with them — `Unserved` alone has both retryable and non-retryable codes. A dedicated `Retry` category was considered and rejected for the same reason. |
-| 2 | A numeric status code field | An earlier version had one; it invited the wrong inference (looking like an HTTP code while meaning something else). Real protocol numbers are available on demand via `CodesToHttp`/`CodesToGrpc`, never implied by the taxonomy itself. |
-| 3 | A ninth group | Every gRPC code and the most common HTTP codes map onto the existing eight without needing one, tested directly against both. |
-
-<BackToTop />
-
 ## Tutorial
 
 ### Status Codes
@@ -665,38 +619,74 @@ fun requireAuthorized(id: String, requesterId: String) {
 
 ### Protocols
 
-Working code for the types introduced in [Concepts](#protocols) — mapping statuses to and from
+Working code for the types introduced in [Concepts](#protocols): mapping statuses to
 HTTP, gRPC, and a custom protocol of your own.
 
-**HTTP**, via `CodesToHttp`:
-
 ```kotlin
+// HTTP, via CodesToHttp
 val http = CodesToHttp()
-
 http.toCode(Succeeded.CREATED)      // 201
 http.toCode(Invalid.INVALID_VALUE)  // 400
-http.toStatus(404)?.name            // "NOT_FOUND"
-```
+http.toCode(Rejected.CONFLICT)      // 409
 
-**gRPC**, via `CodesToGrpc`:
-
-```kotlin
+// gRPC, via CodesToGrpc
 val grpc = CodesToGrpc()
+grpc.toCode(Restricted.DENIED)      // 7, PERMISSION_DENIED
+grpc.toCode(Rejected.CONFLICT)      // 6, ALREADY_EXISTS
 
-grpc.toCode(Restricted.DENIED)  // 7, PERMISSION_DENIED
-grpc.toStatus(6)?.name          // "CONFLICT", ALREADY_EXISTS reversed
-```
-
-**Custom protocols**, via `CodeLookup`/`CompositeLookup`:
-
-```kotlin
+// Custom protocols, via CodeLookup and CompositeLookup
 val lookup = CompositeLookup(
     base = CodesToHttp(),
     extensions = mapOf(PAYMENT_DECLINED to 402),
 )
-
-lookup.toCode(PAYMENT_DECLINED) // 402
+lookup.toCode(PAYMENT_DECLINED)     // 402
 ```
+
+<BackToTop />
+
+## Design
+
+### Philosophy
+
+A closed taxonomy keeps generic handling, exhaustive matching, logging, and protocol mappings
+consistent everywhere a status is used. Codes stay open underneath so each domain can extend the
+taxonomy freely without forking it. This doesn't replace domain modeling: domain errors explain
+*what* happened in one domain, the taxonomy explains *what kind* of outcome it was, consistently,
+across every domain in an application. `Status` is a sealed interface rather than an enum
+specifically so consumers can add their own codes while still participating in the same
+taxonomy — an enum can't be extended this way.
+
+<Spacer />
+
+### Features
+
+| # | Feature | Description |
+|---:|---|---|
+| 1 | **[Status classification](#taxonomy)** | The core `Passed`/`Failed` split, with a fixed `Group` and an open `Code` beneath it for finer-grained classification. |
+| 2 | **[Extensibility](#usage)** | Add domain-specific codes within the same fixed groups, without forking the taxonomy or losing shared meaning. |
+| 3 | **[Protocol mappings](#protocols-1)** | Map statuses to and from HTTP, gRPC, or any custom protocol via `CodeLookup`/`CompositeLookup`. |
+| 4 | **[Validation](#usage)** | `Checked`, `Err`, and `collect` report every problem found at once, instead of stopping at the first. |
+| 5 | **[Typed exceptions](#usage)** | `StatusException` and `Failed.toException()` for boundaries that only understand exceptions. |
+| 6 | **Result integration** | The separate [kiit-result](https://github.com/kiitdev/kiit-result) module builds a `Result<T, E>` type on top of this same taxonomy. |
+
+<Spacer />
+
+### Limitations
+
+| # | Limitation | Details |
+|---:|---|---|
+| 1 | AI framing is unproven | Stable names and explicit classification are expected to reduce ambiguity for AI tooling, but that's a hypothesis, not a benchmarked result. |
+| 2 | JS/TS not CI-gated | Exists but isn't CI-gated or published to npm yet; lacks the compiler-enforced exhaustiveness that Kotlin, Java, and Swift (via SKIE) get. |
+
+<Spacer />
+
+### Exclusions
+
+| # | Excluded | Reasoning |
+|---:|---|---|
+| 1 | Retry logic or severity levels | Retryability cuts across groups rather than aligning with them — `Unserved` alone has both retryable and non-retryable codes. A dedicated `Retry` category was considered and rejected for the same reason. |
+| 2 | A numeric status code field | An earlier version had one; it invited the wrong inference (looking like an HTTP code while meaning something else). Real protocol numbers are available on demand via `CodesToHttp`/`CodesToGrpc`, never implied by the taxonomy itself. |
+| 3 | A ninth group | Every gRPC code and the most common HTTP codes map onto the existing eight without needing one, tested directly against both. |
 
 <BackToTop />
 

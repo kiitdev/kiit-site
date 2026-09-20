@@ -108,47 +108,48 @@
 }
 
 /*
- * TOC-only emoji per top-level Section, matched by position rather than
- * heading text (replaces the earlier "#" anchor-style prefix — having both
- * the "#" and an emoji was too much). Deliberately NOT in the page body
- * headings themselves: an emoji there breaks Docusaurus's anchor-id slug
- * (e.g. "🎓 Tutorial" slugs to "-tutorial", not "tutorial", breaking every
- * #tutorial-style link), and the standard markdown fix for that
- * ({#tutorial}) in turn breaks MDX parsing in a file that already uses JSX
- * components like this one does. Position-based means this only stays
- * correct as long as every doc page follows the fixed Overview -> Setup ->
- * Concepts -> Design -> Tutorial -> Guide -> FAQ section order from the docs
- * template — if that order ever changes, these need updating to match.
+ * TOC-only emoji per top-level Section, matched by the Section's anchor (the link's `#design`, `#tutorial`, ...)
+ * rather than by its position or its heading text. Deliberately NOT in the page body headings themselves: an emoji
+ * there breaks Docusaurus's anchor-id slug (e.g. "🎓 Tutorial" slugs to "-tutorial", not "tutorial", breaking every
+ * #tutorial-style link), and the standard markdown fix for that ({#tutorial}) in turn breaks MDX parsing in a file
+ * that already uses JSX components like this one does. Keying on the anchor means the order of the Sections on a
+ * page doesn't matter, so a page can move a Section (Design now follows Guide) without touching this.
  */
-.table-of-contents.table-of-contents__left-border > li:nth-child(-n + 7) > .table-of-contents__link::before {
+.table-of-contents.table-of-contents__left-border > li > a[href$='#overview']::before,
+.table-of-contents.table-of-contents__left-border > li > a[href$='#setup']::before,
+.table-of-contents.table-of-contents__left-border > li > a[href$='#concepts']::before,
+.table-of-contents.table-of-contents__left-border > li > a[href$='#tutorial']::before,
+.table-of-contents.table-of-contents__left-border > li > a[href$='#guide']::before,
+.table-of-contents.table-of-contents__left-border > li > a[href$='#design']::before,
+.table-of-contents.table-of-contents__left-border > li > a[href$='#faq']::before {
   margin-right: 0.35rem;
 }
 
-.table-of-contents.table-of-contents__left-border > li:nth-child(1) > .table-of-contents__link::before {
+.table-of-contents.table-of-contents__left-border > li > a[href$='#overview']::before {
   content: '💡';
 }
 
-.table-of-contents.table-of-contents__left-border > li:nth-child(2) > .table-of-contents__link::before {
+.table-of-contents.table-of-contents__left-border > li > a[href$='#setup']::before {
   content: '🚀';
 }
 
-.table-of-contents.table-of-contents__left-border > li:nth-child(3) > .table-of-contents__link::before {
+.table-of-contents.table-of-contents__left-border > li > a[href$='#concepts']::before {
   content: '🗂️';
 }
 
-.table-of-contents.table-of-contents__left-border > li:nth-child(4) > .table-of-contents__link::before {
-  content: '🏗️';
-}
-
-.table-of-contents.table-of-contents__left-border > li:nth-child(5) > .table-of-contents__link::before {
+.table-of-contents.table-of-contents__left-border > li > a[href$='#tutorial']::before {
   content: '🎓';
 }
 
-.table-of-contents.table-of-contents__left-border > li:nth-child(6) > .table-of-contents__link::before {
+.table-of-contents.table-of-contents__left-border > li > a[href$='#guide']::before {
   content: '⚙️';
 }
 
-.table-of-contents.table-of-contents__left-border > li:nth-child(7) > .table-of-contents__link::before {
+.table-of-contents.table-of-contents__left-border > li > a[href$='#design']::before {
+  content: '🏗️';
+}
+
+.table-of-contents.table-of-contents__left-border > li > a[href$='#faq']::before {
   content: '❓';
 }
 

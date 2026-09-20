@@ -53,21 +53,37 @@ Listed in top-to-bottom order as they appear on the page:
 14. **TOC Entry** — a single link within the TOC, at either the Section or
     Topic level.
 15. **Section Icon** — the small emoji glyph prefixed to a Section's TOC
-    Entry (applied positionally via CSS, see Section 8.2 below). Distinct
+    Entry (applied via CSS keyed to the Section's anchor, see Section 8.2 below). Distinct
     from the general-purpose `Icon` component, which wraps Tabler icons for
     use in page body content, not the TOC.
 
 ## 2. Docs Page Structure
 
 1. **Fixed Section order** — every module docs page follows the same skeleton:
-   `Overview → Setup → Concepts → Design → Tutorial → Guide`, per
-   `_templates/docs-template.md`. Don't reorder or skip a Section.
+   `Overview → Setup → Concepts → Tutorial → Guide → Design`, then `FAQ`.
+   Don't reorder or skip a Section. The order reads as: what it is, get it
+   running, the vocabulary, a first walkthrough, tasks you'll do, and only
+   then why it's built this way. `Design` comes after `Guide` because a
+   first-time reader needs its rationale least, and it overlaps `Overview`'s
+   Goals. Status: `kiit-codes` follows this order. `kiit-result` and
+   `_templates/docs-template.md` still have `Design` before `Tutorial` and
+   move when they are updated.
 2. **Diátaxis discipline per Section** — `Concepts` is bare reference only (no
    rationale, no narrative). `Design` is rationale/explanation only (no
    step-by-step instructions). `Tutorial` is the one guided, hands-on first win,
    requiring no prior Concepts/Design knowledge. `Guide` is how-to, assuming
    existing competence.
-3. **Versioned URL path** — the intended final URL shape is `/docs/v1/{module}`
+3. **Code lives in Setup, Tutorial and Guide only** — `Concepts` and `Design`
+   have no code blocks. `Concepts` is tables and diagrams (what every Status
+   carries, the eight groups, the eight default codes), and `Design` is prose
+   and diagrams. Where a term is an API shape, show it as a table, not code.
+4. **Setup Topics** — `Install` (the code, plus a table of the published
+   artifacts by language), `Imports`, `Source`, `Example`.
+5. **Code examples come from the sample apps** — a code block in the page is
+   an `<Example section="..." topic="..." />` (see Section 4 and `SETUP.md`),
+   not code typed into the page, so the docs can't drift from the library. A
+   block that is still hand-written is being converted, one Topic at a time.
+6. **Versioned URL path** — the intended final URL shape is `/docs/v1/{module}`
    once the two-instance versioned docs plugin setup lands (Step 4 of the
    redesign plan). Until then, pages live under the default single docs
    instance with an explicit `slug` frontmatter field pinning the URL (see
@@ -149,6 +165,15 @@ never registered globally.
    either way), so this produces identical H1 behavior to the markdown
    syntax it replaces.
 
+9. **`Example`** — shows a code example in one tab per language (Kotlin, Java,
+   TypeScript, Swift), looked up by `section` and `topic`. The code comes
+   from the kiit-codes sample apps through `npm run examples`, see
+   `SETUP.md`. An unknown `section`/`topic` throws, so a typo fails the build.
+   A code block title only shows when a language has several blocks.
+10. **`TocCollapse`** — the state and the "Expand all / Collapse all" buttons
+    for the right-hand TOC. Used by the swizzled `TOC` and `TOCItems/Tree`
+    (Section 11), not imported by a doc page.
+
 ## 5. Theming & Color
 
 1. **Group colors match the taxonomy diagram exactly** — `groupColors` in
@@ -227,12 +252,11 @@ never registered globally.
    `tutorial`, breaking every `#tutorial`-style link), and the standard
    markdown fix for that (`{#tutorial}`) in turn breaks MDX parsing in any
    file that already uses JSX components — which every doc page here does.
-2. **Emoji live in the TOC only, applied positionally via CSS** — a `::before`
-   pseudo-element keyed to each top-level TOC entry's position
-   (`:nth-child(1)` through `(6)`), not its text content. This only stays
-   correct as long as every doc page follows the fixed 6-Section order from
-   Section 2.1 — if that order ever changes, the CSS needs updating to
-   match.
+2. **Emoji live in the TOC only, keyed to the Section's anchor via CSS** — a
+   `::before` pseudo-element on each top-level TOC entry's link, matched by
+   its anchor (`a[href$='#design']`, `#tutorial`, ...), not by its position or
+   its text. That keeps the order of the Sections free to change, and a page
+   with fewer than all the Sections still gets the right emoji.
 
 ## 9. Blog
 
@@ -262,3 +286,19 @@ never registered globally.
 4. **No git commits or pushes performed on the user's behalf** — all
    commits, pushes, and branch operations are left for the user to do
    themselves.
+
+## 11. Swizzled Theme Files
+
+Copies of `@docusaurus/theme-classic` files (currently 3.10.2) that this site
+changes. Everything not listed here is the stock theme.
+
+1. **`src/theme/TOC/`** — adds the collapse provider and the "Expand all /
+   Collapse all" buttons to the right-hand TOC.
+2. **`src/theme/TOCItems/Tree.tsx`** — adds a toggle button to each Section
+   entry that has Topics, and hides its Topics while collapsed. Without a
+   provider (mobile and inline TOCs) it renders like the original.
+3. **Upgrades:** on a Docusaurus upgrade, diff these files against the new
+   originals.
+4. **Restart the dev server** after adding or removing a file under
+   `src/theme/`. Docusaurus reads theme overrides at startup and hot reload
+   doesn't see new ones.
