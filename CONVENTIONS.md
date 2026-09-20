@@ -234,6 +234,12 @@ never registered globally.
    subsequent rows for the same group leave that cell blank rather than
    repeating the badge.
 
+4. **The Defaults table shows the group on every row** — `Concepts > Defaults`
+   (`Group | Alias | Code | Description`) has exactly one row per group, so
+   the `GroupBadge` repeats instead of collapsing to a first row as in the
+   Passed/Failed tables. Its Descriptions are the codes' own messages, the
+   same text as in those tables.
+
 ## 7. Linking & Cross-References
 
 1. **Source links use the right GitHub URL shape for what they point at** —

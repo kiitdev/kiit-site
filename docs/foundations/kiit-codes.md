@@ -339,6 +339,27 @@ and every built-in code within each.
 
 <Spacer />
 
+### Defaults
+
+Each group has one default code, for when nothing more specific applies. `DEFAULT` on a group is an alias for that
+code, so `Succeeded.DEFAULT` is `Succeeded.SUCCESS`: the same instance, not a separate code.
+
+| Group | Alias | Code | Description |
+|---|---|---|---|
+| <GroupBadge group="Succeeded" /> | `Succeeded.DEFAULT` | <CodeBadge>SUCCESS</CodeBadge> | The operation completed successfully. |
+| <GroupBadge group="Pending" /> | `Pending.DEFAULT` | <CodeBadge>ACCEPTED</CodeBadge> | The request was accepted. |
+| <GroupBadge group="Excluded" /> | `Excluded.DEFAULT` | <CodeBadge>OMITTED</CodeBadge> | The item was excluded from the result. |
+| <GroupBadge group="Information" /> | `Information.DEFAULT` | <CodeBadge>NOTICE</CodeBadge> | An informational notice. |
+| <GroupBadge group="Restricted" /> | `Restricted.DEFAULT` | <CodeBadge>DENIED</CodeBadge> | The request was denied. |
+| <GroupBadge group="Invalid" /> | `Invalid.DEFAULT` | <CodeBadge>INVALID_VALUE</CodeBadge> | The request had an invalid value. |
+| <GroupBadge group="Rejected" /> | `Rejected.DEFAULT` | <CodeBadge>RULE_VIOLATION</CodeBadge> | A business rule rejected the request. |
+| <GroupBadge group="Unserved" /> | `Unserved.DEFAULT` | <CodeBadge>UNEXPECTED</CodeBadge> | An unexpected, unclassified error occurred. |
+
+`isDefault` is true for a group's default code and for no other. It compares by value, so a copy with any field
+changed, such as the message, is not the default.
+
+<Spacer />
+
 ### Err
 
 Error representation for use with Validation, Exceptions, and Result types. This stores instance level error details and the building block for `Checked`'s error list.
