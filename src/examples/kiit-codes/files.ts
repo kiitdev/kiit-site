@@ -3,12 +3,16 @@ import f0 from './setup-install/kotlin.text';
 import f1 from './setup-install/java-1.text';
 import f2 from './setup-install/java-2.text';
 import f3 from './setup-install/typescript.text';
+import f4 from './setup-imports/kotlin.text';
+import f5 from './setup-imports/typescript.text';
 
 const files: Record<string, string> = {
   'setup-install/kotlin.text': f0,
   'setup-install/java-1.text': f1,
   'setup-install/java-2.text': f2,
   'setup-install/typescript.text': f3,
+  'setup-imports/kotlin.text': f4,
+  'setup-imports/typescript.text': f5,
 };
 
 export default files;

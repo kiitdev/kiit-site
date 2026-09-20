@@ -15,7 +15,7 @@
               {
                 "lang": "kotlin",
                 "title": "build.gradle.kts",
-                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:24",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:26",
                 "file": "setup-install/kotlin.text"
               }
             ],
@@ -39,6 +39,35 @@
                 "title": "terminal",
                 "source": "samples/sample-ts/src/index.ts:9",
                 "file": "setup-install/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "setup/imports": {
+      "section": "setup",
+      "topic": "imports",
+      "items": [
+        {
+          "id": "setup-imports",
+          "kind": "code",
+          "tags": [
+            "setup"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:6",
+                "file": "setup-imports/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "ts",
+                "source": "samples/sample-ts/src/index.ts:17",
+                "file": "setup-imports/typescript.text"
               }
             ]
           }
