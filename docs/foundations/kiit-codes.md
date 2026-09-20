@@ -13,6 +13,8 @@ import MoreLink from '@site/src/components/MoreLink';
 import Spacer from '@site/src/components/Spacer';
 import PageTitle from '@site/src/components/PageTitle';
 import Icon from '@site/src/components/Icon';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 <PageTitle title="kiit-codes" logo="/img/modules/kiit-codes-logo.png" />
 
@@ -105,6 +107,9 @@ Licensed [Apache 2.0](https://github.com/kiitdev/kiit-codes/blob/main/LICENSE).
 
 ### Example
 
+<Tabs groupId="language">
+<TabItem value="kotlin" label="Kotlin">
+
 ```kotlin
 import kiit.codes.*
 
@@ -117,6 +122,66 @@ when (val status = authorize(userId, requesterId)) {
     is Failed -> log.warn("failed: ${status.name} — ${status.message}")
 }
 ```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+import kiit.codes.Status;
+import kiit.codes.Passed;
+import kiit.codes.Failed;
+
+static Status authorize(String userId, String requesterId) {
+    return !userId.equals(requesterId) ? Failed.Restricted.UNAUTHORIZED : Passed.Succeeded.SUCCESS;
+}
+
+Status status = authorize(userId, requesterId);
+switch (status) {
+    case Passed p -> log.info("ok: " + p.getName());
+    case Failed f -> log.warn("failed: " + f.getName() + " — " + f.getMessage());
+}
+```
+
+</TabItem>
+<TabItem value="typescript" label="TypeScript">
+
+```ts
+import { Succeeded, Restricted } from "@kiitdev/codes";
+import type { Status } from "@kiitdev/codes";
+
+function authorize(userId: string, requesterId: string): Status {
+  return userId !== requesterId ? Restricted.UNAUTHORIZED : Succeeded.SUCCESS;
+}
+
+const status = authorize(userId, requesterId);
+if (status.success) {
+  log.info(`ok: ${status.name}`);
+} else {
+  log.warn(`failed: ${status.name} — ${status.message}`);
+}
+```
+
+</TabItem>
+<TabItem value="swift" label="Swift">
+
+```swift
+import KiitCodes
+
+func authorize(_ userId: String, _ requesterId: String) -> Status {
+    userId != requesterId ? Failed.Restricted.companion.UNAUTHORIZED : Passed.Succeeded.companion.SUCCESS
+}
+
+let status = authorize(userId, requesterId)
+switch onEnum(of: status) {
+case .passed(let passed):
+    print("ok: \(passed.name)")
+case .failed(let failed):
+    print("failed: \(failed.name) — \(failed.message)")
+}
+```
+
+</TabItem>
+</Tabs>
 
 <BackToTop />
 
