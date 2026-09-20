@@ -113,13 +113,16 @@
  * there breaks Docusaurus's anchor-id slug (e.g. "🎓 Tutorial" slugs to "-tutorial", not "tutorial", breaking every
  * #tutorial-style link), and the standard markdown fix for that ({#tutorial}) in turn breaks MDX parsing in a file
  * that already uses JSX components like this one does. Keying on the anchor means the order of the Sections on a
- * page doesn't matter, so a page can move a Section (Design now follows Guide) without touching this.
+ * page doesn't matter, so a page can move a Section (Design now follows Guide) without touching this. `#concepts` stays for
+ * kiit-result, which has not been renamed to Explanation yet.
  */
 .table-of-contents.table-of-contents__left-border > li > a[href$='#overview']::before,
 .table-of-contents.table-of-contents__left-border > li > a[href$='#setup']::before,
 .table-of-contents.table-of-contents__left-border > li > a[href$='#concepts']::before,
+.table-of-contents.table-of-contents__left-border > li > a[href$='#explanation']::before,
 .table-of-contents.table-of-contents__left-border > li > a[href$='#tutorial']::before,
 .table-of-contents.table-of-contents__left-border > li > a[href$='#guide']::before,
+.table-of-contents.table-of-contents__left-border > li > a[href$='#reference']::before,
 .table-of-contents.table-of-contents__left-border > li > a[href$='#design']::before,
 .table-of-contents.table-of-contents__left-border > li > a[href$='#faq']::before {
   margin-right: 0.35rem;
@@ -133,7 +136,8 @@
   content: '🚀';
 }
 
-.table-of-contents.table-of-contents__left-border > li > a[href$='#concepts']::before {
+.table-of-contents.table-of-contents__left-border > li > a[href$='#concepts']::before,
+.table-of-contents.table-of-contents__left-border > li > a[href$='#explanation']::before {
   content: '🗂️';
 }
 
@@ -143,6 +147,10 @@
 
 .table-of-contents.table-of-contents__left-border > li > a[href$='#guide']::before {
   content: '⚙️';
+}
+
+.table-of-contents.table-of-contents__left-border > li > a[href$='#reference']::before {
+  content: '📚';
 }
 
 .table-of-contents.table-of-contents__left-border > li > a[href$='#design']::before {

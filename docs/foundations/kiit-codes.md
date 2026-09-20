@@ -196,7 +196,7 @@ case .failed(let failed):
 
 <BackToTop />
 
-## Concepts
+## Explanation
 
 ### Terms
 
@@ -243,8 +243,8 @@ status.group    // "Succeeded"
 
 ### Taxonomy
 
-The full `Status → Group → Code` taxonomy: every built-in `Passed` and `Failed` group,
-and every built-in code within each.
+The `Status → Group → Code` taxonomy: the two `Status` branches, the eight groups, and the codes
+within them.
 
 ![Kiit Codes taxonomy](/img/kiit-codes/kiit-codes-taxonomy.png)
 
@@ -262,101 +262,11 @@ and every built-in code within each.
 | | | | <GroupBadge group="Unserved" /> | The system can't serve it right now, though nothing was wrong with the request. |
 | 3 | <span style={{fontFamily: 'var(--ifm-font-family-monospace)', fontWeight: 800, color: 'var(--ifm-color-primary)'}}>Code</span> | <span style={{display: 'inline-flex', alignItems: 'center', gap: '0.3rem'}}><Icon name="lock-open" size={16} /> Open + Defaults</span> | | Ships with common built-in codes (e.g. `SUCCESS`, `DENIED`); extensible with custom, domain-specific codes within the same group. |
 
-<Spacer />
-
-### Passed
-
-`Passed.success == true`.
-
-| Group | Code | Description |
+| Codes | Source | Reference |
 |---|---|---|
-| <GroupBadge group="Succeeded" /> | <CodeBadge>SUCCESS</CodeBadge> | The operation completed successfully. |
-| | <CodeBadge>CREATED</CodeBadge> | A new resource was created. |
-| | <CodeBadge>UPDATED</CodeBadge> | The resource was fully updated. |
-| | <CodeBadge>PATCHED</CodeBadge> | The resource was partially updated. |
-| | <CodeBadge>FETCHED</CodeBadge> | The resource was retrieved. |
-| | <CodeBadge>DELETED</CodeBadge> | The resource was deleted. |
-| | <CodeBadge>HANDLED</CodeBadge> | The request was handled; nothing to return. |
-| | <CodeBadge>REFERRED</CodeBadge> | The result is at another location. |
-| | <CodeBadge>EXITED</CodeBadge> | The application exited cleanly. |
-| <GroupBadge group="Pending" /> | <CodeBadge>ACCEPTED</CodeBadge> | The request was accepted. |
-| | <CodeBadge>QUEUED</CodeBadge> | The request is waiting to be processed. |
-| | <CodeBadge>PROCESSING</CodeBadge> | The request is being processed. |
-| | <CodeBadge>CONFIRM</CodeBadge> | The request is awaiting confirmation. |
-| | <CodeBadge>REDIRECTED</CodeBadge> | This request is being handled elsewhere. |
-| | <CodeBadge>SCHEDULED</CodeBadge> | The operation is scheduled for later. |
-| <GroupBadge group="Excluded" /> | <CodeBadge>OMITTED</CodeBadge> | The item was excluded from the result. |
-| | <CodeBadge>SKIPPED</CodeBadge> | The item was not processed. |
-| | <CodeBadge>DISCARDED</CodeBadge> | The item was processed, then excluded for unrelated reasons. |
-| | <CodeBadge>CANCELLED</CodeBadge> | The operation was cancelled by the caller before completion. |
-| | <CodeBadge>DEDUPLICATED</CodeBadge> | The duplicate item was not processed. |
-| | <CodeBadge>DISQUALIFIED</CodeBadge> | The item was disqualified. |
-| <GroupBadge group="Information" /> | <CodeBadge>NOTICE</CodeBadge> | An informational notice. |
-| | <CodeBadge>ADVISORY</CodeBadge> | A notice that may need attention. |
-| | <CodeBadge>METADATA</CodeBadge> | Information about the application itself was returned. |
-| | <CodeBadge>HEALTH</CodeBadge> | The service is healthy and operational. |
-| | <CodeBadge>DIAGNOSTICS</CodeBadge> | Diagnostic or operational information was returned. |
-| | <CodeBadge>MOVED</CodeBadge> | The resource has permanently moved to a new location. |
-
-<Spacer />
-
-### Failed
-
-`Failed.success == false`.
-
-| Group | Code | Description |
-|---|---|---|
-| <GroupBadge group="Restricted" /> | <CodeBadge>DENIED</CodeBadge> | The request was denied. |
-| | <CodeBadge>UNAUTHENTICATED</CodeBadge> | Authentication is required. |
-| | <CodeBadge>UNAUTHORIZED</CodeBadge> | The caller lacks permission. |
-| | <CodeBadge>FORBIDDEN</CodeBadge> | Access to this resource is forbidden. |
-| | <CodeBadge>LOCKED</CodeBadge> | Access is locked; resolve the condition to restore access. |
-| | <CodeBadge>SUSPENDED</CodeBadge> | Access has been administratively suspended. |
-| <GroupBadge group="Invalid" /> | <CodeBadge>INVALID_VALUE</CodeBadge> | The request had an invalid value. |
-| | <CodeBadge>BAD_REQUEST</CodeBadge> | The request was malformed. |
-| | <CodeBadge>NOT_FOUND</CodeBadge> | The requested route or endpoint does not exist. |
-| | <CodeBadge>OUT_OF_RANGE</CodeBadge> | A value was outside the acceptable range. |
-| | <CodeBadge>PAYLOAD_TOO_LARGE</CodeBadge> | The payload is too large. |
-| | <CodeBadge>MISSING_FIELD</CodeBadge> | A required field was not provided. |
-| <GroupBadge group="Rejected" /> | <CodeBadge>RULE_VIOLATION</CodeBadge> | A business rule rejected the request. |
-| | <CodeBadge>CONFLICT</CodeBadge> | The request conflicts with the current state. |
-| | <CodeBadge>NOT_EXISTS</CodeBadge> | The referenced item does not exist. |
-| | <CodeBadge>PRECONDITION_FAILED</CodeBadge> | A required precondition was not met. |
-| | <CodeBadge>EXPIRED</CodeBadge> | The item has expired. |
-| | <CodeBadge>GONE</CodeBadge> | The resource was removed and is no longer available. |
-| <GroupBadge group="Unserved" /> | <CodeBadge>UNEXPECTED</CodeBadge> | An unexpected, unclassified error occurred. |
-| | <CodeBadge>UNSUPPORTED</CodeBadge> | This capability is not currently available. |
-| | <CodeBadge>TIMEOUT</CodeBadge> | The operation timed out. |
-| | <CodeBadge>RATE_LIMITED</CodeBadge> | Too many requests; try again later. |
-| | <CodeBadge>RESOURCE_LIMITED</CodeBadge> | A resource limit has been reached. |
-| | <CodeBadge>UNREACHABLE</CodeBadge> | A required dependency could not be reached. |
-| | <CodeBadge>UNDER_MAINTENANCE</CodeBadge> | The service is temporarily under maintenance. |
-| | <CodeBadge>INTERNAL</CodeBadge> | An internal invariant was violated. |
-| | <CodeBadge>DATA_LOSS</CodeBadge> | Unrecoverable data loss or corruption occurred. |
-| | <CodeBadge>DEGRADED</CodeBadge> | This dependency is degraded; some calls may be refused. |
-| | <CodeBadge>LEGAL_BLOCK</CodeBadge> | Access is blocked for legal reasons. |
-| | <CodeBadge>ABORTED</CodeBadge> | The operation was aborted; retrying may help. |
-
-<Spacer />
-
-### Defaults
-
-Each group has one default code, for when nothing more specific applies. `DEFAULT` on a group is an alias for that
-code, so `Succeeded.DEFAULT` is `Succeeded.SUCCESS`: the same instance, not a separate code.
-
-| Group | Alias | Code | Description |
-|---|---|---|---|
-| <GroupBadge group="Succeeded" /> | `Succeeded.DEFAULT` | <CodeBadge>SUCCESS</CodeBadge> | The operation completed successfully. |
-| <GroupBadge group="Pending" /> | `Pending.DEFAULT` | <CodeBadge>ACCEPTED</CodeBadge> | The request was accepted. |
-| <GroupBadge group="Excluded" /> | `Excluded.DEFAULT` | <CodeBadge>OMITTED</CodeBadge> | The item was excluded from the result. |
-| <GroupBadge group="Information" /> | `Information.DEFAULT` | <CodeBadge>NOTICE</CodeBadge> | An informational notice. |
-| <GroupBadge group="Restricted" /> | `Restricted.DEFAULT` | <CodeBadge>DENIED</CodeBadge> | The request was denied. |
-| <GroupBadge group="Invalid" /> | `Invalid.DEFAULT` | <CodeBadge>INVALID_VALUE</CodeBadge> | The request had an invalid value. |
-| <GroupBadge group="Rejected" /> | `Rejected.DEFAULT` | <CodeBadge>RULE_VIOLATION</CodeBadge> | A business rule rejected the request. |
-| <GroupBadge group="Unserved" /> | `Unserved.DEFAULT` | <CodeBadge>UNEXPECTED</CodeBadge> | An unexpected, unclassified error occurred. |
-
-`isDefault` is true for a group's default code and for no other. It compares by value, so a copy with any field
-changed, such as the message, is not the default.
+| Passed | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L172">Status.kt</ConceptTermLink> | [Passed](#passed) |
+| Failed | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L485">Status.kt</ConceptTermLink> | [Failed](#failed) |
+| Defaults | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt">Status.kt</ConceptTermLink> | [Defaults](#defaults) |
 
 <Spacer />
 
@@ -364,32 +274,13 @@ changed, such as the message, is not the default.
 
 Error representation for use with Validation, Exceptions, and Result types. This stores instance level error details and the building block for `Checked`'s error list.
 
-```kotlin
-sealed class Err {
-    abstract val message: String
-
-    data class ErrorInfo(override val message: String, val cause: Throwable? = null) : Err()
-    data class ErrorField(val field: String, val value: String, override val message: String) : Err()
-    data class ErrorList(val errors: List<Err>, override val message: String) : Err()
-}
-```
-
-| Variant | Fields | Use |
+| Type | Source | Reference |
 |---|---|---|
-| `Err.ErrorInfo` | `message`, `cause?`, `ref?` | Default implementation: a message with an optional cause. |
-| `Err.ErrorField` | `field`, `value`, `message`, `cause?`, `ref?` | An error on a specific field. |
-| `Err.ErrorList` | `errors`, `message`, `cause?`, `ref?` | Wraps a list of other errors. |
-
-| Builder | Use |
-|---|---|
-| `Err.of(message)` | Plain message, no field or cause. |
-| `Err.of(status)` | Build directly from a `Status`. |
-| `Err.on(field, value, message)` | Error on a specific field, including its value. |
-| `Err.on(field, message)` | Same, but omits the value — for sensitive fields. |
-| `Err.ex(throwable)` | Wrap a caught exception or throwable. |
-| `Err.obj(any)` | Wrap an arbitrary object as the cause. |
-| `Err.list(strings, message)` | Build an `Err.ErrorList` from a list of plain strings. |
-| `Err.build(any?)` | Generic builder that dispatches based on the input's type. |
+| Err | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L34">Err.kt</ConceptTermLink> | [Err types](#err-types) |
+| ErrorInfo | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L40">Err.kt</ConceptTermLink> | [Err types](#err-types) |
+| ErrorField | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L53">Err.kt</ConceptTermLink> | [Err types](#err-types) |
+| ErrorList | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L67">Err.kt</ConceptTermLink> | [Err types](#err-types) |
+| Builders | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L79">Err.kt</ConceptTermLink> | [Err types](#err-types) |
 
 <Spacer />
 
@@ -540,7 +431,7 @@ println("valid=${checked.isValid}, errors=${checked.errors.size}")
 ```
 
 `Checked` can only be constructed through `Checked.success(status)`/`Checked.failure(status, errors)`,
-so `status` and `errors` can never disagree. See [Concepts](#checked) for the full type, or
+so `status` and `errors` can never disagree. See [Explanation](#checked) for the full type, or
 [Guide](#usage) for `collect(...)` combining multiple `Checked` results into one.
 
 <Spacer />
@@ -564,7 +455,7 @@ try {
 ```
 
 `status.toException()` picked `StatusException.RestrictedException` automatically, since
-`Restricted.UNAUTHORIZED` belongs to the `Restricted` group. See [Concepts](#exceptions)
+`Restricted.UNAUTHORIZED` belongs to the `Restricted` group. See [Explanation](#exceptions)
 for the full exception hierarchy, or [Design](#philosophy) for why the taxonomy is shaped this
 way.
 
@@ -640,7 +531,7 @@ fun requireAuthorized(id: String, requesterId: String) {
 
 ### Protocols
 
-Working code for the types introduced in [Concepts](#protocols): mapping statuses to
+Working code for the types introduced in [Explanation](#protocols): mapping statuses to
 HTTP, gRPC, and a custom protocol of your own.
 
 ```kotlin
@@ -662,6 +553,129 @@ val lookup = CompositeLookup(
 )
 lookup.toCode(PAYMENT_DECLINED)     // 402
 ```
+
+<BackToTop />
+
+## Reference
+
+Lookup tables. The ideas behind them are in [Explanation](#explanation).
+
+### Passed
+
+`Passed.success == true`.
+
+| Group | Code | Description |
+|---|---|---|
+| <GroupBadge group="Succeeded" /> | <CodeBadge>SUCCESS</CodeBadge> | The operation completed successfully. |
+| | <CodeBadge>CREATED</CodeBadge> | A new resource was created. |
+| | <CodeBadge>UPDATED</CodeBadge> | The resource was fully updated. |
+| | <CodeBadge>PATCHED</CodeBadge> | The resource was partially updated. |
+| | <CodeBadge>FETCHED</CodeBadge> | The resource was retrieved. |
+| | <CodeBadge>DELETED</CodeBadge> | The resource was deleted. |
+| | <CodeBadge>HANDLED</CodeBadge> | The request was handled; nothing to return. |
+| | <CodeBadge>REFERRED</CodeBadge> | The result is at another location. |
+| | <CodeBadge>EXITED</CodeBadge> | The application exited cleanly. |
+| <GroupBadge group="Pending" /> | <CodeBadge>ACCEPTED</CodeBadge> | The request was accepted. |
+| | <CodeBadge>QUEUED</CodeBadge> | The request is waiting to be processed. |
+| | <CodeBadge>PROCESSING</CodeBadge> | The request is being processed. |
+| | <CodeBadge>CONFIRM</CodeBadge> | The request is awaiting confirmation. |
+| | <CodeBadge>REDIRECTED</CodeBadge> | This request is being handled elsewhere. |
+| | <CodeBadge>SCHEDULED</CodeBadge> | The operation is scheduled for later. |
+| <GroupBadge group="Excluded" /> | <CodeBadge>OMITTED</CodeBadge> | The item was excluded from the result. |
+| | <CodeBadge>SKIPPED</CodeBadge> | The item was not processed. |
+| | <CodeBadge>DISCARDED</CodeBadge> | The item was processed, then excluded for unrelated reasons. |
+| | <CodeBadge>CANCELLED</CodeBadge> | The operation was cancelled by the caller before completion. |
+| | <CodeBadge>DEDUPLICATED</CodeBadge> | The duplicate item was not processed. |
+| | <CodeBadge>DISQUALIFIED</CodeBadge> | The item was disqualified. |
+| <GroupBadge group="Information" /> | <CodeBadge>NOTICE</CodeBadge> | An informational notice. |
+| | <CodeBadge>ADVISORY</CodeBadge> | A notice that may need attention. |
+| | <CodeBadge>METADATA</CodeBadge> | Information about the application itself was returned. |
+| | <CodeBadge>HEALTH</CodeBadge> | The service is healthy and operational. |
+| | <CodeBadge>DIAGNOSTICS</CodeBadge> | Diagnostic or operational information was returned. |
+| | <CodeBadge>MOVED</CodeBadge> | The resource has permanently moved to a new location. |
+
+<Spacer />
+
+### Failed
+
+`Failed.success == false`.
+
+| Group | Code | Description |
+|---|---|---|
+| <GroupBadge group="Restricted" /> | <CodeBadge>DENIED</CodeBadge> | The request was denied. |
+| | <CodeBadge>UNAUTHENTICATED</CodeBadge> | Authentication is required. |
+| | <CodeBadge>UNAUTHORIZED</CodeBadge> | The caller lacks permission. |
+| | <CodeBadge>FORBIDDEN</CodeBadge> | Access to this resource is forbidden. |
+| | <CodeBadge>LOCKED</CodeBadge> | Access is locked; resolve the condition to restore access. |
+| | <CodeBadge>SUSPENDED</CodeBadge> | Access has been administratively suspended. |
+| <GroupBadge group="Invalid" /> | <CodeBadge>INVALID_VALUE</CodeBadge> | The request had an invalid value. |
+| | <CodeBadge>BAD_REQUEST</CodeBadge> | The request was malformed. |
+| | <CodeBadge>NOT_FOUND</CodeBadge> | The requested route or endpoint does not exist. |
+| | <CodeBadge>OUT_OF_RANGE</CodeBadge> | A value was outside the acceptable range. |
+| | <CodeBadge>PAYLOAD_TOO_LARGE</CodeBadge> | The payload is too large. |
+| | <CodeBadge>MISSING_FIELD</CodeBadge> | A required field was not provided. |
+| <GroupBadge group="Rejected" /> | <CodeBadge>RULE_VIOLATION</CodeBadge> | A business rule rejected the request. |
+| | <CodeBadge>CONFLICT</CodeBadge> | The request conflicts with the current state. |
+| | <CodeBadge>NOT_EXISTS</CodeBadge> | The referenced item does not exist. |
+| | <CodeBadge>PRECONDITION_FAILED</CodeBadge> | A required precondition was not met. |
+| | <CodeBadge>EXPIRED</CodeBadge> | The item has expired. |
+| | <CodeBadge>GONE</CodeBadge> | The resource was removed and is no longer available. |
+| <GroupBadge group="Unserved" /> | <CodeBadge>UNEXPECTED</CodeBadge> | An unexpected, unclassified error occurred. |
+| | <CodeBadge>UNSUPPORTED</CodeBadge> | This capability is not currently available. |
+| | <CodeBadge>TIMEOUT</CodeBadge> | The operation timed out. |
+| | <CodeBadge>RATE_LIMITED</CodeBadge> | Too many requests; try again later. |
+| | <CodeBadge>RESOURCE_LIMITED</CodeBadge> | A resource limit has been reached. |
+| | <CodeBadge>UNREACHABLE</CodeBadge> | A required dependency could not be reached. |
+| | <CodeBadge>UNDER_MAINTENANCE</CodeBadge> | The service is temporarily under maintenance. |
+| | <CodeBadge>INTERNAL</CodeBadge> | An internal invariant was violated. |
+| | <CodeBadge>DATA_LOSS</CodeBadge> | Unrecoverable data loss or corruption occurred. |
+| | <CodeBadge>DEGRADED</CodeBadge> | This dependency is degraded; some calls may be refused. |
+| | <CodeBadge>LEGAL_BLOCK</CodeBadge> | Access is blocked for legal reasons. |
+| | <CodeBadge>ABORTED</CodeBadge> | The operation was aborted; retrying may help. |
+
+<Spacer />
+
+### Defaults
+
+Each group has one default code, for when nothing more specific applies. `DEFAULT` on a group is an alias for that
+code, so `Succeeded.DEFAULT` is `Succeeded.SUCCESS`: the same instance, not a separate code.
+
+| Group | Alias | Code | Description |
+|---|---|---|---|
+| <GroupBadge group="Succeeded" /> | `Succeeded.DEFAULT` | <CodeBadge>SUCCESS</CodeBadge> | The operation completed successfully. |
+| <GroupBadge group="Pending" /> | `Pending.DEFAULT` | <CodeBadge>ACCEPTED</CodeBadge> | The request was accepted. |
+| <GroupBadge group="Excluded" /> | `Excluded.DEFAULT` | <CodeBadge>OMITTED</CodeBadge> | The item was excluded from the result. |
+| <GroupBadge group="Information" /> | `Information.DEFAULT` | <CodeBadge>NOTICE</CodeBadge> | An informational notice. |
+| <GroupBadge group="Restricted" /> | `Restricted.DEFAULT` | <CodeBadge>DENIED</CodeBadge> | The request was denied. |
+| <GroupBadge group="Invalid" /> | `Invalid.DEFAULT` | <CodeBadge>INVALID_VALUE</CodeBadge> | The request had an invalid value. |
+| <GroupBadge group="Rejected" /> | `Rejected.DEFAULT` | <CodeBadge>RULE_VIOLATION</CodeBadge> | A business rule rejected the request. |
+| <GroupBadge group="Unserved" /> | `Unserved.DEFAULT` | <CodeBadge>UNEXPECTED</CodeBadge> | An unexpected, unclassified error occurred. |
+
+`isDefault` is true for a group's default code and for no other. It compares by value, so a copy with any field
+changed, such as the message, is not the default.
+
+<Spacer />
+
+### Err types
+
+The kinds of `Err` and the builders that create them.
+
+| Variant | Fields | Use |
+|---|---|---|
+| `Err.ErrorInfo` | `message`, `cause?`, `ref?` | Default implementation: a message with an optional cause. |
+| `Err.ErrorField` | `field`, `value`, `message`, `cause?`, `ref?` | An error on a specific field. |
+| `Err.ErrorList` | `errors`, `message`, `cause?`, `ref?` | Wraps a list of other errors. |
+
+| Builder | Use |
+|---|---|
+| `Err.of(message)` | Plain message, no field or cause. |
+| `Err.of(status)` | Build directly from a `Status`. |
+| `Err.on(field, value, message)` | Error on a specific field, including its value. |
+| `Err.on(field, message)` | Same, but omits the value — for sensitive fields. |
+| `Err.ex(throwable)` | Wrap a caught exception or throwable. |
+| `Err.obj(any)` | Wrap an arbitrary object as the cause. |
+| `Err.list(strings, message)` | Build an `Err.ErrorList` from a list of plain strings. |
+| `Err.build(any?)` | Generic builder that dispatches based on the input's type. |
 
 <BackToTop />
 

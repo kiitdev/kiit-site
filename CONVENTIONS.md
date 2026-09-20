@@ -24,8 +24,8 @@ Listed in top-to-bottom order as they appear on the page:
    before `Overview` starts. Distinct from a diagram embedded within a
    specific Topic further down the page (e.g. the taxonomy diagram inside
    `Taxonomy`).
-5. **Section** — an H2 heading on a doc page (`Overview`, `Setup`, `Concepts`,
-   `Design`, `Tutorial`, `Guide`). Matches the docs template's own vocabulary.
+5. **Section** — an H2 heading on a doc page (`Overview`, `Setup`, `Explanation`,
+   `Tutorial`, `Guide`, `Reference`, `Design`). Matches the docs template's own vocabulary.
 6. **Topic** — an H3 heading nested under a Section (e.g. `Goals`, `Install`,
    `Terms`, `Tiers`). Always belongs to exactly one Section.
 7. **Heading Anchor** — the "#" link that appears next to a Section heading
@@ -60,30 +60,42 @@ Listed in top-to-bottom order as they appear on the page:
 ## 2. Docs Page Structure
 
 1. **Fixed Section order** — every module docs page follows the same skeleton:
-   `Overview → Setup → Concepts → Tutorial → Guide → Design`, then `FAQ`.
+   `Overview → Setup → Explanation → Tutorial → Guide → Reference → Design`, then
+   `FAQ`.
    Don't reorder or skip a Section. The order reads as: what it is, get it
    running, the vocabulary, a first walkthrough, tasks you'll do, and only
    then why it's built this way. `Design` comes after `Guide` because a
    first-time reader needs its rationale least, and it overlaps `Overview`'s
    Goals. Status: `kiit-codes` follows this order. `kiit-result` and
-   `_templates/docs-template.md` still have `Design` before `Tutorial` and
-   move when they are updated.
-2. **Diátaxis discipline per Section** — `Concepts` is bare reference only (no
-   rationale, no narrative). `Design` is rationale/explanation only (no
-   step-by-step instructions). `Tutorial` is the one guided, hands-on first win,
-   requiring no prior Concepts/Design knowledge. `Guide` is how-to, assuming
+   `_templates/docs-template.md` still have `Design` before `Tutorial`, no
+   `Reference`, and call the Section `Concepts`. They move when updated.
+2. **Diátaxis discipline per Section** — `Explanation` explains what each thing
+   is, briefly (no member lists, no rationale). `Reference` is lookup tables
+   only: the full code catalog, fields, mappings (no narrative). `Design` is
+   rationale/explanation only (no step-by-step instructions). `Tutorial` is the one guided, hands-on first win,
+   requiring no prior Explanation/Design knowledge. `Guide` is how-to, assuming
    existing competence.
-3. **Code lives in Setup, Tutorial and Guide only** — `Concepts` and `Design`
-   have no code blocks. `Concepts` is tables and diagrams (what every Status
-   carries, the eight groups, the eight default codes), and `Design` is prose
-   and diagrams. Where a term is an API shape, show it as a table, not code.
-4. **Setup Topics** — `Install` (the code, plus a table of the published
+3. **Guide is depth of usage, task-first** — each Topic names the task it helps
+   with, explains it thoroughly with an example (options, edge cases,
+   alternatives), and links to `Design` for the why. Rationale that isn't
+   needed to finish the task belongs in `Design`, not here.
+4. **Explanation and Design are the explanation Sections** — what things
+   are (`Explanation`) and why (`Design`), in prose. Illustrative code is allowed, kept small. It never tells the reader
+   to follow steps, since that makes it a how-to (`Guide`) or a walkthrough
+   (`Tutorial`).
+5. **Code mostly lives in Setup, Tutorial and Guide** — a guideline, not a
+   hard rule. `Explanation` is short prose, diagrams and tables, `Reference` is
+   tables, and `Design` is prose and diagrams, so they usually don't need
+   code. Add a short block there when it explains the point better than a
+   table would (for example the fields every Status carries). Prefer a table
+   for an API shape, and keep any block in those Sections small.
+6. **Setup Topics** — `Install` (the code, plus a table of the published
    artifacts by language), `Imports`, `Source`, `Example`.
-5. **Code examples come from the sample apps** — a code block in the page is
+7. **Code examples come from the sample apps** — a code block in the page is
    an `<Example section="..." topic="..." />` (see Section 4 and `SETUP.md`),
    not code typed into the page, so the docs can't drift from the library. A
    block that is still hand-written is being converted, one Topic at a time.
-6. **Versioned URL path** — the intended final URL shape is `/docs/v1/{module}`
+8. **Versioned URL path** — the intended final URL shape is `/docs/v1/{module}`
    once the two-instance versioned docs plugin setup lands (Step 4 of the
    redesign plan). Until then, pages live under the default single docs
    instance with an explicit `slug` frontmatter field pinning the URL (see
@@ -234,7 +246,7 @@ never registered globally.
    subsequent rows for the same group leave that cell blank rather than
    repeating the badge.
 
-4. **The Defaults table shows the group on every row** — `Concepts > Defaults`
+4. **The Defaults table shows the group on every row** — `Reference > Defaults`
    (`Group | Alias | Code | Description`) has exactly one row per group, so
    the `GroupBadge` repeats instead of collapsing to a first row as in the
    Passed/Failed tables. Its Descriptions are the codes' own messages, the
