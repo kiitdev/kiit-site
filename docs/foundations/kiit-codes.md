@@ -15,6 +15,7 @@ import PageTitle from '@site/src/components/PageTitle';
 import Icon from '@site/src/components/Icon';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import Example from '@site/src/components/Example';
 
 <PageTitle title="kiit-codes" logo="/img/modules/kiit-codes-logo.png" />
 
@@ -83,11 +84,12 @@ export, iOS/Swift export via SKIE) have less track record and are still being ex
 
 ### Install
 
-```kotlin
-dependencies {
-    implementation("dev.kiit:kiit-codes:1.0.1")
-}
-```
+<Example section="setup" topic="install" />
+
+Artifacts:
+
+1. [Maven Central](https://central.sonatype.com/artifact/dev.kiit/kiit-codes) (Kotlin and Java)
+2. [npm](https://www.npmjs.com/package/@kiitdev/codes) (TypeScript)
 
 <Spacer />
 
