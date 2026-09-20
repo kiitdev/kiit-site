@@ -1,0 +1,3 @@
+dependencies {
+    implementation 'dev.kiit:kiit-codes:1.1.0'
+}

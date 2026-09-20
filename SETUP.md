@@ -18,7 +18,9 @@ kiit-codes/samples/                                        kiit-site/
   docs-map.json  (id -> section/topic) ──────>  npm run examples
                                                      │
                                                      ▼
-                                       src/examples/kiit-codes.json  (committed)
+                                       src/examples/kiit-codes/  (committed)
+                                         setup-install/kotlin.text, java-1.text, ...
+                                         examples.json, files.ts
                                                      │
                             <Example section="setup" topic="install" />  ──> language tabs on the page
 ```
@@ -26,9 +28,9 @@ kiit-codes/samples/                                        kiit-site/
 1. **Tags** in each sample file mark a piece of code or a block of text with an `id`.
 2. **The map** (`docs-map.json`) says which `id`s go in which Section and Topic. Placement is only in the map, never in
    the tags.
-3. **The script** reads the tags and the map and writes one JSON file. That file is committed, so a site build doesn't
-   need the kiit-codes repo.
-4. **The `<Example>` component** reads that JSON and shows one tab per language.
+3. **The script** reads the tags and the map and writes a folder per module, `src/examples/kiit-codes/`. It is committed,
+   so a site build doesn't need the kiit-codes repo. See section 5.
+4. **The `<Example>` component** reads that folder and shows one tab per language.
 
 ## 2. Tags
 
@@ -139,21 +141,49 @@ time of writing). An unknown placeholder is an error.
 From `kiit-site`:
 
 ```bash
-npm run examples              # writes src/examples/kiit-codes.json
+npm run examples              # writes src/examples/kiit-codes/
 npm run examples -- --verbose # also lists the sample examples that aren't in the map
 ```
 
 It reads the map and the sample files from the sibling `kiit-codes` folder, so both repos must be checked out side by side.
-Commit the changed `src/examples/kiit-codes.json` with the change that caused it.
+Commit the changed files under `src/examples/kiit-codes/` with the change that caused them.
 
-1. The output has no timestamps and is sorted by the map, so running it twice gives an identical file.
+### 5.1 What it writes
+
+The output goes in a folder named for the module (`module.name` in the map), one folder per example `id`:
+
+```
+src/examples/kiit-codes/
+  setup-install/
+    kotlin.text          the code, one file per language
+    java-1.text          a language with several snippets gets -1, -2, ... (pom.xml, then build.gradle)
+    java-2.text
+    typescript.text
+  examples.json          placement and metadata
+  files.ts               one import per .text file (generated)
+```
+
+1. **`<id>/<language>.text`** holds exactly the code that will be shown, with the placeholders already filled in. The
+   `.text` extension is on purpose: editors and build tools don't treat the snippets as real Kotlin, Gradle or shell
+   files. Plain files also give a readable, line-by-line diff in review.
+2. **`examples.json`** has, for each `section/topic`, its items (`id`, `kind`, `tags`) and, for each language, the
+   snippets: the highlight language, the title, the file name, and the sample file and line it came from. It has no code.
+3. **`files.ts`** imports every `.text` file so the component can look one up by file name. It is generated, don't edit it.
+4. Each run deletes the module folder first, so an example that was removed from the map or the samples doesn't leave
+   files behind.
+5. Nothing here is edited by hand. Change the tag in the sample or the map, and run the script.
+
+### 5.2 Rules
+
+1. The output has no timestamps and is sorted by the map, so running it twice gives identical files.
 2. **Errors** stop it (exit 1): a tag with no `id`, a duplicate `id` in a file, an unclosed tag, a block with no fenced
    code, an unknown `kind`, an unknown placeholder, or an `id` in the map that no sample has.
 3. **Warnings** don't stop it:
    - a `section`/`topic` that isn't a heading on the page
    - an `id` in the map that a language's sample doesn't have yet
    - an unknown attribute on a tag
-4. The last lines say how many topics and examples were mapped, and how many sample examples are sample-only.
+4. The last lines say how many topics, examples and code files were written, and how many sample examples are
+   sample-only.
 
 ## 6. Showing an example on a page
 
@@ -167,6 +197,7 @@ import Example from '@site/src/components/Example';
 ```
 
 1. Import it in each page that uses it, as CONVENTIONS.md section 4 requires. It isn't registered globally.
+   The component reads `examples.json` for what to show and `files.ts` for the code.
 2. It shows one tab per language that has the example, in the order Kotlin, Java, TypeScript, Swift. The tabs use
    `groupId="language"`, so the choice is shared with the other language tabs on the page and remembered in the browser.
 3. An unknown `section`, `topic` or `name` throws, so a typo fails `npm run build` and can't ship an empty block.
@@ -194,5 +225,14 @@ import Example from '@site/src/components/Example';
 3. **Java and TypeScript examples are block comments for now.** They aren't compiled. Real inline examples come when those
    samples are rewritten to match the Kotlin one.
 4. **`tags`** are stored but not used yet.
-5. **Restart the dev server** after adding the component or a new theme file (`npm run start`). Hot reload doesn't pick up
-   new ones.
+5. **Restart the dev server** after adding the component, a new theme file, or changing `docusaurus.config.ts`
+   (`npm run start`). Hot reload doesn't pick those up.
+
+## 9. Pieces to know about
+
+1. **`textFilesPlugin` in `docusaurus.config.ts`:** a small plugin that lets a page import a `*.text` file as a plain
+   string. The `Example` component needs it.
+2. **`src/examples/text.d.ts`:** tells TypeScript that `*.text` imports are strings.
+3. **`scripts/extract-examples.mjs`:** the extractor, run with `npm run examples`.
+4. **`src/components/Example/`:** the component.
+5. **`kiit-codes/samples/docs-map.json`:** the map, in the kiit-codes repo next to the samples.

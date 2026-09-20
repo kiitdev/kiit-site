@@ -2,21 +2,23 @@ import React, {type ReactNode} from 'react';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import CodeBlock from '@theme/CodeBlock';
-import data from '@site/src/examples/kiit-codes.json';
+import data from '@site/src/examples/kiit-codes/examples.json';
+import files from '@site/src/examples/kiit-codes/files';
 
 /**
  * Shows a documentation example, in one tab per language, from the sample apps.
  *
  * 1. `section` and `topic` name where it goes (Setup > Install), as set in kiit-codes/samples/docs-map.json.
  *    `name`, when given, picks one item of a topic that has several. Without it every item is shown in order.
- * 2. The data comes from `npm run examples` (scripts/extract-examples.mjs), see SETUP.md.
+ * 2. The data comes from `npm run examples` (scripts/extract-examples.mjs), see SETUP.md. examples.json holds the
+ *    placement and metadata, and each snippet's code is a plain-text file under src/examples/kiit-codes/<id>/.
  * 3. An unknown section/topic/name throws, so a typo fails `npm run build` instead of showing an empty page.
  * 4. Tabs use groupId="language", so the choice is shared with every other language tab on the page.
  */
 interface Snippet {
   lang: string;
   title?: string;
-  code: string;
+  file: string;
 }
 interface Item {
   id: string;
@@ -41,6 +43,14 @@ interface Block {
   code: string;
 }
 
+function codeOf(snippet: Snippet): string {
+  const text = files[snippet.file];
+  if (text === undefined) {
+    throw new Error(`<Example>: missing file ${snippet.file}. Run \`npm run examples\`.`);
+  }
+  return text.replace(/\n+$/, '');
+}
+
 /** Blocks for one language. Imports are put at the top of the code that follows them, in the same block. */
 function blocksFor(items: Item[], language: string): Block[] {
   const blocks: Block[] = [];
@@ -48,11 +58,12 @@ function blocksFor(items: Item[], language: string): Block[] {
   for (const item of items) {
     const snippets = item.snippets[language] ?? [];
     if (item.kind === 'imports') {
-      imports = imports.concat(snippets.map((s) => s.code));
+      imports = imports.concat(snippets.map((s) => codeOf(s)));
       continue;
     }
     for (const snippet of snippets) {
-      const code = imports.length ? `${imports.join('\n')}\n\n${snippet.code}` : snippet.code;
+      const text = codeOf(snippet);
+      const code = imports.length ? `${imports.join('\n')}\n\n${text}` : text;
       imports = [];
       blocks.push({lang: snippet.lang, title: snippet.title, code});
     }

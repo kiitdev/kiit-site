@@ -15,30 +15,30 @@
               {
                 "lang": "kotlin",
                 "title": "build.gradle.kts",
-                "code": "dependencies {\n    implementation(\"dev.kiit:kiit-codes:1.1.0\")\n}",
-                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:24"
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:24",
+                "file": "setup-install/kotlin.text"
               }
             ],
             "java": [
               {
                 "lang": "xml",
                 "title": "pom.xml",
-                "code": "<dependency>\n    <groupId>dev.kiit</groupId>\n    <artifactId>kiit-codes</artifactId>\n    <version>1.1.0</version>\n</dependency>",
-                "source": "samples/sample-java/src/main/java/sample/SampleApp.java:3"
+                "source": "samples/sample-java/src/main/java/sample/SampleApp.java:3",
+                "file": "setup-install/java-1.text"
               },
               {
                 "lang": "groovy",
                 "title": "build.gradle",
-                "code": "dependencies {\n    implementation 'dev.kiit:kiit-codes:1.1.0'\n}",
-                "source": "samples/sample-java/src/main/java/sample/SampleApp.java:3"
+                "source": "samples/sample-java/src/main/java/sample/SampleApp.java:3",
+                "file": "setup-install/java-2.text"
               }
             ],
             "typescript": [
               {
                 "lang": "bash",
                 "title": "terminal",
-                "code": "npm install @kiitdev/codes",
-                "source": "samples/sample-ts/src/index.ts:9"
+                "source": "samples/sample-ts/src/index.ts:9",
+                "file": "setup-install/typescript.text"
               }
             ]
           }
