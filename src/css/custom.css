@@ -343,3 +343,77 @@ h2.anchor .hash-link {
   color: var(--ifm-navbar-link-color);
   font-weight: 700;
 }
+
+/*
+ * Right-hand TOC collapse controls (see src/components/TocCollapse and the swizzled src/theme/TOC and
+ * src/theme/TOCItems/Tree). A section with sub-items gets a chevron button at the right edge of its row, and the
+ * "Expand all / Collapse all" buttons sit above the list. The chevron is a sibling of the link, so the selectors
+ * above that target `li > .table-of-contents__link` and `li > ul` are unaffected.
+ */
+.toc-controls {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0 0.5rem 0.5rem var(--ifm-toc-padding-horizontal);
+}
+
+.toc-controls__button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--ifm-toc-link-color);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-family: var(--ifm-font-family-base);
+}
+
+.toc-controls__button:hover:not(:disabled) {
+  color: var(--ifm-color-primary);
+  text-decoration: underline;
+}
+
+.toc-controls__button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.toc-item--collapsible {
+  position: relative;
+}
+
+.toc-toggle {
+  position: absolute;
+  top: 0.15rem;
+  right: 0.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+}
+
+.toc-toggle::before {
+  content: '';
+  display: block;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin: 0 auto;
+  border-right: 2px solid var(--ifm-toc-link-color);
+  border-bottom: 2px solid var(--ifm-toc-link-color);
+  transform: translateY(-0.1rem) rotate(45deg);
+  transition: transform 0.15s ease;
+}
+
+.toc-toggle[aria-expanded='false']::before {
+  transform: translateX(-0.1rem) rotate(-45deg);
+}
+
+.toc-toggle:hover {
+  background: var(--ifm-hover-overlay);
+}
+
+/* Room for the chevron so a long section title doesn't run underneath it. */
+.toc-item--collapsible > .table-of-contents__link {
+  padding-right: 1.75rem;
+}
