@@ -25,7 +25,7 @@ Listed in top-to-bottom order as they appear on the page:
    specific Topic further down the page (e.g. the taxonomy diagram inside
    `Taxonomy`).
 5. **Section** — an H2 heading on a doc page (`Overview`, `Setup`, `Explanation`,
-   `Tutorial`, `Guide`, `Reference`, `Design`). Matches the docs template's own vocabulary.
+   `Tutorial`, `Guide`, `Reference`). Matches the docs template's own vocabulary.
 6. **Topic** — an H3 heading nested under a Section (e.g. `Goals`, `Install`,
    `Terms`, `Tiers`). Always belongs to exactly one Section.
 7. **Heading Anchor** — the "#" link that appears next to a Section heading
@@ -60,35 +60,34 @@ Listed in top-to-bottom order as they appear on the page:
 ## 2. Docs Page Structure
 
 1. **Fixed Section order** — every module docs page follows the same skeleton:
-   `Overview → Setup → Explanation → Tutorial → Guide → Reference → Design`, then
-   `FAQ`.
-   Don't reorder or skip a Section. The order reads as: what it is, get it
-   running, the vocabulary, a first walkthrough, tasks you'll do, and only
-   then why it's built this way. `Design` comes after `Guide` because a
-   first-time reader needs its rationale least, and it overlaps `Overview`'s
-   Goals. Status: `kiit-codes` follows this order. `kiit-result` and
-   `_templates/docs-template.md` still have `Design` before `Tutorial`, no
-   `Reference`, and call the Section `Concepts`. They move when updated.
+   `Overview → Setup → Explanation → Tutorial → Guide → Reference`, then
+   `FAQ`. Don't reorder or skip a Section. The order reads as: what it is, get
+   it running, the vocabulary and the reasons, a first walkthrough, tasks
+   you'll do in depth, and lookup tables. There is no separate `Design`
+   Section: its rationale is in `Overview > Goals`, and its features and
+   limitations are Topics in `Explanation`. Status: `kiit-codes` follows this
+   order. `kiit-result` and `_templates/docs-template.md` still have `Design`
+   before `Tutorial`, no `Reference`, and call the Section `Concepts`. They
+   move when updated.
 2. **Diátaxis discipline per Section** — `Explanation` explains what each thing
-   is, briefly (no member lists, no rationale). `Reference` is lookup tables
-   only: the full code catalog, fields, mappings (no narrative). `Design` is
-   rationale/explanation only (no step-by-step instructions). `Tutorial` is the one guided, hands-on first win,
-   requiring no prior Explanation/Design knowledge. `Guide` is how-to, assuming
-   existing competence.
+   is and why it is that way, briefly (no step-by-step, no member lists).
+   `Reference` is lookup tables only: the full code catalog, fields, mappings
+   (no narrative). `Tutorial` is the one guided, hands-on first win, requiring
+   no prior Explanation knowledge. `Guide` is how-to, assuming existing
+   competence.
 3. **Guide is depth of usage, task-first** — each Topic names the task it helps
    with, explains it thoroughly with an example (options, edge cases,
-   alternatives), and links to `Design` for the why. Rationale that isn't
-   needed to finish the task belongs in `Design`, not here.
-4. **Explanation and Design are the explanation Sections** — what things
-   are (`Explanation`) and why (`Design`), in prose. Illustrative code is allowed, kept small. It never tells the reader
-   to follow steps, since that makes it a how-to (`Guide`) or a walkthrough
-   (`Tutorial`).
+   alternatives), and links to `Explanation` for the why. Rationale that isn't
+   needed to finish the task belongs in `Explanation`, not here.
+4. **Explanation is prose** — what things are and why, with illustrative code
+   allowed but kept small. It never tells the reader to follow steps, since
+   that makes it a how-to (`Guide`) or a walkthrough (`Tutorial`).
 5. **Code mostly lives in Setup, Tutorial and Guide** — a guideline, not a
-   hard rule. `Explanation` is short prose, diagrams and tables, `Reference` is
-   tables, and `Design` is prose and diagrams, so they usually don't need
-   code. Add a short block there when it explains the point better than a
-   table would (for example the fields every Status carries). Prefer a table
-   for an API shape, and keep any block in those Sections small.
+   hard rule. `Explanation` is short prose, diagrams and tables, and
+   `Reference` is tables, so they usually don't need code. Add a short block
+   there when it explains the point better than a table would (for example
+   the fields every Status carries). Prefer a table for an API shape, and
+   keep any block in those Sections small.
 6. **Setup Topics** — `Install` (the code, plus a table of the published
    artifacts by language), `Imports`, `Source`, `Example`.
 7. **Code examples come from the sample apps** — a code block in the page is

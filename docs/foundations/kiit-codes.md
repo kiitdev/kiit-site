@@ -43,6 +43,13 @@ taxonomy for consistent classification, extensible codes that preserve domain-sp
 and protocol mappings that keep application outcomes independent from how they're transported.
 The same model is then reused across statuses, validation, exceptions, and result types.
 
+The taxonomy is closed at the top and open underneath. A fixed set of groups keeps generic
+handling, exhaustive matching, logging, and protocol mappings consistent everywhere a status is
+used, and codes stay open so each domain can add its own without forking the taxonomy. Codes are
+ordinary values rather than enum cases, which is what lets a domain add them. This doesn't replace
+domain modeling: a domain error explains *what* happened in one domain, and the taxonomy explains
+*what kind* of outcome it was, consistently, across every domain in an application.
+
 <Spacer />
 
 ### Inspiration
@@ -359,6 +366,32 @@ or a custom protocol of your own via `CodeLookup`.
 
 ![Kiit Codes protocol mappings](/img/kiit-codes/kiit-codes-protocols.png)
 
+<Spacer />
+
+### Features
+
+| # | Feature | Description |
+|---:|---|---|
+| 1 | **[Status classification](#taxonomy)** | The core `Passed`/`Failed` split, with a fixed `Group` and an open `Code` beneath it for finer-grained classification. |
+| 2 | **[Extensibility](#usage)** | Add domain-specific codes within the same fixed groups, without forking the taxonomy or losing shared meaning. |
+| 3 | **[Protocol mappings](#protocols-1)** | Map statuses to and from HTTP, gRPC, or any custom protocol via `CodeLookup`/`CompositeLookup`. |
+| 4 | **[Validation](#usage)** | `Checked`, `Err`, and `collect` report every problem found at once, instead of stopping at the first. |
+| 5 | **[Typed exceptions](#usage)** | `StatusException` and `Failed.toException()` for boundaries that only understand exceptions. |
+| 6 | **Result integration** | The separate [kiit-result](https://github.com/kiitdev/kiit-result) module builds a `Result<T, E>` type on top of this same taxonomy. |
+
+<Spacer />
+
+### Limitations
+
+What kiit-codes doesn't do, and why.
+
+| # | Limitation | Details |
+|---:|---|---|
+| 1 | AI framing is unproven | Stable names and explicit classification are expected to reduce ambiguity for AI tooling, but that's a hypothesis, not a benchmarked result. |
+| 2 | No retry logic or severity levels | Retryability cuts across groups rather than aligning with them — `Unserved` alone has both retryable and non-retryable codes. A dedicated `Retry` category was considered and rejected for the same reason. |
+| 3 | No numeric status code field | An earlier version had one; it invited the wrong inference (looking like an HTTP code while meaning something else). Real protocol numbers are available on demand via `CodesToHttp`/`CodesToGrpc`, never implied by the taxonomy itself. |
+| 4 | No ninth group | Every gRPC code and the most common HTTP codes map onto the existing eight without needing one, tested directly against both. |
+
 <BackToTop />
 
 ## Tutorial
@@ -456,7 +489,7 @@ try {
 
 `status.toException()` picked `StatusException.RestrictedException` automatically, since
 `Restricted.UNAUTHORIZED` belongs to the `Restricted` group. See [Explanation](#exceptions)
-for the full exception hierarchy, or [Design](#philosophy) for why the taxonomy is shaped this
+for the full exception hierarchy, or [Goals](#goals) for why the taxonomy is shaped this
 way.
 
 <Spacer />
@@ -676,52 +709,6 @@ The kinds of `Err` and the builders that create them.
 | `Err.obj(any)` | Wrap an arbitrary object as the cause. |
 | `Err.list(strings, message)` | Build an `Err.ErrorList` from a list of plain strings. |
 | `Err.build(any?)` | Generic builder that dispatches based on the input's type. |
-
-<BackToTop />
-
-## Design
-
-### Philosophy
-
-A closed taxonomy keeps generic handling, exhaustive matching, logging, and protocol mappings
-consistent everywhere a status is used. Codes stay open underneath so each domain can extend the
-taxonomy freely without forking it. This doesn't replace domain modeling: domain errors explain
-*what* happened in one domain, the taxonomy explains *what kind* of outcome it was, consistently,
-across every domain in an application. `Status` is a sealed interface rather than an enum
-specifically so consumers can add their own codes while still participating in the same
-taxonomy — an enum can't be extended this way.
-
-<Spacer />
-
-### Features
-
-| # | Feature | Description |
-|---:|---|---|
-| 1 | **[Status classification](#taxonomy)** | The core `Passed`/`Failed` split, with a fixed `Group` and an open `Code` beneath it for finer-grained classification. |
-| 2 | **[Extensibility](#usage)** | Add domain-specific codes within the same fixed groups, without forking the taxonomy or losing shared meaning. |
-| 3 | **[Protocol mappings](#protocols-1)** | Map statuses to and from HTTP, gRPC, or any custom protocol via `CodeLookup`/`CompositeLookup`. |
-| 4 | **[Validation](#usage)** | `Checked`, `Err`, and `collect` report every problem found at once, instead of stopping at the first. |
-| 5 | **[Typed exceptions](#usage)** | `StatusException` and `Failed.toException()` for boundaries that only understand exceptions. |
-| 6 | **Result integration** | The separate [kiit-result](https://github.com/kiitdev/kiit-result) module builds a `Result<T, E>` type on top of this same taxonomy. |
-
-<Spacer />
-
-### Limitations
-
-| # | Limitation | Details |
-|---:|---|---|
-| 1 | AI framing is unproven | Stable names and explicit classification are expected to reduce ambiguity for AI tooling, but that's a hypothesis, not a benchmarked result. |
-| 2 | JS/TS not CI-gated | Exists but isn't CI-gated or published to npm yet; lacks the compiler-enforced exhaustiveness that Kotlin, Java, and Swift (via SKIE) get. |
-
-<Spacer />
-
-### Exclusions
-
-| # | Excluded | Reasoning |
-|---:|---|---|
-| 1 | Retry logic or severity levels | Retryability cuts across groups rather than aligning with them — `Unserved` alone has both retryable and non-retryable codes. A dedicated `Retry` category was considered and rejected for the same reason. |
-| 2 | A numeric status code field | An earlier version had one; it invited the wrong inference (looking like an HTTP code while meaning something else). Real protocol numbers are available on demand via `CodesToHttp`/`CodesToGrpc`, never implied by the taxonomy itself. |
-| 3 | A ninth group | Every gRPC code and the most common HTTP codes map onto the existing eight without needing one, tested directly against both. |
 
 <BackToTop />
 
