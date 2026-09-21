@@ -42,37 +42,39 @@ export default function Related({title = 'Related', items}: RelatedProps): React
   return (
     <section className={styles.related}>
       <div className={styles.title}>{title}</div>
-      <table>
-        <thead>
-          <tr>
-            <th className={styles.number}>#</th>
-            <th>Item</th>
-            <th>Note</th>
-            <th>Links</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item, i) => (
-            <tr key={item.label}>
-              <td className={styles.number}>{i + 1}</td>
-              <td>{item.label}</td>
-              <td>{item.note}</td>
-              <td>
-                {item.links.map((link) => (
-                  <span key={link.href + link.text} className={styles.link}>
-                    {link.kind && <span className={styles.kind}>{KIND_LABELS[link.kind]}</span>}
-                    {link.kind === 'source' ? (
-                      <ConceptTermLink href={link.href}>{link.text}</ConceptTermLink>
-                    ) : (
-                      <Link to={link.href}>{link.text}</Link>
-                    )}
-                  </span>
-                ))}
-              </td>
+      <div className="kiit-table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th className={styles.number}>#</th>
+              <th>Item</th>
+              <th>Note</th>
+              <th>Links</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {items.map((item, i) => (
+              <tr key={item.label}>
+                <td className={styles.number}>{i + 1}</td>
+                <td>{item.label}</td>
+                <td>{item.note}</td>
+                <td>
+                  {item.links.map((link) => (
+                    <span key={link.href + link.text} className={styles.link}>
+                      {link.kind && <span className={styles.kind}>{KIND_LABELS[link.kind]}</span>}
+                      {link.kind === 'source' ? (
+                        <ConceptTermLink href={link.href}>{link.text}</ConceptTermLink>
+                      ) : (
+                        <Link to={link.href}>{link.text}</Link>
+                      )}
+                    </span>
+                  ))}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }

@@ -262,8 +262,10 @@ never registered globally.
    (`.theme-doc-markdown table { display: table; width: 100% }`) overrides
    this everywhere. `display: table` is needed because Infima sets tables to
    `display: block`, where `width: 100%` doesn't stretch the cells. It applies
-   at every window size. Below the desktop breakpoint, cells may break inside a
-   long word so a wide cell wraps instead of overflowing the page.
+   at every window size. Cells never break inside a word. Each table sits in a
+   `.kiit-table-scroll` wrapper (the swizzled `MDXComponents` and the `Related`
+   component add it), so a table that doesn't fit a narrow screen scrolls
+   sideways instead of squeezing its columns.
 3. **Repeated group values collapse to the first row only** — in the
    Passed/Failed code tables (`Group | Code | Description`), the `Group`
    cell (rendered via `GroupBadge`) only appears on that group's first row;
