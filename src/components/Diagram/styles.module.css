@@ -6,7 +6,12 @@
   display: block;
   max-width: 100%;
   height: auto;
+  box-sizing: border-box;
   border-radius: var(--diagram-radius, var(--kiit-diagram-radius, 16px));
+}
+
+.bordered {
+  border: 1px solid var(--kiit-diagram-border, var(--ifm-color-emphasis-300));
 }
 
 .caption {

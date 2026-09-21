@@ -26,8 +26,9 @@
  * where text contrast rules don't apply.
  */
 :root {
-  /* Corner radius of every <Diagram> image. */
+  /* Corner radius and border color of every <Diagram> image. */
   --kiit-diagram-radius: 16px;
+  --kiit-diagram-border: var(--ifm-color-emphasis-300);
 
   --kiit-color-brand: #5e72e4;
   --kiit-color-accent-orange: #f8a13e;

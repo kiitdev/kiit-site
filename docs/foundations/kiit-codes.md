@@ -28,6 +28,12 @@ A small, dependency-free status and error taxonomy for application outcomes, wit
 extensible codes, protocol mappings, validation, typed exceptions, and optional
 `Result<T, E>` integration.
 
+:::info[Think HTTP status codes]
+1. **Familiar Concept**: Like HTTP status codes, but generalized to name the kind of outcome (success, not found, etc ).
+2. **For any layer**: Can be ued at any technical layer: services, jobs, validation, exceptions, APIs.
+3. **Usable anywhere**: Maps to HTTP and gRPC, and you can add your own domain codes.
+:::
+
 <Diagram src="/img/kiit-codes/kiit-codes-overview.png" alt="Kiit Codes overview" />
 
 ## Overview

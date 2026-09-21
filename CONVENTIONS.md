@@ -191,10 +191,12 @@ never registered globally.
     the frame, synced with the page's other language tabs. Stack several to
     build a diagram-style figure from real highlighted code instead of a
     screenshot, so the text stays current and searchable.
-12. **`Diagram`** — an image with rounded corners (props `src`, `alt`, optional
-    `radius` and `caption`). Use it for every diagram instead of a markdown
-    image, so all diagrams share one corner radius, set once as
-    `--kiit-diagram-radius` in `src/css/custom.css`.
+12. **`Diagram`** — an image with rounded corners and a thin rounded border
+    (props `src`, `alt`, optional `radius`, `border` and `caption`). Use it for
+    every diagram instead of a markdown image, so all diagrams share one look.
+    The radius and border color are set once as `--kiit-diagram-radius` and
+    `--kiit-diagram-border` in `src/css/custom.css`. `border={false}` removes
+    the border for a diagram that draws its own.
 
 ## 5. Theming & Color
 
