@@ -197,6 +197,14 @@ never registered globally.
     The radius and border color are set once as `--kiit-diagram-radius` and
     `--kiit-diagram-border` in `src/css/custom.css`. `border={false}` removes
     the border for a diagram that draws its own.
+13. **`Related`** — a numbered, full-width table of links related to a Topic
+    (props `title`, `items`; each item has a `label` and `links`, each link a
+    `text`, `href` and optional `kind`: `source`, `reference`, `guide` or
+    `sample`). Put one at the end of a Topic for its source and reference links.
+    It replaces the `info[Source and references]` admonition, so links don't
+    add to the number of callouts. Source links use the `ConceptTermLink`
+    style.
+
 
 ## 5. Theming & Color
 
@@ -251,7 +259,11 @@ never registered globally.
 2. **Every table is forced to full content-column width** — Infima's default
    table sizing shrinks to fit content, making short tables look noticeably
    narrower than long ones. A single global rule
-   (`.theme-doc-markdown table { width: 100% }`) overrides this everywhere.
+   (`.theme-doc-markdown table { display: table; width: 100% }`) overrides
+   this everywhere. `display: table` is needed because Infima sets tables to
+   `display: block`, where `width: 100%` doesn't stretch the cells. It applies
+   at every window size. Below the desktop breakpoint, cells may break inside a
+   long word so a wide cell wraps instead of overflowing the page.
 3. **Repeated group values collapse to the first row only** — in the
    Passed/Failed code tables (`Group | Code | Description`), the `Group`
    cell (rendered via `GroupBadge`) only appears on that group's first row;
@@ -272,11 +284,12 @@ never registered globally.
    paste the output over the table. Like the Passed/Failed tables it shows the
    group on a group's first row only.
 
-6. **Don't use a table just for links** — a short `Type | Source | Reference`
-   table reads as awkwardly narrow. A Topic's links go in its
-   `info[Source and references]` admonition (Section 12), which takes the full
-   width of the page and reads as a list. A table is for data with columns
-   worth comparing, like the code and mapping tables.
+6. **A short links table is fine** — now that every table fills the page width
+   (item 2), a short table of links no longer looks awkward, and the Setup
+   Topics use them (`Install` artifacts, `Source`). At the end of an
+   `Explanation` Topic, the source file and Reference links go in a `Related`
+   table (Section 4). A table is for data with columns worth comparing, like
+   the code and mapping tables.
 
 ## 7. Linking & Cross-References
 
@@ -357,11 +370,9 @@ on every page (`kiit-result` already does).
    the type for what it means, not for color.
 2. **A numbered list with bold lead-ins inside** — `1. **Start here**: ...`,
    matching the numbered-bullet style used elsewhere on the page.
-3. **At most one advice or pitfall per Topic**, so each one stays noticeable,
-   and only where it guards against a real misunderstanding or gives a useful
-   default. A Topic can also end with one `info[Source and references]`
-   admonition, a numbered list of its source file, the Reference Topics it
-   links to and the sample app, in place of a links table.
+3. **At most one per Topic**, so each one stays noticeable, and only where it
+   guards against a real misunderstanding or gives a useful default. Lists of
+   links are not admonitions: use a `Related` table (Section 4).
 4. **No code inside** — link to the Topic that shows it.
 5. **Not headings** — an admonition doesn't appear in the TOC and shouldn't be
    the only place a fact is stated. The Topic's text and tables still carry it.

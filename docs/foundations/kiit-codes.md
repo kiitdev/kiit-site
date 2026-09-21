@@ -18,6 +18,7 @@ import TabItem from '@theme/TabItem';
 import Example from '@site/src/components/Example';
 import CodeCard from '@site/src/components/CodeCard';
 import Diagram from '@site/src/components/Diagram';
+import Related from '@site/src/components/Related';
 
 <PageTitle title="kiit-codes" logo="/img/modules/kiit-codes-logo.png" />
 
@@ -29,8 +30,8 @@ extensible codes, protocol mappings, validation, typed exceptions, and optional
 `Result<T, E>` integration.
 
 :::info[Think HTTP status codes]
-1. **Familiar Concept**: Like HTTP status codes, but generalized to name the kind of outcome (success, not found, etc ).
-2. **For any layer**: Can be ued at any technical layer: services, jobs, validation, exceptions, APIs.
+1. **Familiar Concept**: Like HTTP status codes, but generalized to name the kind of outcome (success, not found, etc.).
+2. **For any layer**: Can be used at any technical layer: services, jobs, validation, exceptions, APIs.
 3. **Usable anywhere**: Maps to HTTP and gRPC, and you can add your own domain codes.
 :::
 
@@ -118,10 +119,7 @@ export, iOS/Swift export via SKIE) have less track record and are still being ex
 |---:|---|---|
 | 1 | Kotlin, Java | [Maven Central](https://central.sonatype.com/artifact/dev.kiit/kiit-codes) |
 | 2 | TypeScript | [npm](https://www.npmjs.com/package/@kiitdev/codes) |
-
-:::info[Swift]
-1. **Not linked yet**: The Swift Package Manager artifact will be linked here when it is available.
-:::
+| 3 | Swift | Swift Package Manager, link to come |
 
 <Spacer />
 
@@ -314,11 +312,27 @@ Every Status carries the same six fields, built-in or custom:
 3. **Also a host**: The origin becomes the host of the RFC 9457 `type`, for example `https://samples.kiit.dev/problems/...`.
 :::
 
-:::info[Source and references]
-1. **Source**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L44">Status.kt</ConceptTermLink>
-2. **Codes**: [Passed](#passed), [Failed](#failed), [Defaults](#defaults)
-3. **Sample app**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/tree/main/samples/sample-kotlin">sample-kotlin</ConceptTermLink>, with a first example in [Setup](#example)
-:::
+<Related
+  title="Source and references"
+  items={[
+    {
+      label: 'Status',
+      links: [
+        {text: 'Status.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L44', kind: 'source'},
+        {text: 'Passed', href: '#passed', kind: 'reference'},
+        {text: 'Failed', href: '#failed', kind: 'reference'},
+        {text: 'Defaults', href: '#defaults', kind: 'reference'},
+      ],
+    },
+    {
+      label: 'Sample app',
+      links: [
+        {text: 'sample-kotlin', href: 'https://github.com/kiitdev/kiit-codes/tree/main/samples/sample-kotlin', kind: 'sample'},
+        {text: 'Setup example', href: '#example'},
+      ],
+    },
+  ]}
+/>
 
 <Spacer />
 
@@ -343,11 +357,32 @@ within them.
 | | | | <GroupBadge group="Unserved" /> | The system can't serve it right now, though nothing was wrong with the request. |
 | 3 | <span style={{fontFamily: 'var(--ifm-font-family-monospace)', fontWeight: 800, color: 'var(--ifm-color-primary)'}}>Code</span> | <span style={{display: 'inline-flex', alignItems: 'center', gap: '0.3rem'}}><Icon name="lock-open" size={16} /> Open + Defaults</span> | | Ships with common built-in codes (e.g. `SUCCESS`, `DENIED`); extensible with custom, domain-specific codes within the same group. |
 
-:::info[Source and references]
-1. **Passed**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L172">Status.kt</ConceptTermLink>, listed in [Passed](#passed)
-2. **Failed**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L485">Status.kt</ConceptTermLink>, listed in [Failed](#failed)
-3. **Defaults**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt">Status.kt</ConceptTermLink>, listed in [Defaults](#defaults)
-:::
+<Related
+  title="Source and references"
+  items={[
+    {
+      label: 'Passed',
+      links: [
+        {text: 'Status.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L172', kind: 'source'},
+        {text: 'Passed', href: '#passed', kind: 'reference'},
+      ],
+    },
+    {
+      label: 'Failed',
+      links: [
+        {text: 'Status.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L485', kind: 'source'},
+        {text: 'Failed', href: '#failed', kind: 'reference'},
+      ],
+    },
+    {
+      label: 'Defaults',
+      links: [
+        {text: 'Status.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt', kind: 'source'},
+        {text: 'Defaults', href: '#defaults', kind: 'reference'},
+      ],
+    },
+  ]}
+/>
 
 <Spacer />
 
@@ -361,14 +396,46 @@ Error representation for use with Validation, Exceptions, and Result types. This
 3. **Together**: `Checked` carries both, so a status and its errors travel together.
 :::
 
-:::info[Source and references]
-1. **Err**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L34">Err.kt</ConceptTermLink>
-2. **ErrorInfo**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L40">Err.kt</ConceptTermLink>
-3. **ErrorField**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L53">Err.kt</ConceptTermLink>
-4. **ErrorList**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L67">Err.kt</ConceptTermLink>
-5. **Builders**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L79">Err.kt</ConceptTermLink>
-6. **Reference**: the types and builders are listed in [Err types](#err-types)
-:::
+<Related
+  title="Source and references"
+  items={[
+    {
+      label: 'Err',
+      links: [
+        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L34', kind: 'source'},
+        {text: 'Err types', href: '#err-types', kind: 'reference'},
+      ],
+    },
+    {
+      label: 'ErrorInfo',
+      links: [
+        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L40', kind: 'source'},
+        {text: 'Err types', href: '#err-types', kind: 'reference'},
+      ],
+    },
+    {
+      label: 'ErrorField',
+      links: [
+        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L53', kind: 'source'},
+        {text: 'Err types', href: '#err-types', kind: 'reference'},
+      ],
+    },
+    {
+      label: 'ErrorList',
+      links: [
+        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L67', kind: 'source'},
+        {text: 'Err types', href: '#err-types', kind: 'reference'},
+      ],
+    },
+    {
+      label: 'Builders',
+      links: [
+        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L79', kind: 'source'},
+        {text: 'Err types', href: '#err-types', kind: 'reference'},
+      ],
+    },
+  ]}
+/>
 
 <Spacer />
 
@@ -452,14 +519,39 @@ your own via `CodeLookup`.
 
 <Diagram src="/img/kiit-codes/kiit-codes-protocols.png" alt="Kiit Codes protocol mappings" />
 
-:::info[Source and references]
-1. **CodesToHttp**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L89">Codes.kt</ConceptTermLink>
-2. **CodesToGrpc**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L148">Codes.kt</ConceptTermLink>
-3. **CodeLookup**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L72">Codes.kt</ConceptTermLink>
-4. **CompositeLookup**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L215">Codes.kt</ConceptTermLink>
-5. **Reference**: every code's HTTP and gRPC value is in [Protocol mappings](#protocol-mappings)
-6. **Guide**: mapping to your own protocol is in [Protocols](#protocols-1)
-:::
+<Related
+  title="Source and references"
+  items={[
+    {
+      label: 'CodesToHttp',
+      links: [
+        {text: 'Codes.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L89', kind: 'source'},
+        {text: 'Protocol mappings', href: '#protocol-mappings', kind: 'reference'},
+      ],
+    },
+    {
+      label: 'CodesToGrpc',
+      links: [
+        {text: 'Codes.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L148', kind: 'source'},
+        {text: 'Protocol mappings', href: '#protocol-mappings', kind: 'reference'},
+      ],
+    },
+    {
+      label: 'CodeLookup',
+      links: [
+        {text: 'Codes.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L72', kind: 'source'},
+        {text: 'Protocols', href: '#protocols-1', kind: 'guide'},
+      ],
+    },
+    {
+      label: 'CompositeLookup',
+      links: [
+        {text: 'Codes.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L215', kind: 'source'},
+        {text: 'Protocols', href: '#protocols-1', kind: 'guide'},
+      ],
+    },
+  ]}
+/>
 
 <Spacer />
 

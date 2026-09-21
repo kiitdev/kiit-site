@@ -308,8 +308,22 @@ h2.anchor .hash-link {
  * noticeably narrower than a long 3-column one. Force every table in doc
  * content to the full content-column width for a consistent look.
  */
+/*
+ * Infima makes every table `display: block` (so a wide one can scroll sideways), and a block-level table is only as wide
+ * as its content even when `width: 100%`, which is why short tables looked narrow. `display: table` makes the width
+ * apply, at every window size. On narrow windows cells may break inside a long word, so a wide cell wraps instead of
+ * pushing the table past the edge of the page.
+ */
 .theme-doc-markdown table {
+  display: table;
   width: 100%;
+}
+
+@media (max-width: 996px) {
+  .theme-doc-markdown table th,
+  .theme-doc-markdown table td {
+    overflow-wrap: anywhere;
+  }
 }
 
 /*
