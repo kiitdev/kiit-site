@@ -184,6 +184,13 @@ never registered globally.
 10. **`TocCollapse`** — the state and the "Expand all / Collapse all" buttons
     for the right-hand TOC. Used by the swizzled `TOC` and `TOCItems/Tree`
     (Section 11), not imported by a doc page.
+11. **`CodeCard`** — a code snippet in a colored, rounded frame (props
+    `title`, `subtitle`, `color`, `code`, `language`, `footnote`; title and
+    subtitle are optional). `code` is a string for one snippet (JSON, or a
+    single-language example), or an object keyed by language for tabs inside
+    the frame, synced with the page's other language tabs. Stack several to
+    build a diagram-style figure from real highlighted code instead of a
+    screenshot, so the text stays current and searchable.
 
 ## 5. Theming & Color
 

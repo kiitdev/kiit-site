@@ -16,6 +16,7 @@ import Icon from '@site/src/components/Icon';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Example from '@site/src/components/Example';
+import CodeCard from '@site/src/components/CodeCard';
 
 <PageTitle title="kiit-codes" logo="/img/modules/kiit-codes-logo.png" />
 
@@ -234,30 +235,73 @@ case .failed(let failed):
 
 ### Status
 
-Every `Status` belongs to exactly one `Group`, and every concrete status value is a
-`Code` within that `Group`. `Passed.Succeeded.SUCCESS` is the `SUCCESS` `Code` inside
-the `Succeeded` `Group`, under the `Passed` `Status`. `Failed.Restricted.DENIED` is
-the `DENIED` `Code` inside the `Restricted` `Group`, under the `Failed` `Status`.
+A `Status` is the outcome of any operation, at any layer: a service call, a background job step, an
+API request, a CLI command. It says what *kind* of success or failure happened, in one shape
+everywhere, and nothing about the details of this one occurrence. Those belong to an [`Err`](#err).
 
-`Succeeded.CREATED` is one built-in `Code`. Its fields, each read on its own line:
+Every Status belongs to exactly one group, and each concrete Status is a code within that group.
+`Invalid.INVALID_VALUE` is the `INVALID_VALUE` code in the `Invalid` group, under `Failed`. This is how
+that built-in code is defined:
 
-```kotlin
-val status: Status = Succeeded.CREATED
+<CodeCard
+  title="Code Definition"
+  subtitle="How a built-in code is defined"
+  color="blue"
+  code={{
+    kotlin: `val INVALID_VALUE = Invalid(
+    name = "INVALID_VALUE",
+    message = "The request had an invalid value.",
+    origin = StatusConstants.KIIT,
+)`,
+    java: `Failed.Invalid INVALID_VALUE = new Failed.Invalid(
+    "INVALID_VALUE",
+    "The request had an invalid value.",
+    StatusConstants.KIIT,
+    "");`,
+    typescript: `const INVALID_VALUE: Invalid = Invalid(
+  "INVALID_VALUE",
+  "The request had an invalid value.",
+  StatusConstants.KIIT,
+);`,
+  }}
+/>
 
-status.name     // "CREATED"
-status.origin   // "kiit"
-status.message  // "A new resource was created."
-status.success  // true
-status.group    // "Succeeded"
-```
+And this is the same Status as it appears in an API response:
 
-| Field | Definition |
+<CodeCard
+  title="HTTP Response"
+  subtitle="The same shape everywhere"
+  color="yellow"
+  language="json"
+  code={`{
+    "success": false,
+    "name"   : "INVALID_VALUE",
+    "group"  : "Invalid",
+    "origin" : "kiit.dev",
+    "scope"  : "",
+    "message": "The request had an invalid value."
+}`}
+/>
+
+Every Status carries the same six fields, built-in or custom:
+
+| Field | Why it exists |
 |---|---|
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L50">name</ConceptTermLink> | Stable SCREAMING_SNAKE_CASE label, e.g. `"TOKEN_EXPIRED"`, for logs. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L57">origin</ConceptTermLink> | Where a status came from: `"kiit"` for built-ins, `"custom"` by default. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L67">message</ConceptTermLink> | Human-readable constant description. Never built from runtime data. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L73">success</ConceptTermLink> | `true` for `Passed`, `false` for `Failed`. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L76">group</ConceptTermLink> | The fixed `Group` this status belongs to, e.g. `"Succeeded"`, `"Pending"`, `"Excluded"`, or `"Restricted"`. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L89">success</ConceptTermLink> | `true` for `Passed`, `false` for `Failed`. A quick check that doesn't need the group. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L49">name</ConceptTermLink> | A stable, `SCREAMING_SNAKE_CASE` key that logs, metrics and clients can match on. Never built from runtime data. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L92">group</ConceptTermLink> | The kind of outcome (`Succeeded`, `Invalid`, ...). Lets generic code handle any Status, including custom ones, without knowing its name. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L62">origin</ConceptTermLink> | Who owns the code: `kiit.dev` for built-ins, your domain or a name of your own for custom codes. Keeps custom codes apart from the built-in ones and other teams', and becomes the host of an RFC 9457 `type`. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L76">scope</ConceptTermLink> | An optional label inside an origin, such as a department or product area (`payments.cards`). Empty when unset. Never parsed. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L83">message</ConceptTermLink> | A constant description of the code, not of one occurrence. Per-occurrence detail lives in an `Err`. |
+
+Built-in codes and your own sit side by side, in the same groups:
+
+![Kiit Codes custom codes](/img/kiit-codes/kiit-codes-custom.png)
+
+| Item | Source | Reference |
+|---|---|---|
+| Status | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L44">Status.kt</ConceptTermLink> | [Passed](#passed), [Failed](#failed), [Defaults](#defaults) |
+| Sample app | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/tree/main/samples/sample-kotlin">sample-kotlin</ConceptTermLink> | [Example](#example) |
 
 <Spacer />
 
@@ -536,7 +580,6 @@ val PAYMENT_DECLINED = Failed.Rejected(
 domain-specific identity. `origin` keeps custom namespaces distinct from `"kiit"` and from other
 teams' codes.
 
-![Kiit Codes custom codes](/img/kiit-codes/kiit-codes-custom.png)
 
 **Validation**, reporting every problem instead of stopping at the first:
 
@@ -558,7 +601,57 @@ fun requireAuthorized(id: String, requesterId: String) {
 }
 ```
 
-![Kiit Codes usage](/img/kiit-codes/kiit-codes-usage.png)
+<CodeCard
+  title="Status"
+  subtitle="Classify the kind of success or failure"
+  color="blue"
+  language="json"
+  code={`{
+    "success": false,
+    "name"   : "INVALID_VALUE",
+    "group"  : "Invalid",
+    "origin" : "kiit.dev",
+    "message": "The request had an invalid value."
+}`}
+/>
+
+<CodeCard
+  title="Validate"
+  subtitle="Validate and collect errors"
+  color="yellow"
+  code={`fun validatePhone(phone: String): Checked {
+    return if (phone.isNotEmpty()) Checked.success()
+    else Checked.failure(
+        Invalid.INVALID_VALUE,
+        listOf(Err.on("phone", phone, "Too short")))
+}`}
+/>
+
+<CodeCard
+  title="Exceptions"
+  subtitle="Throw meaningful exceptions with status codes and detail"
+  color="red"
+  code={`try {
+    throw StatusException.InvalidException(Invalid.INVALID_VALUE)
+} catch (e: StatusException.InvalidException) {
+    // handle the invalid value
+}`}
+/>
+
+<CodeCard
+  title="Result<T, E>"
+  subtitle="Optionally treat errors as values with Result<T, E>"
+  color="green"
+  footnote="kiit-result: a separate module"
+  code={`fun validatePhone(phone: String): Result<String, Err> =
+    when {
+        phone.isNotEmpty() -> Success(phone)
+        else -> Failure(
+            Err.on("phone", phone, "Too short"),
+            Invalid.INVALID_VALUE
+        )
+    }`}
+/>
 
 <Spacer />
 
