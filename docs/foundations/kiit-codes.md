@@ -52,6 +52,19 @@ domain modeling: a domain error explains *what* happened in one domain, and the 
 
 <Spacer />
 
+### Features
+
+| # | Feature | Description |
+|---:|---|---|
+| 1 | **[Status classification](#taxonomy)** | The core `Passed`/`Failed` split, with a fixed `Group` and an open `Code` beneath it for finer-grained classification. |
+| 2 | **[Extensibility](#usage)** | Add domain-specific codes within the same fixed groups, without forking the taxonomy or losing shared meaning. |
+| 3 | **[Protocol mappings](#protocols-1)** | Map statuses to HTTP, gRPC, or any custom protocol via `CodeLookup`/`CompositeLookup`. |
+| 4 | **[Validation](#usage)** | `Checked`, `Err`, and `collect` report every problem found at once, instead of stopping at the first. |
+| 5 | **[Typed exceptions](#usage)** | `StatusException` and `Failed.toException()` for boundaries that only understand exceptions. |
+| 6 | **Result integration** | The separate [kiit-result](https://github.com/kiitdev/kiit-result) module builds a `Result<T, E>` type on top of this same taxonomy. |
+
+<Spacer />
+
 ### Inspiration
 
 | # | Source | What was drawn from it |
@@ -365,19 +378,6 @@ or a custom protocol of your own via `CodeLookup`.
 | `CompositeLookup` | Combines a base `CodeLookup` with per-code extensions/overrides. |
 
 ![Kiit Codes protocol mappings](/img/kiit-codes/kiit-codes-protocols.png)
-
-<Spacer />
-
-### Features
-
-| # | Feature | Description |
-|---:|---|---|
-| 1 | **[Status classification](#taxonomy)** | The core `Passed`/`Failed` split, with a fixed `Group` and an open `Code` beneath it for finer-grained classification. |
-| 2 | **[Extensibility](#usage)** | Add domain-specific codes within the same fixed groups, without forking the taxonomy or losing shared meaning. |
-| 3 | **[Protocol mappings](#protocols-1)** | Map statuses to and from HTTP, gRPC, or any custom protocol via `CodeLookup`/`CompositeLookup`. |
-| 4 | **[Validation](#usage)** | `Checked`, `Err`, and `collect` report every problem found at once, instead of stopping at the first. |
-| 5 | **[Typed exceptions](#usage)** | `StatusException` and `Failed.toException()` for boundaries that only understand exceptions. |
-| 6 | **Result integration** | The separate [kiit-result](https://github.com/kiitdev/kiit-result) module builds a `Result<T, E>` type on top of this same taxonomy. |
 
 <Spacer />
 
