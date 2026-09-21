@@ -191,6 +191,10 @@ never registered globally.
     the frame, synced with the page's other language tabs. Stack several to
     build a diagram-style figure from real highlighted code instead of a
     screenshot, so the text stays current and searchable.
+12. **`Diagram`** — an image with rounded corners (props `src`, `alt`, optional
+    `radius` and `caption`). Use it for every diagram instead of a markdown
+    image, so all diagrams share one corner radius, set once as
+    `--kiit-diagram-radius` in `src/css/custom.css`.
 
 ## 5. Theming & Color
 
@@ -257,6 +261,20 @@ never registered globally.
    the `GroupBadge` repeats instead of collapsing to a first row as in the
    Passed/Failed tables. Its Descriptions are the codes' own messages, the
    same text as in those tables.
+
+5. **The Protocol mappings table is generated, not typed** — `Reference >
+   Protocol mappings` (`Group | Code | HTTP | gRPC`) comes from
+   `./gradlew -q :sample-kotlin:printMappingTable` in the kiit-codes repo
+   (`MappingTable.kt`), which computes every value from `CodesToHttp` and
+   `CodesToGrpc` over `Codes.all`. After a code or mapping change, run it and
+   paste the output over the table. Like the Passed/Failed tables it shows the
+   group on a group's first row only.
+
+6. **Don't use a table just for links** — a short `Type | Source | Reference`
+   table reads as awkwardly narrow. A Topic's links go in its
+   `info[Source and references]` admonition (Section 12), which takes the full
+   width of the page and reads as a list. A table is for data with columns
+   worth comparing, like the code and mapping tables.
 
 ## 7. Linking & Cross-References
 
@@ -326,3 +344,22 @@ changes. Everything not listed here is the stock theme.
 4. **Restart the dev server** after adding or removing a file under
    `src/theme/`. Docusaurus reads theme overrides at startup and hot reload
    doesn't see new ones.
+
+## 12. Admonitions
+
+Docusaurus's built-in admonitions (`:::tip[Title]` ... `:::`), used the same way
+on every page (`kiit-result` already does).
+
+1. **Built-in types only, with a title in brackets** — `tip` for advice,
+   `info` for context, `note` for a short aside, `warning` for a pitfall. Use
+   the type for what it means, not for color.
+2. **A numbered list with bold lead-ins inside** — `1. **Start here**: ...`,
+   matching the numbered-bullet style used elsewhere on the page.
+3. **At most one advice or pitfall per Topic**, so each one stays noticeable,
+   and only where it guards against a real misunderstanding or gives a useful
+   default. A Topic can also end with one `info[Source and references]`
+   admonition, a numbered list of its source file, the Reference Topics it
+   links to and the sample app, in place of a links table.
+4. **No code inside** — link to the Topic that shows it.
+5. **Not headings** — an admonition doesn't appear in the TOC and shouldn't be
+   the only place a fact is stated. The Topic's text and tables still carry it.

@@ -17,6 +17,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Example from '@site/src/components/Example';
 import CodeCard from '@site/src/components/CodeCard';
+import Diagram from '@site/src/components/Diagram';
 
 <PageTitle title="kiit-codes" logo="/img/modules/kiit-codes-logo.png" />
 
@@ -27,7 +28,7 @@ A small, dependency-free status and error taxonomy for application outcomes, wit
 extensible codes, protocol mappings, validation, typed exceptions, and optional
 `Result<T, E>` integration.
 
-![Kiit Codes overview](/img/kiit-codes/kiit-codes-overview.png)
+<Diagram src="/img/kiit-codes/kiit-codes-overview.png" alt="Kiit Codes overview" />
 
 ## Overview
 
@@ -111,7 +112,10 @@ export, iOS/Swift export via SKIE) have less track record and are still being ex
 |---:|---|---|
 | 1 | Kotlin, Java | [Maven Central](https://central.sonatype.com/artifact/dev.kiit/kiit-codes) |
 | 2 | TypeScript | [npm](https://www.npmjs.com/package/@kiitdev/codes) |
-| 3 | Swift | Swift Package Manager, link to come |
+
+:::info[Swift]
+1. **Not linked yet**: The Swift Package Manager artifact will be linked here when it is available.
+:::
 
 <Spacer />
 
@@ -239,6 +243,10 @@ A `Status` is the outcome of any operation, at any layer: a service call, a back
 API request, a CLI command. It says what *kind* of success or failure happened, in one shape
 everywhere, and nothing about the details of this one occurrence. Those belong to an [`Err`](#err).
 
+Built-in codes and your own sit side by side, in the same groups:
+
+<Diagram src="/img/kiit-codes/kiit-codes-custom.png" alt="Kiit Codes custom codes" />
+
 Every Status belongs to exactly one group, and each concrete Status is a code within that group.
 `Invalid.INVALID_VALUE` is the `INVALID_VALUE` code in the `Invalid` group, under `Failed`. This is how
 that built-in code is defined:
@@ -294,14 +302,17 @@ Every Status carries the same six fields, built-in or custom:
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L76">scope</ConceptTermLink> | An optional label inside an origin, such as a department or product area (`payments.cards`). Empty when unset. Never parsed. |
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L83">message</ConceptTermLink> | A constant description of the code, not of one occurrence. Per-occurrence detail lives in an `Err`. |
 
-Built-in codes and your own sit side by side, in the same groups:
+:::warning[Choose a specific origin]
+1. **Domain**: A domain you own is unique through DNS, so your codes can't collide with anyone else's.
+2. **Plain id**: A plain id such as `myapp1` can collide with another team's, and kiit-codes can't detect it. Pick a specific name.
+3. **Also a host**: The origin becomes the host of the RFC 9457 `type`, for example `https://samples.kiit.dev/problems/...`.
+:::
 
-![Kiit Codes custom codes](/img/kiit-codes/kiit-codes-custom.png)
-
-| Item | Source | Reference |
-|---|---|---|
-| Status | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L44">Status.kt</ConceptTermLink> | [Passed](#passed), [Failed](#failed), [Defaults](#defaults) |
-| Sample app | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/tree/main/samples/sample-kotlin">sample-kotlin</ConceptTermLink> | [Example](#example) |
+:::info[Source and references]
+1. **Source**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L44">Status.kt</ConceptTermLink>
+2. **Codes**: [Passed](#passed), [Failed](#failed), [Defaults](#defaults)
+3. **Sample app**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/tree/main/samples/sample-kotlin">sample-kotlin</ConceptTermLink>, with a first example in [Setup](#example)
+:::
 
 <Spacer />
 
@@ -310,7 +321,7 @@ Built-in codes and your own sit side by side, in the same groups:
 The `Status → Group → Code` taxonomy: the two `Status` branches, the eight groups, and the codes
 within them.
 
-![Kiit Codes taxonomy](/img/kiit-codes/kiit-codes-taxonomy.png)
+<Diagram src="/img/kiit-codes/kiit-codes-taxonomy.png" alt="Kiit Codes taxonomy" />
 
 | Tier | Parent | Fixed/Open | Children | Description |
 |---|---|---|---|---|
@@ -326,11 +337,11 @@ within them.
 | | | | <GroupBadge group="Unserved" /> | The system can't serve it right now, though nothing was wrong with the request. |
 | 3 | <span style={{fontFamily: 'var(--ifm-font-family-monospace)', fontWeight: 800, color: 'var(--ifm-color-primary)'}}>Code</span> | <span style={{display: 'inline-flex', alignItems: 'center', gap: '0.3rem'}}><Icon name="lock-open" size={16} /> Open + Defaults</span> | | Ships with common built-in codes (e.g. `SUCCESS`, `DENIED`); extensible with custom, domain-specific codes within the same group. |
 
-| Codes | Source | Reference |
-|---|---|---|
-| Passed | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L172">Status.kt</ConceptTermLink> | [Passed](#passed) |
-| Failed | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L485">Status.kt</ConceptTermLink> | [Failed](#failed) |
-| Defaults | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt">Status.kt</ConceptTermLink> | [Defaults](#defaults) |
+:::info[Source and references]
+1. **Passed**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L172">Status.kt</ConceptTermLink>, listed in [Passed](#passed)
+2. **Failed**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L485">Status.kt</ConceptTermLink>, listed in [Failed](#failed)
+3. **Defaults**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt">Status.kt</ConceptTermLink>, listed in [Defaults](#defaults)
+:::
 
 <Spacer />
 
@@ -338,13 +349,20 @@ within them.
 
 Error representation for use with Validation, Exceptions, and Result types. This stores instance level error details and the building block for `Checked`'s error list.
 
-| Type | Source | Reference |
-|---|---|---|
-| Err | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L34">Err.kt</ConceptTermLink> | [Err types](#err-types) |
-| ErrorInfo | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L40">Err.kt</ConceptTermLink> | [Err types](#err-types) |
-| ErrorField | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L53">Err.kt</ConceptTermLink> | [Err types](#err-types) |
-| ErrorList | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L67">Err.kt</ConceptTermLink> | [Err types](#err-types) |
-| Builders | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L79">Err.kt</ConceptTermLink> | [Err types](#err-types) |
+:::tip[Status or Err?]
+1. **Status**: The kind of outcome, constant: `Invalid.INVALID_VALUE`.
+2. **Err**: The details of this occurrence: which field, what value, what message.
+3. **Together**: `Checked` carries both, so a status and its errors travel together.
+:::
+
+:::info[Source and references]
+1. **Err**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L34">Err.kt</ConceptTermLink>
+2. **ErrorInfo**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L40">Err.kt</ConceptTermLink>
+3. **ErrorField**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L53">Err.kt</ConceptTermLink>
+4. **ErrorList**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L67">Err.kt</ConceptTermLink>
+5. **Builders**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L79">Err.kt</ConceptTermLink>
+6. **Reference**: the types and builders are listed in [Err types](#err-types)
+:::
 
 <Spacer />
 
@@ -411,17 +429,31 @@ sealed class StatusException(val checked: Checked) : Exception() {
 
 ### Protocols
 
-Maps `Status` to and from external protocol representations — HTTP and gRPC out of the box,
-or a custom protocol of your own via `CodeLookup`.
+Maps a `Status` to an external protocol's code: HTTP and gRPC out of the box, or a custom protocol of
+your own via `CodeLookup`.
 
 | Type | Purpose |
 |---|---|
-| `CodesToHttp` | Maps `Status` to/from HTTP status codes. |
-| `CodesToGrpc` | Maps `Status` to/from gRPC status codes. |
+| `CodesToHttp` | Maps `Status` to HTTP status codes. |
+| `CodesToGrpc` | Maps `Status` to gRPC status codes. |
 | `CodeLookup` | Interface for defining a mapping to any other protocol. |
 | `CompositeLookup` | Combines a base `CodeLookup` with per-code extensions/overrides. |
 
-![Kiit Codes protocol mappings](/img/kiit-codes/kiit-codes-protocols.png)
+:::info[One way only]
+1. **No reverse conversion**: There is no way to get a `Status` back from an HTTP or gRPC code, because many statuses share one code.
+2. **Carry the status instead**: To send a status across a boundary, use the `code` of a `CodeDetail`, or the RFC 9457 `type`.
+:::
+
+<Diagram src="/img/kiit-codes/kiit-codes-protocols.png" alt="Kiit Codes protocol mappings" />
+
+:::info[Source and references]
+1. **CodesToHttp**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L89">Codes.kt</ConceptTermLink>
+2. **CodesToGrpc**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L148">Codes.kt</ConceptTermLink>
+3. **CodeLookup**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L72">Codes.kt</ConceptTermLink>
+4. **CompositeLookup**: <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L215">Codes.kt</ConceptTermLink>
+5. **Reference**: every code's HTTP and gRPC value is in [Protocol mappings](#protocol-mappings)
+6. **Guide**: mapping to your own protocol is in [Protocols](#protocols-1)
+:::
 
 <Spacer />
 
@@ -444,6 +476,11 @@ What kiit-codes doesn't do, and why.
 
 This walks through building a tiny service that returns `Status` for expected outcomes, then
 crosses a boundary that can only communicate via exceptions.
+
+:::tip[Start simple]
+1. **Start here**: Return a `Status` from your functions first.
+2. **Add as needed**: Bring in `Checked` for validation and exceptions for boundaries only when you need them.
+:::
 
 Define a service that returns a `Status` instead of throwing for expected failures:
 
@@ -777,8 +814,10 @@ code, so `Succeeded.DEFAULT` is `Succeeded.SUCCESS`: the same instance, not a se
 | <GroupBadge group="Rejected" /> | `Rejected.DEFAULT` | <CodeBadge>RULE_VIOLATION</CodeBadge> | A business rule rejected the request. |
 | <GroupBadge group="Unserved" /> | `Unserved.DEFAULT` | <CodeBadge>UNEXPECTED</CodeBadge> | An unexpected, unclassified error occurred. |
 
-`isDefault` is true for a group's default code and for no other. It compares by value, so a copy with any field
-changed, such as the message, is not the default.
+:::note[isDefault compares by value]
+1. **Only the default**: `isDefault` is true for a group's default code and for no other.
+2. **Every field counts**: A copy with any field changed, such as the message, is not the default.
+:::
 
 <Spacer />
 
@@ -802,6 +841,79 @@ The kinds of `Err` and the builders that create them.
 | `Err.obj(any)` | Wrap an arbitrary object as the cause. |
 | `Err.list(strings, message)` | Build an `Err.ErrorList` from a list of plain strings. |
 | `Err.build(any?)` | Generic builder that dispatches based on the input's type. |
+
+<Spacer />
+
+### Protocol mappings
+
+Every built-in code mapped to HTTP and gRPC. A code with no mapping of its own takes its group's default,
+so most of a group shares one value. There is no reverse conversion, since many codes share one protocol
+code.
+
+| Group | Code | HTTP | gRPC |
+|---|---|---|---|
+| <GroupBadge group="Succeeded" /> | <CodeBadge>SUCCESS</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>CREATED</CodeBadge> | 201 Created | 0 OK |
+|  | <CodeBadge>UPDATED</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>PATCHED</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>FETCHED</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>DELETED</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>HANDLED</CodeBadge> | 204 No Content | 0 OK |
+|  | <CodeBadge>REFERRED</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>EXITED</CodeBadge> | 200 OK | 0 OK |
+| <GroupBadge group="Pending" /> | <CodeBadge>ACCEPTED</CodeBadge> | 202 Accepted | 0 OK |
+|  | <CodeBadge>QUEUED</CodeBadge> | 202 Accepted | 0 OK |
+|  | <CodeBadge>PROCESSING</CodeBadge> | 202 Accepted | 0 OK |
+|  | <CodeBadge>CONFIRM</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>REDIRECTED</CodeBadge> | 307 Temporary Redirect | 0 OK |
+|  | <CodeBadge>SCHEDULED</CodeBadge> | 202 Accepted | 0 OK |
+| <GroupBadge group="Excluded" /> | <CodeBadge>OMITTED</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>SKIPPED</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>DISCARDED</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>CANCELLED</CodeBadge> | 499 Client Closed Request | 1 CANCELLED |
+|  | <CodeBadge>DEDUPLICATED</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>DISQUALIFIED</CodeBadge> | 200 OK | 0 OK |
+| <GroupBadge group="Information" /> | <CodeBadge>NOTICE</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>ADVISORY</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>METADATA</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>HEALTH</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>DIAGNOSTICS</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>MOVED</CodeBadge> | 200 OK | 0 OK |
+| <GroupBadge group="Restricted" /> | <CodeBadge>DENIED</CodeBadge> | 401 Unauthorized | 7 PERMISSION_DENIED |
+|  | <CodeBadge>UNAUTHENTICATED</CodeBadge> | 401 Unauthorized | 16 UNAUTHENTICATED |
+|  | <CodeBadge>UNAUTHORIZED</CodeBadge> | 401 Unauthorized | 7 PERMISSION_DENIED |
+|  | <CodeBadge>FORBIDDEN</CodeBadge> | 403 Forbidden | 7 PERMISSION_DENIED |
+|  | <CodeBadge>LOCKED</CodeBadge> | 423 Locked | 7 PERMISSION_DENIED |
+|  | <CodeBadge>SUSPENDED</CodeBadge> | 403 Forbidden | 7 PERMISSION_DENIED |
+| <GroupBadge group="Invalid" /> | <CodeBadge>INVALID_VALUE</CodeBadge> | 400 Bad Request | 3 INVALID_ARGUMENT |
+|  | <CodeBadge>BAD_REQUEST</CodeBadge> | 400 Bad Request | 3 INVALID_ARGUMENT |
+|  | <CodeBadge>NOT_FOUND</CodeBadge> | 404 Not Found | 5 NOT_FOUND |
+|  | <CodeBadge>OUT_OF_RANGE</CodeBadge> | 400 Bad Request | 11 OUT_OF_RANGE |
+|  | <CodeBadge>PAYLOAD_TOO_LARGE</CodeBadge> | 413 Payload Too Large | 8 RESOURCE_EXHAUSTED |
+|  | <CodeBadge>MISSING_FIELD</CodeBadge> | 400 Bad Request | 3 INVALID_ARGUMENT |
+| <GroupBadge group="Rejected" /> | <CodeBadge>RULE_VIOLATION</CodeBadge> | 409 Conflict | 9 FAILED_PRECONDITION |
+|  | <CodeBadge>CONFLICT</CodeBadge> | 409 Conflict | 6 ALREADY_EXISTS |
+|  | <CodeBadge>NOT_EXISTS</CodeBadge> | 404 Not Found | 9 FAILED_PRECONDITION |
+|  | <CodeBadge>PRECONDITION_FAILED</CodeBadge> | 409 Conflict | 9 FAILED_PRECONDITION |
+|  | <CodeBadge>EXPIRED</CodeBadge> | 410 Gone | 9 FAILED_PRECONDITION |
+|  | <CodeBadge>GONE</CodeBadge> | 410 Gone | 9 FAILED_PRECONDITION |
+| <GroupBadge group="Unserved" /> | <CodeBadge>UNEXPECTED</CodeBadge> | 500 Internal Server Error | 2 UNKNOWN |
+|  | <CodeBadge>UNSUPPORTED</CodeBadge> | 501 Not Implemented | 12 UNIMPLEMENTED |
+|  | <CodeBadge>TIMEOUT</CodeBadge> | 504 Gateway Timeout | 4 DEADLINE_EXCEEDED |
+|  | <CodeBadge>RATE_LIMITED</CodeBadge> | 429 Too Many Requests | 8 RESOURCE_EXHAUSTED |
+|  | <CodeBadge>RESOURCE_LIMITED</CodeBadge> | 429 Too Many Requests | 8 RESOURCE_EXHAUSTED |
+|  | <CodeBadge>UNREACHABLE</CodeBadge> | 503 Service Unavailable | 14 UNAVAILABLE |
+|  | <CodeBadge>UNDER_MAINTENANCE</CodeBadge> | 503 Service Unavailable | 13 INTERNAL |
+|  | <CodeBadge>INTERNAL</CodeBadge> | 503 Service Unavailable | 13 INTERNAL |
+|  | <CodeBadge>DATA_LOSS</CodeBadge> | 503 Service Unavailable | 15 DATA_LOSS |
+|  | <CodeBadge>DEGRADED</CodeBadge> | 503 Service Unavailable | 13 INTERNAL |
+|  | <CodeBadge>LEGAL_BLOCK</CodeBadge> | 451 Unavailable For Legal Reasons | 13 INTERNAL |
+|  | <CodeBadge>ABORTED</CodeBadge> | 503 Service Unavailable | 10 ABORTED |
+
+| Mapping | Source |
+|---|---|
+| HTTP | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L89">CodesToHttp</ConceptTermLink>, its <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L110">overrides</ConceptTermLink> |
+| gRPC | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L148">CodesToGrpc</ConceptTermLink>, its <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L169">overrides</ConceptTermLink> |
 
 <BackToTop />
 
