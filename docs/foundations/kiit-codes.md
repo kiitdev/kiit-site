@@ -13,6 +13,12 @@ import MoreLink from '@site/src/components/MoreLink';
 import Spacer from '@site/src/components/Spacer';
 import PageTitle from '@site/src/components/PageTitle';
 import Icon from '@site/src/components/Icon';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import Example from '@site/src/components/Example';
+import CodeCard from '@site/src/components/CodeCard';
+import Diagram from '@site/src/components/Diagram';
+import Related from '@site/src/components/Related';
 
 <PageTitle title="kiit-codes" logo="/img/modules/kiit-codes-logo.png" />
 
@@ -23,7 +29,13 @@ A small, dependency-free status and error taxonomy for application outcomes, wit
 extensible codes, protocol mappings, validation, typed exceptions, and optional
 `Result<T, E>` integration.
 
-![Kiit Codes overview](/img/kiit-codes/kiit-codes-overview.png)
+:::info[Think HTTP status codes]
+1. **Familiar Concept**: Like HTTP status codes, but generalized to name the kind of outcome (success, not found, etc.).
+2. **For any layer**: Can be used at any technical layer: services, jobs, validation, exceptions, APIs.
+3. **Usable anywhere**: Maps to HTTP and gRPC, and you can add your own domain codes.
+:::
+
+<Diagram src="/img/kiit-codes/kiit-codes-overview.png" alt="Kiit Codes overview" />
 
 ## Overview
 
@@ -39,6 +51,26 @@ kiit-codes exists to provide a shared, application-level model for these concern
 taxonomy for consistent classification, extensible codes that preserve domain-specific meaning,
 and protocol mappings that keep application outcomes independent from how they're transported.
 The same model is then reused across statuses, validation, exceptions, and result types.
+
+The taxonomy is closed at the top and open underneath. A fixed set of groups keeps generic
+handling, exhaustive matching, logging, and protocol mappings consistent everywhere a status is
+used, and codes stay open so each domain can add its own without forking the taxonomy. Codes are
+ordinary values rather than enum cases, which is what lets a domain add them. This doesn't replace
+domain modeling: a domain error explains *what* happened in one domain, and the taxonomy explains
+*what kind* of outcome it was, consistently, across every domain in an application.
+
+<Spacer />
+
+### Features
+
+| # | Feature | Description |
+|---:|---|---|
+| 1 | **[Status classification](#taxonomy)** | The core `Passed`/`Failed` split, with a fixed `Group` and an open `Code` beneath it for finer-grained classification. |
+| 2 | **[Extensibility](#usage)** | Add domain-specific codes within the same fixed groups, without forking the taxonomy or losing shared meaning. |
+| 3 | **[Protocol mappings](#protocols-1)** | Map statuses to HTTP, gRPC, or any custom protocol via `CodeLookup`/`CompositeLookup`. |
+| 4 | **[Validation](#usage)** | `Checked`, `Err`, and `collect` report every problem found at once, instead of stopping at the first. |
+| 5 | **[Typed exceptions](#usage)** | `StatusException` and `Failed.toException()` for boundaries that only understand exceptions. |
+| 6 | **Result integration** | The separate [kiit-result](https://github.com/kiitdev/kiit-result) module builds a `Result<T, E>` type on top of this same taxonomy. |
 
 <Spacer />
 
@@ -81,11 +113,21 @@ export, iOS/Swift export via SKIE) have less track record and are still being ex
 
 ### Install
 
-```kotlin
-dependencies {
-    implementation("dev.kiit:kiit-codes:1.0.1")
-}
-```
+<Example section="setup" topic="install" />
+
+| # | Language | Artifact |
+|---:|---|---|
+| 1 | Kotlin, Java | [Maven Central](https://central.sonatype.com/artifact/dev.kiit/kiit-codes) |
+| 2 | TypeScript | [npm](https://www.npmjs.com/package/@kiitdev/codes) |
+| 3 | Swift | Swift Package Manager, link to come |
+
+<Spacer />
+
+### Imports
+
+What to import to use the library.
+
+<Example section="setup" topic="imports" />
 
 <Spacer />
 
@@ -94,16 +136,19 @@ dependencies {
 | # | Item | Link |
 |---:|---|---|
 | 1 | Git Repo | [github.com/kiitdev/kiit-codes](https://github.com/kiitdev/kiit-codes) |
-| 2 | Root folder of sources in repo | [kiit-codes/src/commonMain/kotlin](https://github.com/kiitdev/kiit-codes/tree/main/kiit-codes/src/commonMain/kotlin) |
+| 2 | Root folder of sources in repo | [kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin](https://github.com/kiitdev/kiit-codes/tree/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin) |
 | 3 | Sample app | [samples/sample-kotlin](https://github.com/kiitdev/kiit-codes/tree/main/samples/sample-kotlin) |
-| 4 | Package Name | [kiit.codes](https://github.com/kiitdev/kiit-codes/tree/main/kiit-codes/src/commonMain/kotlin/kiit/codes) |
-| 5 | Unit Tests | [kiit-codes/src/commonTest](https://github.com/kiitdev/kiit-codes/tree/main/kiit-codes/src/commonTest) |
+| 4 | Package Name | [kiit.codes](https://github.com/kiitdev/kiit-codes/tree/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes) |
+| 5 | Unit Tests | [kiit-codes-kotlin/kiit-codes/src/commonTest](https://github.com/kiitdev/kiit-codes/tree/main/kiit-codes-kotlin/kiit-codes/src/commonTest) |
 
 Licensed [Apache 2.0](https://github.com/kiitdev/kiit-codes/blob/main/LICENSE).
 
 <Spacer />
 
 ### Example
+
+<Tabs groupId="language">
+<TabItem value="kotlin" label="Kotlin">
 
 ```kotlin
 import kiit.codes.*
@@ -118,59 +163,185 @@ when (val status = authorize(userId, requesterId)) {
 }
 ```
 
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+import kiit.codes.Status;
+import kiit.codes.Passed;
+import kiit.codes.Failed;
+
+static Status authorize(String userId, String requesterId) {
+    return !userId.equals(requesterId) ? Failed.Restricted.UNAUTHORIZED : Passed.Succeeded.SUCCESS;
+}
+
+Status status = authorize(userId, requesterId);
+switch (status) {
+    case Passed p -> log.info("ok: " + p.getName());
+    case Failed f -> log.warn("failed: " + f.getName() + " — " + f.getMessage());
+}
+```
+
+</TabItem>
+<TabItem value="typescript" label="TypeScript">
+
+```ts
+import { Succeeded, Restricted } from "@kiitdev/codes";
+import type { Status } from "@kiitdev/codes";
+
+function authorize(userId: string, requesterId: string): Status {
+  return userId !== requesterId ? Restricted.UNAUTHORIZED : Succeeded.SUCCESS;
+}
+
+const status = authorize(userId, requesterId);
+if (status.success) {
+  log.info(`ok: ${status.name}`);
+} else {
+  log.warn(`failed: ${status.name} — ${status.message}`);
+}
+```
+
+</TabItem>
+<TabItem value="swift" label="Swift">
+
+```swift
+import KiitCodes
+
+func authorize(_ userId: String, _ requesterId: String) -> Status {
+    userId != requesterId ? Failed.Restricted.companion.UNAUTHORIZED : Passed.Succeeded.companion.SUCCESS
+}
+
+let status = authorize(userId, requesterId)
+switch onEnum(of: status) {
+case .passed(let passed):
+    print("ok: \(passed.name)")
+case .failed(let failed):
+    print("failed: \(failed.name) — \(failed.message)")
+}
+```
+
+</TabItem>
+</Tabs>
+
 <BackToTop />
 
-## Concepts
+## Explanation
 
 ### Terms
 
 | # | Term | Definition | |
 |---:|---|---|---|
 | 1 | Taxonomy | The overall `Status → Group → Code` classification system. | <MoreLink href="#taxonomy" /> |
-| 2 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L45">Status</ConceptTermLink> | Sealed interface for an operation's outcome: `Passed` or `Failed`. | <MoreLink href="#status" /> |
-| 3 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L76">Group</ConceptTermLink> | Second tier: a fixed subtype of `Passed`/`Failed` (e.g. `Restricted`). | <MoreLink href="#taxonomy" /> |
-| 4 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt">Code</ConceptTermLink> | Third tier: an open `Status` instance within a group (e.g. `DENIED`). | <MoreLink href="#taxonomy" /> |
-| 5 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L32">Err</ConceptTermLink> | Error representation for use with `Result`/`Outcome`-style types. | <MoreLink href="#err" /> |
-| 6 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Checked.kt#L29">Checked</ConceptTermLink> | Non-monadic validation result reporting every problem, not just the first. | <MoreLink href="#checked" /> |
-| 7 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/StatusException.kt#L46">StatusException</ConceptTermLink> | Sealed exception hierarchy carrying a `Checked`, for exception-only boundaries. | <MoreLink href="#exceptions" /> |
+| 2 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L44">Status</ConceptTermLink> | Sealed interface for an operation's outcome: `Passed` or `Failed`. | <MoreLink href="#status" /> |
+| 3 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L92">Group</ConceptTermLink> | Second tier: a fixed subtype of `Passed`/`Failed` (e.g. `Restricted`). | <MoreLink href="#taxonomy" /> |
+| 4 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L22">Code</ConceptTermLink> | Third tier: an open `Status` instance within a group (e.g. `DENIED`). | <MoreLink href="#taxonomy" /> |
+| 5 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L34">Err</ConceptTermLink> | Error representation for use with `Result`/`Outcome`-style types. | <MoreLink href="#err" /> |
+| 6 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Checked.kt#L22">Checked</ConceptTermLink> | Non-monadic validation result reporting every problem, not just the first. | <MoreLink href="#checked" /> |
+| 7 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/StatusException.kt#L46">StatusException</ConceptTermLink> | Sealed exception hierarchy carrying a `Checked`, for exception-only boundaries. | <MoreLink href="#exceptions" /> |
 
 <Spacer />
 
 ### Status
 
-Every `Status` belongs to exactly one `Group`, and every concrete status value is a
-`Code` within that `Group`. `Passed.Succeeded.SUCCESS` is the `SUCCESS` `Code` inside
-the `Succeeded` `Group`, under the `Passed` `Status`. `Failed.Restricted.DENIED` is
-the `DENIED` `Code` inside the `Restricted` `Group`, under the `Failed` `Status`.
+A `Status` is the outcome of any operation, at any layer: a service call, a background job step, an
+API request, a CLI command. It says what *kind* of success or failure happened, in one shape
+everywhere, and nothing about the details of this one occurrence. Those belong to an [`Err`](#err).
 
-`Succeeded.CREATED` is one built-in `Code`. Its fields, each read on its own line:
+Built-in codes and your own sit side by side, in the same groups:
 
-```kotlin
-val status: Status = Succeeded.CREATED
+<Diagram src="/img/kiit-codes/kiit-codes-custom.png" alt="Kiit Codes custom codes" />
 
-status.name     // "CREATED"
-status.origin   // "kiit"
-status.message  // "A new resource was created."
-status.success  // true
-status.group    // "Succeeded"
-```
+Every Status belongs to exactly one group, and each concrete Status is a code within that group.
+`Invalid.INVALID_VALUE` is the `INVALID_VALUE` code in the `Invalid` group, under `Failed`. This is how
+that built-in code is defined:
 
-| Field | Definition |
+<CodeCard
+  title="Code Definition"
+  subtitle="How a built-in code is defined"
+  code={{
+    kotlin: `val INVALID_VALUE = Invalid(
+    name = "INVALID_VALUE",
+    message = "The request had an invalid value.",
+    origin = StatusConstants.KIIT,
+)`,
+    java: `Failed.Invalid INVALID_VALUE = new Failed.Invalid(
+    "INVALID_VALUE",
+    "The request had an invalid value.",
+    StatusConstants.KIIT,
+    "");`,
+    typescript: `const INVALID_VALUE: Invalid = Invalid(
+  "INVALID_VALUE",
+  "The request had an invalid value.",
+  StatusConstants.KIIT,
+);`,
+  }}
+/>
+
+And this is the same Status as it appears in an API response:
+
+<CodeCard
+  title="HTTP Response"
+  subtitle="The same shape everywhere"
+  language="json"
+  code={`{
+    "success": false,
+    "name"   : "INVALID_VALUE",
+    "group"  : "Invalid",
+    "origin" : "kiit.dev",
+    "scope"  : "",
+    "message": "The request had an invalid value."
+}`}
+/>
+
+Every Status carries the same six fields, built-in or custom:
+
+| Field | Why it exists |
 |---|---|
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L50">name</ConceptTermLink> | Stable SCREAMING_SNAKE_CASE label, e.g. `"TOKEN_EXPIRED"`, for logs. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L57">origin</ConceptTermLink> | Where a status came from: `"kiit"` for built-ins, `"custom"` by default. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L67">message</ConceptTermLink> | Human-readable constant description. Never built from runtime data. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L73">success</ConceptTermLink> | `true` for `Passed`, `false` for `Failed`. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L76">group</ConceptTermLink> | The fixed `Group` this status belongs to, e.g. `"Succeeded"`, `"Pending"`, `"Excluded"`, or `"Restricted"`. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L89">success</ConceptTermLink> | `true` for `Passed`, `false` for `Failed`. A quick check that doesn't need the group. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L49">name</ConceptTermLink> | A stable, `SCREAMING_SNAKE_CASE` key that logs, metrics and clients can match on. Never built from runtime data. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L92">group</ConceptTermLink> | The kind of outcome (`Succeeded`, `Invalid`, ...). Lets generic code handle any Status, including custom ones, without knowing its name. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L62">origin</ConceptTermLink> | Who owns the code: `kiit.dev` for built-ins, your domain or a name of your own for custom codes. Keeps custom codes apart from the built-in ones and other teams', and becomes the host of an RFC 9457 `type`. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L76">scope</ConceptTermLink> | An optional label inside an origin, such as a department or product area (`payments.cards`). Empty when unset. Never parsed. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L83">message</ConceptTermLink> | A constant description of the code, not of one occurrence. Per-occurrence detail lives in an `Err`. |
+
+:::warning[Choose a specific origin]
+1. **Domain**: A domain you own is unique through DNS, so your codes can't collide with anyone else's.
+2. **Plain id**: A plain id such as `myapp1` can collide with another team's, and kiit-codes can't detect it. Pick a specific name.
+3. **Also a host**: The origin becomes the host of the RFC 9457 `type`, for example `https://samples.kiit.dev/problems/...`.
+:::
+
+<Related
+  title="Source and references"
+  items={[
+    {
+      label: 'Status',
+      note: 'The sealed base type of every code',
+      links: [
+        {text: 'Status.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L44', kind: 'source'},
+        {text: 'Passed', href: '#passed', kind: 'reference'},
+        {text: 'Failed', href: '#failed', kind: 'reference'},
+        {text: 'Defaults', href: '#defaults', kind: 'reference'},
+      ],
+    },
+    {
+      label: 'Sample app',
+      note: 'Runs every example on this page',
+      links: [
+        {text: 'sample-kotlin', href: 'https://github.com/kiitdev/kiit-codes/tree/main/samples/sample-kotlin', kind: 'sample'},
+        {text: 'Setup example', href: '#example'},
+      ],
+    },
+  ]}
+/>
 
 <Spacer />
 
 ### Taxonomy
 
-The full `Status → Group → Code` taxonomy: every built-in `Passed` and `Failed` group,
-and every built-in code within each.
+The `Status → Group → Code` taxonomy: the two `Status` branches, the eight groups, and the codes
+within them.
 
-![Kiit Codes taxonomy](/img/kiit-codes/kiit-codes-taxonomy.png)
+<Diagram src="/img/kiit-codes/kiit-codes-taxonomy.png" alt="Kiit Codes taxonomy" />
 
 | Tier | Parent | Fixed/Open | Children | Description |
 |---|---|---|---|---|
@@ -186,7 +357,496 @@ and every built-in code within each.
 | | | | <GroupBadge group="Unserved" /> | The system can't serve it right now, though nothing was wrong with the request. |
 | 3 | <span style={{fontFamily: 'var(--ifm-font-family-monospace)', fontWeight: 800, color: 'var(--ifm-color-primary)'}}>Code</span> | <span style={{display: 'inline-flex', alignItems: 'center', gap: '0.3rem'}}><Icon name="lock-open" size={16} /> Open + Defaults</span> | | Ships with common built-in codes (e.g. `SUCCESS`, `DENIED`); extensible with custom, domain-specific codes within the same group. |
 
+<Related
+  title="Source and references"
+  items={[
+    {
+      label: 'Passed',
+      note: 'The success side of the taxonomy',
+      links: [
+        {text: 'Status.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L172', kind: 'source'},
+        {text: 'Passed', href: '#passed', kind: 'reference'},
+      ],
+    },
+    {
+      label: 'Failed',
+      note: 'The failure side of the taxonomy',
+      links: [
+        {text: 'Status.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L485', kind: 'source'},
+        {text: 'Failed', href: '#failed', kind: 'reference'},
+      ],
+    },
+    {
+      label: 'Defaults',
+      note: 'The DEFAULT code of each group',
+      links: [
+        {text: 'Status.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt', kind: 'source'},
+        {text: 'Defaults', href: '#defaults', kind: 'reference'},
+      ],
+    },
+  ]}
+/>
+
 <Spacer />
+
+### Err
+
+Error representation for use with Validation, Exceptions, and Result types. This stores instance level error details and the building block for `Checked`'s error list.
+
+:::tip[Status or Err?]
+1. **Status**: The kind of outcome, constant: `Invalid.INVALID_VALUE`.
+2. **Err**: The details of this occurrence: which field, what value, what message.
+3. **Together**: `Checked` carries both, so a status and its errors travel together.
+:::
+
+<Related
+  title="Source and references"
+  items={[
+    {
+      label: 'Err',
+      note: 'Error info a status can carry',
+      links: [
+        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L34', kind: 'source'},
+        {text: 'Err types', href: '#err-types', kind: 'reference'},
+      ],
+    },
+    {
+      label: 'ErrorInfo',
+      note: 'One error with a message',
+      links: [
+        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L40', kind: 'source'},
+        {text: 'Err types', href: '#err-types', kind: 'reference'},
+      ],
+    },
+    {
+      label: 'ErrorField',
+      note: 'An error on a named field',
+      links: [
+        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L53', kind: 'source'},
+        {text: 'Err types', href: '#err-types', kind: 'reference'},
+      ],
+    },
+    {
+      label: 'ErrorList',
+      note: 'Several errors together',
+      links: [
+        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L67', kind: 'source'},
+        {text: 'Err types', href: '#err-types', kind: 'reference'},
+      ],
+    },
+    {
+      label: 'Builders',
+      note: 'Helpers that create each kind',
+      links: [
+        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L79', kind: 'source'},
+        {text: 'Err types', href: '#err-types', kind: 'reference'},
+      ],
+    },
+  ]}
+/>
+
+<Spacer />
+
+### Checked
+
+Non-monadic validation result that reports every problem at once, instead of stopping at the
+first. `Checked(status: Status, errors: List<Err>)`, reachable only through
+`Checked.success(status)` or `Checked.failure(status, errors)`.
+
+```kotlin
+class Checked private constructor(
+    val status: Status,
+    val errors: List<Err>,
+) : HasErrors {
+    val isValid: Boolean get() = errors.isEmpty()
+
+    companion object {
+        fun success(status: Passed = Succeeded.SUCCESS): Checked
+        fun failure(status: Failed, errors: List<Err>): Checked
+    }
+}
+```
+
+| # | Trait | Details |
+|---:|---|---|
+| 1 | Invariant | `status` and `errors` can never disagree: a passing `Checked` always has an empty `errors` list, a failing one always has at least one entry. |
+| 2 | `isValid` | `Boolean`, reflects `errors.isEmpty()`. |
+| 3 | Interface | Implements `HasErrors`. |
+| 4 | `collect(...)` | `collect(vararg checks)` / `collect(checks: List<Checked>)` combine multiple `Checked` into one, failing with `Invalid.INVALID_VALUE` and every pooled error if any input failed. |
+
+<Spacer />
+
+### Exceptions
+
+Sealed exception hierarchy carrying a `Checked`, for boundaries that only understand
+exceptions — one subclass per `Failed` group:
+
+```kotlin
+sealed class StatusException(val checked: Checked) : Exception() {
+    val status: Status get() = checked.status
+    val errors: List<Err> get() = checked.errors
+
+    class RestrictedException(status: Failed.Restricted, errors: List<Err> = emptyList()) : StatusException(...)
+    class InvalidException(status: Failed.Invalid, errors: List<Err> = emptyList()) : StatusException(...)
+    class RejectedException(status: Failed.Rejected, errors: List<Err> = emptyList()) : StatusException(...)
+    class UnservedException(status: Failed.Unserved, errors: List<Err> = emptyList()) : StatusException(...)
+}
+```
+
+| Exception | Matches |
+|---|---|
+| `RestrictedException` | `Failed.Restricted` |
+| `InvalidException` | `Failed.Invalid` |
+| `RejectedException` | `Failed.Rejected` |
+| `UnservedException` | `Failed.Unserved` |
+
+| # | Trait | Details |
+|---:|---|---|
+| 1 | Carries | A `Checked`, exposed as `status: Status` and `errors: List<Err>`. |
+| 2 | Conversion | `Failed.toException(errors)` converts a bare `Failed` status into the matching subclass. |
+| 3 | Platform equivalents | iOS via `@ObjCName` in `iosMain`; JS/TS via `jsMain`. |
+
+<Spacer />
+
+### Protocols
+
+Maps a `Status` to an external protocol's code: HTTP and gRPC out of the box, or a custom protocol of
+your own via `CodeLookup`.
+
+| Type | Purpose |
+|---|---|
+| `CodesToHttp` | Maps `Status` to HTTP status codes. |
+| `CodesToGrpc` | Maps `Status` to gRPC status codes. |
+| `CodeLookup` | Interface for defining a mapping to any other protocol. |
+| `CompositeLookup` | Combines a base `CodeLookup` with per-code extensions/overrides. |
+
+:::info[One way only]
+1. **No reverse conversion**: There is no way to get a `Status` back from an HTTP or gRPC code, because many statuses share one code.
+2. **Carry the status instead**: To send a status across a boundary, use the `code` of a `CodeDetail`, or the RFC 9457 `type`.
+:::
+
+<Diagram src="/img/kiit-codes/kiit-codes-protocols.png" alt="Kiit Codes protocol mappings" />
+
+<Related
+  title="Source and references"
+  items={[
+    {
+      label: 'CodesToHttp',
+      note: 'Status to HTTP code',
+      links: [
+        {text: 'Codes.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L89', kind: 'source'},
+        {text: 'Protocol mappings', href: '#protocol-mappings', kind: 'reference'},
+      ],
+    },
+    {
+      label: 'CodesToGrpc',
+      note: 'Status to gRPC code',
+      links: [
+        {text: 'Codes.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L148', kind: 'source'},
+        {text: 'Protocol mappings', href: '#protocol-mappings', kind: 'reference'},
+      ],
+    },
+    {
+      label: 'CodeLookup',
+      note: 'The interface both implement',
+      links: [
+        {text: 'Codes.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L72', kind: 'source'},
+        {text: 'Protocols', href: '#protocols-1', kind: 'guide'},
+      ],
+    },
+    {
+      label: 'CompositeLookup',
+      note: 'Tries several lookups in order',
+      links: [
+        {text: 'Codes.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L215', kind: 'source'},
+        {text: 'Protocols', href: '#protocols-1', kind: 'guide'},
+      ],
+    },
+  ]}
+/>
+
+<Spacer />
+
+### Limitations
+
+What kiit-codes doesn't do, and why.
+
+| # | Limitation | Details |
+|---:|---|---|
+| 1 | AI framing is unproven | Stable names and explicit classification are expected to reduce ambiguity for AI tooling, but that's a hypothesis, not a benchmarked result. |
+| 2 | No retry logic or severity levels | Retryability cuts across groups rather than aligning with them — `Unserved` alone has both retryable and non-retryable codes. A dedicated `Retry` category was considered and rejected for the same reason. |
+| 3 | No numeric status code field | An earlier version had one; it invited the wrong inference (looking like an HTTP code while meaning something else). Real protocol numbers are available on demand via `CodesToHttp`/`CodesToGrpc`, never implied by the taxonomy itself. |
+| 4 | No ninth group | Every gRPC code and the most common HTTP codes map onto the existing eight without needing one, tested directly against both. |
+
+<BackToTop />
+
+## Tutorial
+
+### Status Codes
+
+This walks through building a tiny service that returns `Status` for expected outcomes, then
+crosses a boundary that can only communicate via exceptions.
+
+:::tip[Start simple]
+1. **Start here**: Return a `Status` from your functions first.
+2. **Add as needed**: Bring in `Checked` for validation and exceptions for boundaries only when you need them.
+:::
+
+Define a service that returns a `Status` instead of throwing for expected failures:
+
+```kotlin
+import kiit.codes.*
+
+data class User(val id: String, val email: String)
+
+class UserService {
+    private val users = mutableMapOf<String, User>()
+
+    fun create(id: String, email: String): Status {
+        if (email.isBlank()) return Invalid.BAD_REQUEST
+        if (users.containsKey(id)) return Rejected.CONFLICT
+        users[id] = User(id, email)
+        return Succeeded.CREATED
+    }
+
+    fun authorize(id: String, requesterId: String): Status =
+        when {
+            !users.containsKey(id) -> Rejected.NOT_EXISTS
+            id != requesterId -> Restricted.UNAUTHORIZED
+            else -> Succeeded.SUCCESS
+        }
+}
+```
+
+<Spacer />
+
+### Callers
+
+Call it and branch on the result:
+
+<CodeCard
+  language="kotlin"
+  code={`val service = UserService()
+
+val created = service.create("alice", "alice@example.com")
+println("\${created.name} (success=\${created.success})") // CREATED (success=true)
+
+val denied = service.authorize("alice", "bob")
+println("\${denied.name} (success=\${denied.success})") // UNAUTHORIZED (success=false)`}
+/>
+
+<Spacer />
+
+### Validation
+
+Now add a method that reports every problem at once instead of stopping at the first:
+
+<CodeCard
+  language="kotlin"
+  code={`fun UserService.validateSignup(id: String, email: String): Checked {
+    val errors = mutableListOf<Err>()
+    if (id.isBlank()) errors.add(Err.on("id", id, "Id is required"))
+    if (!email.contains("@")) errors.add(Err.on("email", email, "Email must contain @"))
+    return if (errors.isEmpty()) Checked.success(Succeeded.SUCCESS)
+           else Checked.failure(Invalid.INVALID_VALUE, errors)
+}
+
+val checked = service.validateSignup("", "not-an-email")
+println("valid=\${checked.isValid}, errors=\${checked.errors.size}")
+// valid=false, errors=2`}
+/>
+
+`Checked` can only be constructed through `Checked.success(status)`/`Checked.failure(status, errors)`,
+so `status` and `errors` can never disagree. See [Explanation](#checked) for the full type, or
+[Guide](#usage) for `collect(...)` combining multiple `Checked` results into one.
+
+<Spacer />
+
+### Try/Catch
+
+Now add a method that throws instead, for a caller that only understands exceptions:
+
+<CodeCard
+  language="kotlin"
+  code={`fun UserService.requireAuthorized(id: String, requesterId: String) {
+    val status = authorize(id, requesterId)
+    if (status is Failed) throw status.toException()
+}
+
+try {
+    service.requireAuthorized("alice", "bob")
+} catch (e: StatusException) {
+    println("caught: \${e.status.name} — \${e.message}")
+    // caught: UNAUTHORIZED — Not authorized to perform this action
+}`}
+/>
+
+`status.toException()` picked `StatusException.RestrictedException` automatically, since
+`Restricted.UNAUTHORIZED` belongs to the `Restricted` group. See [Explanation](#exceptions)
+for the full exception hierarchy, or [Goals](#goals) for why the taxonomy is shaped this
+way.
+
+<Spacer />
+
+### Result
+
+`kiit-codes` classifies an outcome, but doesn't hand back a value alongside it. For that, pair it
+with [kiit-result](/docs/kiit-result) — a separate Kiit library that builds a `Result<T, E>` type
+on this same taxonomy:
+
+<CodeCard
+  language="kotlin"
+  code={`fun UserService.find(id: String): Result<User, Status> =
+    users[id]?.let { Result.success(it) } ?: Result.failure(Rejected.NOT_EXISTS)`}
+/>
+
+See the [kiit-result docs](/docs/kiit-result) for the full API.
+
+<BackToTop />
+
+## Guide
+
+### Usage
+
+| # | Area | Topic | Task | |
+|---:|---|---|---|---|
+| 1 | Statuses | Return a status | Return a `Status` instead of throwing | <MoreLink href="#usage" /> |
+| 2 |  | Branch on a status | Check `success`, `Passed`/`Failed`, or a group with `when` | <MoreLink href="#usage" /> |
+| 3 |  | Define custom codes | Add codes with a name, message, origin and scope | <MoreLink href="#usage" /> |
+| 4 |  | Test a status | Assert on a status or `isDefault` in a test | <MoreLink href="#usage" /> |
+| 5 | Errors | Attach error details | Carry `Err` info with a status | <MoreLink href="#usage" /> |
+| 6 |  | Validate and collect errors | Report every problem with `Checked` and `collect()` | <MoreLink href="#usage" /> |
+| 7 |  | Throw and catch | Cross an exception-only boundary with `toException()` | <MoreLink href="#usage" /> |
+| 8 | Protocols | Map to HTTP | Convert a status to an HTTP code | <MoreLink href="#usage" /> |
+| 9 |  | Map to gRPC | Convert a status to a gRPC code | <MoreLink href="#usage" /> |
+| 10 | Problem details | Return Problem details | Convert a status to an RFC 9457 `Problem`, with `errors` and `scope` | <MoreLink href="#usage" /> |
+| 11 |  | Set the type URL | Domain origin, plain id, or registered base URLs | <MoreLink href="#usage" /> |
+| 12 |  | Serialize to JSON | Write a `Problem` with Jackson | <MoreLink href="#usage" /> |
+
+**Status only**, when the outcome itself is enough:
+
+```kotlin
+when (val status = authorize(userId, requesterId)) {
+    is Passed -> log.info("ok: ${status.name}")
+    is Failed -> log.warn("failed: ${status.name} — ${status.message}")
+}
+```
+
+**Extensibility** — custom codes stay inside a built-in group:
+
+```kotlin
+val PAYMENT_DECLINED = Failed.Rejected(
+    name = "PAYMENT_DECLINED",
+    message = "Payment declined",
+    origin = "payments",
+)
+```
+
+`PAYMENT_DECLINED` remains a `Rejected` outcome everywhere in the system while retaining its own
+domain-specific identity. `origin` keeps custom namespaces distinct from `"kiit"` and from other
+teams' codes.
+
+
+**Validation**, reporting every problem instead of stopping at the first:
+
+```kotlin
+fun validateUser(name: String, email: String): Checked {
+    val errors = mutableListOf<Err>()
+    if (name.isBlank()) errors.add(Err.on("name", name, "Name is required"))
+    if (!email.contains("@")) errors.add(Err.on("email", email, "Email must contain @"))
+    return if (errors.isEmpty()) Checked.success() else Checked.failure(Invalid.INVALID_VALUE, errors)
+}
+```
+
+**Exceptions**, converting a `Failed` status at a boundary that needs one:
+
+```kotlin
+fun requireAuthorized(id: String, requesterId: String) {
+    val status = authorize(id, requesterId)
+    if (status is Failed) throw status.toException()
+}
+```
+
+<CodeCard
+  title="Status"
+  subtitle="Classify the kind of success or failure"
+  language="json"
+  code={`{
+    "success": false,
+    "name"   : "INVALID_VALUE",
+    "group"  : "Invalid",
+    "origin" : "kiit.dev",
+    "message": "The request had an invalid value."
+}`}
+/>
+
+<CodeCard
+  title="Validate"
+  subtitle="Validate and collect errors"
+  code={`fun validatePhone(phone: String): Checked {
+    return if (phone.isNotEmpty()) Checked.success()
+    else Checked.failure(
+        Invalid.INVALID_VALUE,
+        listOf(Err.on("phone", phone, "Too short")))
+}`}
+/>
+
+<CodeCard
+  title="Exceptions"
+  subtitle="Throw meaningful exceptions with status codes and detail"
+  code={`try {
+    throw StatusException.InvalidException(Invalid.INVALID_VALUE)
+} catch (e: StatusException.InvalidException) {
+    // handle the invalid value
+}`}
+/>
+
+<CodeCard
+  title="Result<T, E>"
+  subtitle="Optionally treat errors as values with Result<T, E>"
+  footnote="kiit-result: a separate module"
+  code={`fun validatePhone(phone: String): Result<String, Err> =
+    when {
+        phone.isNotEmpty() -> Success(phone)
+        else -> Failure(
+            Err.on("phone", phone, "Too short"),
+            Invalid.INVALID_VALUE
+        )
+    }`}
+/>
+
+<Spacer />
+
+### Protocols
+
+Working code for the types introduced in [Explanation](#protocols): mapping statuses to
+HTTP, gRPC, and a custom protocol of your own.
+
+```kotlin
+// HTTP, via CodesToHttp
+val http = CodesToHttp()
+http.toCode(Succeeded.CREATED)      // 201
+http.toCode(Invalid.INVALID_VALUE)  // 400
+http.toCode(Rejected.CONFLICT)      // 409
+
+// gRPC, via CodesToGrpc
+val grpc = CodesToGrpc()
+grpc.toCode(Restricted.DENIED)      // 7, PERMISSION_DENIED
+grpc.toCode(Rejected.CONFLICT)      // 6, ALREADY_EXISTS
+
+// Custom protocols, via CodeLookup and CompositeLookup
+val lookup = CompositeLookup(
+    base = CodesToHttp(),
+    extensions = mapOf(PAYMENT_DECLINED to 402),
+)
+lookup.toCode(PAYMENT_DECLINED)     // 402
+```
+
+<BackToTop />
+
+## Reference
+
+Lookup tables. The ideas behind them are in [Explanation](#explanation).
 
 ### Passed
 
@@ -263,19 +923,32 @@ and every built-in code within each.
 
 <Spacer />
 
-### Err
+### Defaults
 
-Error representation for use with Validation, Exceptions, and Result types. This stores instance level error details and the building block for `Checked`'s error list.
+Each group has one default code, for when nothing more specific applies. `DEFAULT` on a group is an alias for that
+code, so `Succeeded.DEFAULT` is `Succeeded.SUCCESS`: the same instance, not a separate code.
 
-```kotlin
-sealed class Err {
-    abstract val message: String
+| Group | Alias | Code | Description |
+|---|---|---|---|
+| <GroupBadge group="Succeeded" /> | `Succeeded.DEFAULT` | <CodeBadge>SUCCESS</CodeBadge> | The operation completed successfully. |
+| <GroupBadge group="Pending" /> | `Pending.DEFAULT` | <CodeBadge>ACCEPTED</CodeBadge> | The request was accepted. |
+| <GroupBadge group="Excluded" /> | `Excluded.DEFAULT` | <CodeBadge>OMITTED</CodeBadge> | The item was excluded from the result. |
+| <GroupBadge group="Information" /> | `Information.DEFAULT` | <CodeBadge>NOTICE</CodeBadge> | An informational notice. |
+| <GroupBadge group="Restricted" /> | `Restricted.DEFAULT` | <CodeBadge>DENIED</CodeBadge> | The request was denied. |
+| <GroupBadge group="Invalid" /> | `Invalid.DEFAULT` | <CodeBadge>INVALID_VALUE</CodeBadge> | The request had an invalid value. |
+| <GroupBadge group="Rejected" /> | `Rejected.DEFAULT` | <CodeBadge>RULE_VIOLATION</CodeBadge> | A business rule rejected the request. |
+| <GroupBadge group="Unserved" /> | `Unserved.DEFAULT` | <CodeBadge>UNEXPECTED</CodeBadge> | An unexpected, unclassified error occurred. |
 
-    data class ErrorInfo(override val message: String, val cause: Throwable? = null) : Err()
-    data class ErrorField(val field: String, val value: String, override val message: String) : Err()
-    data class ErrorList(val errors: List<Err>, override val message: String) : Err()
-}
-```
+:::note[isDefault compares by value]
+1. **Only the default**: `isDefault` is true for a group's default code and for no other.
+2. **Every field counts**: A copy with any field changed, such as the message, is not the default.
+:::
+
+<Spacer />
+
+### Err types
+
+The kinds of `Err` and the builders that create them.
 
 | Variant | Fields | Use |
 |---|---|---|
@@ -296,331 +969,76 @@ sealed class Err {
 
 <Spacer />
 
-### Checked
+### Protocol mappings
 
-Non-monadic validation result that reports every problem at once, instead of stopping at the
-first. `Checked(status: Status, errors: List<Err>)`, reachable only through
-`Checked.success(status)` or `Checked.failure(status, errors)`.
+Every built-in code mapped to HTTP and gRPC. A code with no mapping of its own takes its group's default,
+so most of a group shares one value. There is no reverse conversion, since many codes share one protocol
+code.
 
-```kotlin
-class Checked private constructor(
-    val status: Status,
-    val errors: List<Err>,
-) : HasErrors {
-    val isValid: Boolean get() = errors.isEmpty()
+| Group | Code | HTTP | gRPC |
+|---|---|---|---|
+| <GroupBadge group="Succeeded" /> | <CodeBadge>SUCCESS</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>CREATED</CodeBadge> | 201 Created | 0 OK |
+|  | <CodeBadge>UPDATED</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>PATCHED</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>FETCHED</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>DELETED</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>HANDLED</CodeBadge> | 204 No Content | 0 OK |
+|  | <CodeBadge>REFERRED</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>EXITED</CodeBadge> | 200 OK | 0 OK |
+| <GroupBadge group="Pending" /> | <CodeBadge>ACCEPTED</CodeBadge> | 202 Accepted | 0 OK |
+|  | <CodeBadge>QUEUED</CodeBadge> | 202 Accepted | 0 OK |
+|  | <CodeBadge>PROCESSING</CodeBadge> | 202 Accepted | 0 OK |
+|  | <CodeBadge>CONFIRM</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>REDIRECTED</CodeBadge> | 307 Temporary Redirect | 0 OK |
+|  | <CodeBadge>SCHEDULED</CodeBadge> | 202 Accepted | 0 OK |
+| <GroupBadge group="Excluded" /> | <CodeBadge>OMITTED</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>SKIPPED</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>DISCARDED</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>CANCELLED</CodeBadge> | 499 Client Closed Request | 1 CANCELLED |
+|  | <CodeBadge>DEDUPLICATED</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>DISQUALIFIED</CodeBadge> | 200 OK | 0 OK |
+| <GroupBadge group="Information" /> | <CodeBadge>NOTICE</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>ADVISORY</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>METADATA</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>HEALTH</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>DIAGNOSTICS</CodeBadge> | 200 OK | 0 OK |
+|  | <CodeBadge>MOVED</CodeBadge> | 200 OK | 0 OK |
+| <GroupBadge group="Restricted" /> | <CodeBadge>DENIED</CodeBadge> | 401 Unauthorized | 7 PERMISSION_DENIED |
+|  | <CodeBadge>UNAUTHENTICATED</CodeBadge> | 401 Unauthorized | 16 UNAUTHENTICATED |
+|  | <CodeBadge>UNAUTHORIZED</CodeBadge> | 401 Unauthorized | 7 PERMISSION_DENIED |
+|  | <CodeBadge>FORBIDDEN</CodeBadge> | 403 Forbidden | 7 PERMISSION_DENIED |
+|  | <CodeBadge>LOCKED</CodeBadge> | 423 Locked | 7 PERMISSION_DENIED |
+|  | <CodeBadge>SUSPENDED</CodeBadge> | 403 Forbidden | 7 PERMISSION_DENIED |
+| <GroupBadge group="Invalid" /> | <CodeBadge>INVALID_VALUE</CodeBadge> | 400 Bad Request | 3 INVALID_ARGUMENT |
+|  | <CodeBadge>BAD_REQUEST</CodeBadge> | 400 Bad Request | 3 INVALID_ARGUMENT |
+|  | <CodeBadge>NOT_FOUND</CodeBadge> | 404 Not Found | 5 NOT_FOUND |
+|  | <CodeBadge>OUT_OF_RANGE</CodeBadge> | 400 Bad Request | 11 OUT_OF_RANGE |
+|  | <CodeBadge>PAYLOAD_TOO_LARGE</CodeBadge> | 413 Payload Too Large | 8 RESOURCE_EXHAUSTED |
+|  | <CodeBadge>MISSING_FIELD</CodeBadge> | 400 Bad Request | 3 INVALID_ARGUMENT |
+| <GroupBadge group="Rejected" /> | <CodeBadge>RULE_VIOLATION</CodeBadge> | 409 Conflict | 9 FAILED_PRECONDITION |
+|  | <CodeBadge>CONFLICT</CodeBadge> | 409 Conflict | 6 ALREADY_EXISTS |
+|  | <CodeBadge>NOT_EXISTS</CodeBadge> | 404 Not Found | 9 FAILED_PRECONDITION |
+|  | <CodeBadge>PRECONDITION_FAILED</CodeBadge> | 409 Conflict | 9 FAILED_PRECONDITION |
+|  | <CodeBadge>EXPIRED</CodeBadge> | 410 Gone | 9 FAILED_PRECONDITION |
+|  | <CodeBadge>GONE</CodeBadge> | 410 Gone | 9 FAILED_PRECONDITION |
+| <GroupBadge group="Unserved" /> | <CodeBadge>UNEXPECTED</CodeBadge> | 500 Internal Server Error | 2 UNKNOWN |
+|  | <CodeBadge>UNSUPPORTED</CodeBadge> | 501 Not Implemented | 12 UNIMPLEMENTED |
+|  | <CodeBadge>TIMEOUT</CodeBadge> | 504 Gateway Timeout | 4 DEADLINE_EXCEEDED |
+|  | <CodeBadge>RATE_LIMITED</CodeBadge> | 429 Too Many Requests | 8 RESOURCE_EXHAUSTED |
+|  | <CodeBadge>RESOURCE_LIMITED</CodeBadge> | 429 Too Many Requests | 8 RESOURCE_EXHAUSTED |
+|  | <CodeBadge>UNREACHABLE</CodeBadge> | 503 Service Unavailable | 14 UNAVAILABLE |
+|  | <CodeBadge>UNDER_MAINTENANCE</CodeBadge> | 503 Service Unavailable | 13 INTERNAL |
+|  | <CodeBadge>INTERNAL</CodeBadge> | 503 Service Unavailable | 13 INTERNAL |
+|  | <CodeBadge>DATA_LOSS</CodeBadge> | 503 Service Unavailable | 15 DATA_LOSS |
+|  | <CodeBadge>DEGRADED</CodeBadge> | 503 Service Unavailable | 13 INTERNAL |
+|  | <CodeBadge>LEGAL_BLOCK</CodeBadge> | 451 Unavailable For Legal Reasons | 13 INTERNAL |
+|  | <CodeBadge>ABORTED</CodeBadge> | 503 Service Unavailable | 10 ABORTED |
 
-    companion object {
-        fun success(status: Passed = Succeeded.SUCCESS): Checked
-        fun failure(status: Failed, errors: List<Err>): Checked
-    }
-}
-```
-
-| # | Trait | Details |
-|---:|---|---|
-| 1 | Invariant | `status` and `errors` can never disagree: a passing `Checked` always has an empty `errors` list, a failing one always has at least one entry. |
-| 2 | `isValid` | `Boolean`, reflects `errors.isEmpty()`. |
-| 3 | Interface | Implements `HasErrors`. |
-| 4 | `collect(...)` | `collect(vararg checks)` / `collect(checks: List<Checked>)` combine multiple `Checked` into one, failing with `Invalid.INVALID_VALUE` and every pooled error if any input failed. |
-
-<Spacer />
-
-### Exceptions
-
-Sealed exception hierarchy carrying a `Checked`, for boundaries that only understand
-exceptions — one subclass per `Failed` group:
-
-```kotlin
-sealed class StatusException(val checked: Checked) : Exception() {
-    val status: Status get() = checked.status
-    val errors: List<Err> get() = checked.errors
-
-    class RestrictedException(status: Failed.Restricted, errors: List<Err> = emptyList()) : StatusException(...)
-    class InvalidException(status: Failed.Invalid, errors: List<Err> = emptyList()) : StatusException(...)
-    class RejectedException(status: Failed.Rejected, errors: List<Err> = emptyList()) : StatusException(...)
-    class UnservedException(status: Failed.Unserved, errors: List<Err> = emptyList()) : StatusException(...)
-}
-```
-
-| Exception | Matches |
+| Mapping | Source |
 |---|---|
-| `RestrictedException` | `Failed.Restricted` |
-| `InvalidException` | `Failed.Invalid` |
-| `RejectedException` | `Failed.Rejected` |
-| `UnservedException` | `Failed.Unserved` |
-
-| # | Trait | Details |
-|---:|---|---|
-| 1 | Carries | A `Checked`, exposed as `status: Status` and `errors: List<Err>`. |
-| 2 | Conversion | `Failed.toException(errors)` converts a bare `Failed` status into the matching subclass. |
-| 3 | Platform equivalents | iOS via `@ObjCName` in `iosMain`; JS/TS via `jsMain`. |
-
-<Spacer />
-
-### Protocols
-
-Maps `Status` to and from external protocol representations — HTTP and gRPC out of the box,
-or a custom protocol of your own via `CodeLookup`.
-
-| Type | Purpose |
-|---|---|
-| `CodesToHttp` | Maps `Status` to/from HTTP status codes. |
-| `CodesToGrpc` | Maps `Status` to/from gRPC status codes. |
-| `CodeLookup` | Interface for defining a mapping to any other protocol. |
-| `CompositeLookup` | Combines a base `CodeLookup` with per-code extensions/overrides. |
-
-![Kiit Codes protocol mappings](/img/kiit-codes/kiit-codes-protocols.png)
-
-<BackToTop />
-
-## Design
-
-### Philosophy
-
-A closed taxonomy keeps generic handling, exhaustive matching, logging, and protocol mappings
-consistent everywhere a status is used. Codes stay open underneath so each domain can extend the
-taxonomy freely without forking it. This doesn't replace domain modeling: domain errors explain
-*what* happened in one domain, the taxonomy explains *what kind* of outcome it was, consistently,
-across every domain in an application. `Status` is a sealed interface rather than an enum
-specifically so consumers can add their own codes while still participating in the same
-taxonomy — an enum can't be extended this way.
-
-<Spacer />
-
-### Features
-
-| # | Feature | Description |
-|---:|---|---|
-| 1 | **[Status classification](#taxonomy)** | The core `Passed`/`Failed` split, with a fixed `Group` and an open `Code` beneath it for finer-grained classification. |
-| 2 | **[Extensibility](#usage)** | Add domain-specific codes within the same fixed groups, without forking the taxonomy or losing shared meaning. |
-| 3 | **[Protocol mappings](#protocols-1)** | Map statuses to and from HTTP, gRPC, or any custom protocol via `CodeLookup`/`CompositeLookup`. |
-| 4 | **[Validation](#usage)** | `Checked`, `Err`, and `collect` report every problem found at once, instead of stopping at the first. |
-| 5 | **[Typed exceptions](#usage)** | `StatusException` and `Failed.toException()` for boundaries that only understand exceptions. |
-| 6 | **Result integration** | The separate [kiit-result](https://github.com/kiitdev/kiit-result) module builds a `Result<T, E>` type on top of this same taxonomy. |
-
-<Spacer />
-
-### Limitations
-
-| # | Limitation | Details |
-|---:|---|---|
-| 1 | AI framing is unproven | Stable names and explicit classification are expected to reduce ambiguity for AI tooling, but that's a hypothesis, not a benchmarked result. |
-| 2 | JS/TS not CI-gated | Exists but isn't CI-gated or published to npm yet; lacks the compiler-enforced exhaustiveness that Kotlin, Java, and Swift (via SKIE) get. |
-
-<Spacer />
-
-### Exclusions
-
-| # | Excluded | Reasoning |
-|---:|---|---|
-| 1 | Retry logic or severity levels | Retryability cuts across groups rather than aligning with them — `Unserved` alone has both retryable and non-retryable codes. A dedicated `Retry` category was considered and rejected for the same reason. |
-| 2 | A numeric status code field | An earlier version had one; it invited the wrong inference (looking like an HTTP code while meaning something else). Real protocol numbers are available on demand via `CodesToHttp`/`CodesToGrpc`, never implied by the taxonomy itself. |
-| 3 | A ninth group | Every gRPC code and the most common HTTP codes map onto the existing eight without needing one, tested directly against both. |
-
-<BackToTop />
-
-## Tutorial
-
-### Status Codes
-
-This walks through building a tiny service that returns `Status` for expected outcomes, then
-crosses a boundary that can only communicate via exceptions.
-
-Define a service that returns a `Status` instead of throwing for expected failures:
-
-```kotlin
-import kiit.codes.*
-
-data class User(val id: String, val email: String)
-
-class UserService {
-    private val users = mutableMapOf<String, User>()
-
-    fun create(id: String, email: String): Status {
-        if (email.isBlank()) return Invalid.BAD_REQUEST
-        if (users.containsKey(id)) return Rejected.CONFLICT
-        users[id] = User(id, email)
-        return Succeeded.CREATED
-    }
-
-    fun authorize(id: String, requesterId: String): Status =
-        when {
-            !users.containsKey(id) -> Rejected.NOT_EXISTS
-            id != requesterId -> Restricted.UNAUTHORIZED
-            else -> Succeeded.SUCCESS
-        }
-}
-```
-
-<Spacer />
-
-### Callers
-
-Call it and branch on the result:
-
-```kotlin
-val service = UserService()
-
-val created = service.create("alice", "alice@example.com")
-println("${created.name} (success=${created.success})") // CREATED (success=true)
-
-val denied = service.authorize("alice", "bob")
-println("${denied.name} (success=${denied.success})") // UNAUTHORIZED (success=false)
-```
-
-<Spacer />
-
-### Validation
-
-Now add a method that reports every problem at once instead of stopping at the first:
-
-```kotlin
-fun UserService.validateSignup(id: String, email: String): Checked {
-    val errors = mutableListOf<Err>()
-    if (id.isBlank()) errors.add(Err.on("id", id, "Id is required"))
-    if (!email.contains("@")) errors.add(Err.on("email", email, "Email must contain @"))
-    return if (errors.isEmpty()) Checked.success(Succeeded.SUCCESS)
-           else Checked.failure(Invalid.INVALID_VALUE, errors)
-}
-
-val checked = service.validateSignup("", "not-an-email")
-println("valid=${checked.isValid}, errors=${checked.errors.size}")
-// valid=false, errors=2
-```
-
-`Checked` can only be constructed through `Checked.success(status)`/`Checked.failure(status, errors)`,
-so `status` and `errors` can never disagree. See [Concepts](#checked) for the full type, or
-[Guide](#usage) for `collect(...)` combining multiple `Checked` results into one.
-
-<Spacer />
-
-### Try/Catch
-
-Now add a method that throws instead, for a caller that only understands exceptions:
-
-```kotlin
-fun UserService.requireAuthorized(id: String, requesterId: String) {
-    val status = authorize(id, requesterId)
-    if (status is Failed) throw status.toException()
-}
-
-try {
-    service.requireAuthorized("alice", "bob")
-} catch (e: StatusException) {
-    println("caught: ${e.status.name} — ${e.message}")
-    // caught: UNAUTHORIZED — Not authorized to perform this action
-}
-```
-
-`status.toException()` picked `StatusException.RestrictedException` automatically, since
-`Restricted.UNAUTHORIZED` belongs to the `Restricted` group. See [Concepts](#exceptions)
-for the full exception hierarchy, or [Design](#philosophy) for why the taxonomy is shaped this
-way.
-
-<Spacer />
-
-### Result
-
-`kiit-codes` classifies an outcome, but doesn't hand back a value alongside it. For that, pair it
-with [kiit-result](/docs/kiit-result) — a separate Kiit library that builds a `Result<T, E>` type
-on this same taxonomy:
-
-```kotlin
-fun UserService.find(id: String): Result<User, Status> =
-    users[id]?.let { Result.success(it) } ?: Result.failure(Rejected.NOT_EXISTS)
-```
-
-See the [kiit-result docs](/docs/kiit-result) for the full API.
-
-<BackToTop />
-
-## Guide
-
-### Usage
-
-**Status only**, when the outcome itself is enough:
-
-```kotlin
-when (val status = authorize(userId, requesterId)) {
-    is Passed -> log.info("ok: ${status.name}")
-    is Failed -> log.warn("failed: ${status.name} — ${status.message}")
-}
-```
-
-**Extensibility** — custom codes stay inside a built-in group:
-
-```kotlin
-val PAYMENT_DECLINED = Failed.Rejected(
-    name = "PAYMENT_DECLINED",
-    message = "Payment declined",
-    origin = "payments",
-)
-```
-
-`PAYMENT_DECLINED` remains a `Rejected` outcome everywhere in the system while retaining its own
-domain-specific identity. `origin` keeps custom namespaces distinct from `"kiit"` and from other
-teams' codes.
-
-![Kiit Codes custom codes](/img/kiit-codes/kiit-codes-custom.png)
-
-**Validation**, reporting every problem instead of stopping at the first:
-
-```kotlin
-fun validateUser(name: String, email: String): Checked {
-    val errors = mutableListOf<Err>()
-    if (name.isBlank()) errors.add(Err.on("name", name, "Name is required"))
-    if (!email.contains("@")) errors.add(Err.on("email", email, "Email must contain @"))
-    return if (errors.isEmpty()) Checked.success() else Checked.failure(Invalid.INVALID_VALUE, errors)
-}
-```
-
-**Exceptions**, converting a `Failed` status at a boundary that needs one:
-
-```kotlin
-fun requireAuthorized(id: String, requesterId: String) {
-    val status = authorize(id, requesterId)
-    if (status is Failed) throw status.toException()
-}
-```
-
-![Kiit Codes usage](/img/kiit-codes/kiit-codes-usage.png)
-
-<Spacer />
-
-### Protocols
-
-Working code for the types introduced in [Concepts](#protocols) — mapping statuses to and from
-HTTP, gRPC, and a custom protocol of your own.
-
-**HTTP**, via `CodesToHttp`:
-
-```kotlin
-val http = CodesToHttp()
-
-http.toCode(Succeeded.CREATED)      // 201
-http.toCode(Invalid.INVALID_VALUE)  // 400
-http.toStatus(404)?.name            // "NOT_FOUND"
-```
-
-**gRPC**, via `CodesToGrpc`:
-
-```kotlin
-val grpc = CodesToGrpc()
-
-grpc.toCode(Restricted.DENIED)  // 7, PERMISSION_DENIED
-grpc.toStatus(6)?.name          // "CONFLICT", ALREADY_EXISTS reversed
-```
-
-**Custom protocols**, via `CodeLookup`/`CompositeLookup`:
-
-```kotlin
-val lookup = CompositeLookup(
-    base = CodesToHttp(),
-    extensions = mapOf(PAYMENT_DECLINED to 402),
-)
-
-lookup.toCode(PAYMENT_DECLINED) // 402
-```
+| HTTP | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L89">CodesToHttp</ConceptTermLink>, its <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L110">overrides</ConceptTermLink> |
+| gRPC | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L148">CodesToGrpc</ConceptTermLink>, its <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L169">overrides</ConceptTermLink> |
 
 <BackToTop />
 

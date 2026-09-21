@@ -1,0 +1,32 @@
+.related {
+  margin: 1.5rem 0;
+}
+
+.title {
+  margin-bottom: 0.4rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--kiit-color-heading-accent, var(--ifm-color-primary));
+}
+
+/* Numbers column: as narrow as its content, like the `#` column in the page's other list tables. */
+.number {
+  width: 1%;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* One link plus its label. Several links in a cell sit side by side and wrap as a unit. */
+.link {
+  display: inline-block;
+  margin-right: 1.25rem;
+}
+
+.kind {
+  margin-right: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ifm-color-emphasis-600);
+}

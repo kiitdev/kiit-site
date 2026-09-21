@@ -24,8 +24,8 @@ Listed in top-to-bottom order as they appear on the page:
    before `Overview` starts. Distinct from a diagram embedded within a
    specific Topic further down the page (e.g. the taxonomy diagram inside
    `Taxonomy`).
-5. **Section** — an H2 heading on a doc page (`Overview`, `Setup`, `Concepts`,
-   `Design`, `Tutorial`, `Guide`). Matches the docs template's own vocabulary.
+5. **Section** — an H2 heading on a doc page (`Overview`, `Setup`, `Explanation`,
+   `Tutorial`, `Guide`, `Reference`). Matches the docs template's own vocabulary.
 6. **Topic** — an H3 heading nested under a Section (e.g. `Goals`, `Install`,
    `Terms`, `Tiers`). Always belongs to exactly one Section.
 7. **Heading Anchor** — the "#" link that appears next to a Section heading
@@ -53,21 +53,48 @@ Listed in top-to-bottom order as they appear on the page:
 14. **TOC Entry** — a single link within the TOC, at either the Section or
     Topic level.
 15. **Section Icon** — the small emoji glyph prefixed to a Section's TOC
-    Entry (applied positionally via CSS, see Section 8.2 below). Distinct
+    Entry (applied via CSS keyed to the Section's anchor, see Section 8.2 below). Distinct
     from the general-purpose `Icon` component, which wraps Tabler icons for
     use in page body content, not the TOC.
 
 ## 2. Docs Page Structure
 
 1. **Fixed Section order** — every module docs page follows the same skeleton:
-   `Overview → Setup → Concepts → Design → Tutorial → Guide`, per
-   `_templates/docs-template.md`. Don't reorder or skip a Section.
-2. **Diátaxis discipline per Section** — `Concepts` is bare reference only (no
-   rationale, no narrative). `Design` is rationale/explanation only (no
-   step-by-step instructions). `Tutorial` is the one guided, hands-on first win,
-   requiring no prior Concepts/Design knowledge. `Guide` is how-to, assuming
-   existing competence.
-3. **Versioned URL path** — the intended final URL shape is `/docs/v1/{module}`
+   `Overview → Setup → Explanation → Tutorial → Guide → Reference`, then
+   `FAQ`. Don't reorder or skip a Section. The order reads as: what it is, get
+   it running, the vocabulary and the reasons, a first walkthrough, tasks
+   you'll do in depth, and lookup tables. There is no separate `Design`
+   Section: its rationale is in `Overview > Goals`, and its features and
+   limitations are Topics in `Explanation`. Status: `kiit-codes` follows this
+   order. `kiit-result` and `_templates/docs-template.md` still have `Design`
+   before `Tutorial`, no `Reference`, and call the Section `Concepts`. They
+   move when updated.
+2. **Diátaxis discipline per Section** — `Explanation` explains what each thing
+   is and why it is that way, briefly (no step-by-step, no member lists).
+   `Reference` is lookup tables only: the full code catalog, fields, mappings
+   (no narrative). `Tutorial` is the one guided, hands-on first win, requiring
+   no prior Explanation knowledge. `Guide` is how-to, assuming existing
+   competence.
+3. **Guide is depth of usage, task-first** — each Topic names the task it helps
+   with, explains it thoroughly with an example (options, edge cases,
+   alternatives), and links to `Explanation` for the why. Rationale that isn't
+   needed to finish the task belongs in `Explanation`, not here.
+4. **Explanation is prose** — what things are and why, with illustrative code
+   allowed but kept small. It never tells the reader to follow steps, since
+   that makes it a how-to (`Guide`) or a walkthrough (`Tutorial`).
+5. **Code mostly lives in Setup, Tutorial and Guide** — a guideline, not a
+   hard rule. `Explanation` is short prose, diagrams and tables, and
+   `Reference` is tables, so they usually don't need code. Add a short block
+   there when it explains the point better than a table would (for example
+   the fields every Status carries). Prefer a table for an API shape, and
+   keep any block in those Sections small.
+6. **Setup Topics** — `Install` (the code, plus a table of the published
+   artifacts by language), `Imports`, `Source`, `Example`.
+7. **Code examples come from the sample apps** — a code block in the page is
+   an `<Example section="..." topic="..." />` (see Section 4 and `SETUP.md`),
+   not code typed into the page, so the docs can't drift from the library. A
+   block that is still hand-written is being converted, one Topic at a time.
+8. **Versioned URL path** — the intended final URL shape is `/docs/v1/{module}`
    once the two-instance versioned docs plugin setup lands (Step 4 of the
    redesign plan). Until then, pages live under the default single docs
    instance with an explicit `slug` frontmatter field pinning the URL (see
@@ -149,6 +176,36 @@ never registered globally.
    either way), so this produces identical H1 behavior to the markdown
    syntax it replaces.
 
+9. **`Example`** — shows a code example in one tab per language (Kotlin, Java,
+   TypeScript, Swift), looked up by `section` and `topic`. The code comes
+   from the kiit-codes sample apps through `npm run examples`, see
+   `SETUP.md`. An unknown `section`/`topic` throws, so a typo fails the build.
+   A code block title only shows when a language has several blocks.
+10. **`TocCollapse`** — the state and the "Expand all / Collapse all" buttons
+    for the right-hand TOC. Used by the swizzled `TOC` and `TOCItems/Tree`
+    (Section 11), not imported by a doc page.
+11. **`CodeCard`** — a code snippet in a colored, rounded frame (props
+    `title`, `subtitle`, `color`, `code`, `language`, `footnote`; title and
+    subtitle are optional). `code` is a string for one snippet (JSON, or a
+    single-language example), or an object keyed by language for tabs inside
+    the frame, synced with the page's other language tabs. Stack several to
+    build a diagram-style figure from real highlighted code instead of a
+    screenshot, so the text stays current and searchable.
+12. **`Diagram`** — an image with rounded corners and a thin rounded border
+    (props `src`, `alt`, optional `radius`, `border` and `caption`). Use it for
+    every diagram instead of a markdown image, so all diagrams share one look.
+    The radius and border color are set once as `--kiit-diagram-radius` and
+    `--kiit-diagram-border` in `src/css/custom.css`. `border={false}` removes
+    the border for a diagram that draws its own.
+13. **`Related`** — a numbered, full-width table of links related to a Topic
+    (props `title`, `items`; columns `#`, Item, Note, Links: each item has a `label`, a short `note` and `links`, each link a
+    `text`, `href` and optional `kind`: `source`, `reference`, `guide` or
+    `sample`). Put one at the end of a Topic for its source and reference links.
+    It replaces the `info[Source and references]` admonition, so links don't
+    add to the number of callouts. Source links use the `ConceptTermLink`
+    style.
+
+
 ## 5. Theming & Color
 
 1. **Group colors match the taxonomy diagram exactly** — `groupColors` in
@@ -202,12 +259,37 @@ never registered globally.
 2. **Every table is forced to full content-column width** — Infima's default
    table sizing shrinks to fit content, making short tables look noticeably
    narrower than long ones. A single global rule
-   (`.theme-doc-markdown table { width: 100% }`) overrides this everywhere.
+   (`.theme-doc-markdown table { display: table; width: 100% }`) overrides
+   this everywhere. `display: table` is needed because Infima sets tables to
+   `display: block`, where `width: 100%` doesn't stretch the cells. It applies
+   at every window size. Below the desktop breakpoint, cells may break inside a
+   long word so a wide cell wraps instead of overflowing the page.
 3. **Repeated group values collapse to the first row only** — in the
    Passed/Failed code tables (`Group | Code | Description`), the `Group`
    cell (rendered via `GroupBadge`) only appears on that group's first row;
    subsequent rows for the same group leave that cell blank rather than
    repeating the badge.
+
+4. **The Defaults table shows the group on every row** — `Reference > Defaults`
+   (`Group | Alias | Code | Description`) has exactly one row per group, so
+   the `GroupBadge` repeats instead of collapsing to a first row as in the
+   Passed/Failed tables. Its Descriptions are the codes' own messages, the
+   same text as in those tables.
+
+5. **The Protocol mappings table is generated, not typed** — `Reference >
+   Protocol mappings` (`Group | Code | HTTP | gRPC`) comes from
+   `./gradlew -q :sample-kotlin:printMappingTable` in the kiit-codes repo
+   (`MappingTable.kt`), which computes every value from `CodesToHttp` and
+   `CodesToGrpc` over `Codes.all`. After a code or mapping change, run it and
+   paste the output over the table. Like the Passed/Failed tables it shows the
+   group on a group's first row only.
+
+6. **A short links table is fine** — now that every table fills the page width
+   (item 2), a short table of links no longer looks awkward, and the Setup
+   Topics use them (`Install` artifacts, `Source`). At the end of an
+   `Explanation` Topic, the source file and Reference links go in a `Related`
+   table (Section 4). A table is for data with columns worth comparing, like
+   the code and mapping tables.
 
 ## 7. Linking & Cross-References
 
@@ -227,12 +309,11 @@ never registered globally.
    `tutorial`, breaking every `#tutorial`-style link), and the standard
    markdown fix for that (`{#tutorial}`) in turn breaks MDX parsing in any
    file that already uses JSX components — which every doc page here does.
-2. **Emoji live in the TOC only, applied positionally via CSS** — a `::before`
-   pseudo-element keyed to each top-level TOC entry's position
-   (`:nth-child(1)` through `(6)`), not its text content. This only stays
-   correct as long as every doc page follows the fixed 6-Section order from
-   Section 2.1 — if that order ever changes, the CSS needs updating to
-   match.
+2. **Emoji live in the TOC only, keyed to the Section's anchor via CSS** — a
+   `::before` pseudo-element on each top-level TOC entry's link, matched by
+   its anchor (`a[href$='#design']`, `#tutorial`, ...), not by its position or
+   its text. That keeps the order of the Sections free to change, and a page
+   with fewer than all the Sections still gets the right emoji.
 
 ## 9. Blog
 
@@ -262,3 +343,36 @@ never registered globally.
 4. **No git commits or pushes performed on the user's behalf** — all
    commits, pushes, and branch operations are left for the user to do
    themselves.
+
+## 11. Swizzled Theme Files
+
+Copies of `@docusaurus/theme-classic` files (currently 3.10.2) that this site
+changes. Everything not listed here is the stock theme.
+
+1. **`src/theme/TOC/`** — adds the collapse provider and the "Expand all /
+   Collapse all" buttons to the right-hand TOC.
+2. **`src/theme/TOCItems/Tree.tsx`** — adds a toggle button to each Section
+   entry that has Topics, and hides its Topics while collapsed. Without a
+   provider (mobile and inline TOCs) it renders like the original.
+3. **Upgrades:** on a Docusaurus upgrade, diff these files against the new
+   originals.
+4. **Restart the dev server** after adding or removing a file under
+   `src/theme/`. Docusaurus reads theme overrides at startup and hot reload
+   doesn't see new ones.
+
+## 12. Admonitions
+
+Docusaurus's built-in admonitions (`:::tip[Title]` ... `:::`), used the same way
+on every page (`kiit-result` already does).
+
+1. **Built-in types only, with a title in brackets** — `tip` for advice,
+   `info` for context, `note` for a short aside, `warning` for a pitfall. Use
+   the type for what it means, not for color.
+2. **A numbered list with bold lead-ins inside** — `1. **Start here**: ...`,
+   matching the numbered-bullet style used elsewhere on the page.
+3. **At most one per Topic**, so each one stays noticeable, and only where it
+   guards against a real misunderstanding or gives a useful default. Lists of
+   links are not admonitions: use a `Related` table (Section 4).
+4. **No code inside** — link to the Topic that shows it.
+5. **Not headings** — an admonition doesn't appear in the TOC and shouldn't be
+   the only place a fact is stated. The Topic's text and tables still carry it.

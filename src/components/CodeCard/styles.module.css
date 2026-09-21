@@ -1,0 +1,116 @@
+.card {
+  margin: 1.75rem 0;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.85rem;
+  margin-bottom: 0.6rem;
+}
+
+.title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--kiit-color-heading-accent, var(--ifm-color-primary));
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ifm-color-emphasis-600);
+}
+
+/*
+ * The colored frame around the code panel. For a card with one snippet it is the .bezel div. For a card with language
+ * tabs it is the tab panel area, so the tab list above it stays on the page background, outside the color.
+ */
+.bezel,
+.withTabs :global(.tabs-container > .margin-top--md) {
+  padding: 0.8rem;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  border-radius: 28px;
+  background: var(--card-bezel);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+}
+
+/* The code panel inside it: no extra margin or shadow, corners that follow the frame. */
+.bezel :global(.theme-code-block),
+.withTabs :global(.theme-code-block) {
+  margin: 0;
+  border-radius: 18px;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+/* Language tabs: small pills on the page background, the active one tinted with the card's color. */
+.withTabs :global(.tabs) {
+  margin-bottom: 0.5rem;
+  padding-left: 0.35rem;
+  gap: 0.25rem;
+}
+
+.withTabs :global(.tabs__item) {
+  padding: 0.2rem 0.75rem;
+  border: 0;
+  border-radius: 999px;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.withTabs :global(.tabs__item:hover) {
+  background: var(--ifm-color-emphasis-200);
+}
+
+.withTabs :global(.tabs__item--active) {
+  background: var(--card-bezel);
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.withTabs :global(.tabs-container > .margin-top--md) {
+  margin-top: 0 !important;
+}
+
+.footnote {
+  margin-top: 0.5rem;
+  text-align: right;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.gray {
+  --card-bezel: #e3e6ea;
+}
+
+.blue {
+  --card-bezel: #66aaff;
+}
+
+.yellow {
+  --card-bezel: #ffe28a;
+}
+
+.red {
+  --card-bezel: #ff9c9c;
+}
+
+.green {
+  --card-bezel: #9af0c8;
+}
+
+[data-theme='dark'] .bezel,
+[data-theme='dark'] .withTabs :global(.tabs-container > .margin-top--md) {
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme='dark'] .gray {
+  --card-bezel: #3a3f47;
+}
+
+[data-theme='dark'] .gray.withTabs :global(.tabs__item--active) {
+  color: rgba(255, 255, 255, 0.9);
+}

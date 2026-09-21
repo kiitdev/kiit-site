@@ -1,0 +1,23 @@
+.diagram {
+  margin: 1.5rem 0;
+}
+
+.image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  box-sizing: border-box;
+  border-radius: var(--diagram-radius, var(--kiit-diagram-radius, 16px));
+}
+
+.bordered {
+  border: 1px solid var(--kiit-diagram-border, var(--ifm-color-emphasis-300));
+}
+
+.caption {
+  margin-top: 0.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ifm-color-emphasis-600);
+}

@@ -1,0 +1,78 @@
+{
+  "examples": {
+    "setup/install": {
+      "section": "setup",
+      "topic": "install",
+      "items": [
+        {
+          "id": "setup-install",
+          "kind": "install",
+          "tags": [
+            "setup"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "title": "build.gradle.kts",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:26",
+                "file": "setup-install/kotlin.text"
+              }
+            ],
+            "java": [
+              {
+                "lang": "xml",
+                "title": "pom.xml",
+                "source": "samples/sample-java/src/main/java/sample/SampleApp.java:3",
+                "file": "setup-install/java-1.text"
+              },
+              {
+                "lang": "groovy",
+                "title": "build.gradle",
+                "source": "samples/sample-java/src/main/java/sample/SampleApp.java:3",
+                "file": "setup-install/java-2.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "bash",
+                "title": "terminal",
+                "source": "samples/sample-ts/src/index.ts:9",
+                "file": "setup-install/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "setup/imports": {
+      "section": "setup",
+      "topic": "imports",
+      "items": [
+        {
+          "id": "setup-imports",
+          "kind": "code",
+          "tags": [
+            "setup"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:6",
+                "file": "setup-imports/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "ts",
+                "source": "samples/sample-ts/src/index.ts:17",
+                "file": "setup-imports/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

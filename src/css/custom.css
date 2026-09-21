@@ -26,6 +26,10 @@
  * where text contrast rules don't apply.
  */
 :root {
+  /* Corner radius and border color of every <Diagram> image. */
+  --kiit-diagram-radius: 16px;
+  --kiit-diagram-border: var(--ifm-color-emphasis-300);
+
   --kiit-color-brand: #5e72e4;
   --kiit-color-accent-orange: #f8a13e;
 
@@ -108,47 +112,56 @@
 }
 
 /*
- * TOC-only emoji per top-level Section, matched by position rather than
- * heading text (replaces the earlier "#" anchor-style prefix — having both
- * the "#" and an emoji was too much). Deliberately NOT in the page body
- * headings themselves: an emoji there breaks Docusaurus's anchor-id slug
- * (e.g. "🎓 Tutorial" slugs to "-tutorial", not "tutorial", breaking every
- * #tutorial-style link), and the standard markdown fix for that
- * ({#tutorial}) in turn breaks MDX parsing in a file that already uses JSX
- * components like this one does. Position-based means this only stays
- * correct as long as every doc page follows the fixed Overview -> Setup ->
- * Concepts -> Design -> Tutorial -> Guide -> FAQ section order from the docs
- * template — if that order ever changes, these need updating to match.
+ * TOC-only emoji per top-level Section, matched by the Section's anchor (the link's `#design`, `#tutorial`, ...)
+ * rather than by its position or its heading text. Deliberately NOT in the page body headings themselves: an emoji
+ * there breaks Docusaurus's anchor-id slug (e.g. "🎓 Tutorial" slugs to "-tutorial", not "tutorial", breaking every
+ * #tutorial-style link), and the standard markdown fix for that ({#tutorial}) in turn breaks MDX parsing in a file
+ * that already uses JSX components like this one does. Keying on the anchor means the order of the Sections on a
+ * page doesn't matter, so a page can move a Section (Design now follows Guide) without touching this. `#concepts` stays for
+ * kiit-result, which has not been renamed to Explanation yet.
  */
-.table-of-contents.table-of-contents__left-border > li:nth-child(-n + 7) > .table-of-contents__link::before {
+.table-of-contents.table-of-contents__left-border > li > a[href$='#overview']::before,
+.table-of-contents.table-of-contents__left-border > li > a[href$='#setup']::before,
+.table-of-contents.table-of-contents__left-border > li > a[href$='#concepts']::before,
+.table-of-contents.table-of-contents__left-border > li > a[href$='#explanation']::before,
+.table-of-contents.table-of-contents__left-border > li > a[href$='#tutorial']::before,
+.table-of-contents.table-of-contents__left-border > li > a[href$='#guide']::before,
+.table-of-contents.table-of-contents__left-border > li > a[href$='#reference']::before,
+.table-of-contents.table-of-contents__left-border > li > a[href$='#design']::before,
+.table-of-contents.table-of-contents__left-border > li > a[href$='#faq']::before {
   margin-right: 0.35rem;
 }
 
-.table-of-contents.table-of-contents__left-border > li:nth-child(1) > .table-of-contents__link::before {
+.table-of-contents.table-of-contents__left-border > li > a[href$='#overview']::before {
   content: '💡';
 }
 
-.table-of-contents.table-of-contents__left-border > li:nth-child(2) > .table-of-contents__link::before {
+.table-of-contents.table-of-contents__left-border > li > a[href$='#setup']::before {
   content: '🚀';
 }
 
-.table-of-contents.table-of-contents__left-border > li:nth-child(3) > .table-of-contents__link::before {
+.table-of-contents.table-of-contents__left-border > li > a[href$='#concepts']::before,
+.table-of-contents.table-of-contents__left-border > li > a[href$='#explanation']::before {
   content: '🗂️';
 }
 
-.table-of-contents.table-of-contents__left-border > li:nth-child(4) > .table-of-contents__link::before {
-  content: '🏗️';
-}
-
-.table-of-contents.table-of-contents__left-border > li:nth-child(5) > .table-of-contents__link::before {
+.table-of-contents.table-of-contents__left-border > li > a[href$='#tutorial']::before {
   content: '🎓';
 }
 
-.table-of-contents.table-of-contents__left-border > li:nth-child(6) > .table-of-contents__link::before {
+.table-of-contents.table-of-contents__left-border > li > a[href$='#guide']::before {
   content: '⚙️';
 }
 
-.table-of-contents.table-of-contents__left-border > li:nth-child(7) > .table-of-contents__link::before {
+.table-of-contents.table-of-contents__left-border > li > a[href$='#reference']::before {
+  content: '📚';
+}
+
+.table-of-contents.table-of-contents__left-border > li > a[href$='#design']::before {
+  content: '🏗️';
+}
+
+.table-of-contents.table-of-contents__left-border > li > a[href$='#faq']::before {
   content: '❓';
 }
 
@@ -295,8 +308,22 @@ h2.anchor .hash-link {
  * noticeably narrower than a long 3-column one. Force every table in doc
  * content to the full content-column width for a consistent look.
  */
+/*
+ * Infima makes every table `display: block` (so a wide one can scroll sideways), and a block-level table is only as wide
+ * as its content even when `width: 100%`, which is why short tables looked narrow. `display: table` makes the width
+ * apply, at every window size. On narrow windows cells may break inside a long word, so a wide cell wraps instead of
+ * pushing the table past the edge of the page.
+ */
 .theme-doc-markdown table {
+  display: table;
   width: 100%;
+}
+
+@media (max-width: 996px) {
+  .theme-doc-markdown table th,
+  .theme-doc-markdown table td {
+    overflow-wrap: anywhere;
+  }
 }
 
 /*
@@ -342,4 +369,78 @@ h2.anchor .hash-link {
 .navbar__link {
   color: var(--ifm-navbar-link-color);
   font-weight: 700;
+}
+
+/*
+ * Right-hand TOC collapse controls (see src/components/TocCollapse and the swizzled src/theme/TOC and
+ * src/theme/TOCItems/Tree). A section with sub-items gets a chevron button at the right edge of its row, and the
+ * "Expand all / Collapse all" buttons sit above the list. The chevron is a sibling of the link, so the selectors
+ * above that target `li > .table-of-contents__link` and `li > ul` are unaffected.
+ */
+.toc-controls {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0 0.5rem 0.5rem var(--ifm-toc-padding-horizontal);
+}
+
+.toc-controls__button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--ifm-toc-link-color);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-family: var(--ifm-font-family-base);
+}
+
+.toc-controls__button:hover:not(:disabled) {
+  color: var(--ifm-color-primary);
+  text-decoration: underline;
+}
+
+.toc-controls__button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.toc-item--collapsible {
+  position: relative;
+}
+
+.toc-toggle {
+  position: absolute;
+  top: 0.15rem;
+  right: 0.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+}
+
+.toc-toggle::before {
+  content: '';
+  display: block;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin: 0 auto;
+  border-right: 2px solid var(--ifm-toc-link-color);
+  border-bottom: 2px solid var(--ifm-toc-link-color);
+  transform: translateY(-0.1rem) rotate(45deg);
+  transition: transform 0.15s ease;
+}
+
+.toc-toggle[aria-expanded='false']::before {
+  transform: translateX(-0.1rem) rotate(-45deg);
+}
+
+.toc-toggle:hover {
+  background: var(--ifm-hover-overlay);
+}
+
+/* Room for the chevron so a long section title doesn't run underneath it. */
+.toc-item--collapsible > .table-of-contents__link {
+  padding-right: 1.75rem;
 }

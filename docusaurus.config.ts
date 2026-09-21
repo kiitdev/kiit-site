@@ -1,8 +1,23 @@
 import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
+import type {Plugin} from '@docusaurus/types';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
+
+/**
+ * Lets a page import a `*.text` file as a plain string. The doc examples extracted from the kiit-codes samples are
+ * stored that way (src/examples/kiit-codes/<id>/<language>.text), see SETUP.md. The `.text` extension keeps editors
+ * and build tools from treating the snippets as real Kotlin, Gradle or shell files.
+ */
+function textFilesPlugin(): Plugin {
+  return {
+    name: 'text-files',
+    configureWebpack() {
+      return {module: {rules: [{test: /\.text$/, type: 'asset/source'}]}};
+    },
+  };
+}
 
 const config: Config = {
   title: 'Kiit',
@@ -33,6 +48,8 @@ const config: Config = {
     defaultLocale: 'en',
     locales: ['en'],
   },
+
+  plugins: [textFilesPlugin],
 
   presets: [
     [
@@ -132,6 +149,7 @@ const config: Config = {
     prism: {
       theme: prismThemes.dracula,
       darkTheme: prismThemes.dracula,
+      additionalLanguages: ['java', 'kotlin', 'swift', 'typescript'],
     },
   } satisfies Preset.ThemeConfig,
 };
