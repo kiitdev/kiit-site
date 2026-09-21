@@ -81,6 +81,10 @@
   color: var(--ifm-color-emphasis-600);
 }
 
+.gray {
+  --card-bezel: #e3e6ea;
+}
+
 .blue {
   --card-bezel: #66aaff;
 }
@@ -101,4 +105,12 @@
 [data-theme='dark'] .withTabs :global(.tabs-container > .margin-top--md) {
   border-color: rgba(255, 255, 255, 0.18);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme='dark'] .gray {
+  --card-bezel: #3a3f47;
+}
+
+[data-theme='dark'] .gray.withTabs :global(.tabs__item--active) {
+  color: rgba(255, 255, 255, 0.9);
 }

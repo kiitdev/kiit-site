@@ -198,7 +198,7 @@ never registered globally.
     `--kiit-diagram-border` in `src/css/custom.css`. `border={false}` removes
     the border for a diagram that draws its own.
 13. **`Related`** — a numbered, full-width table of links related to a Topic
-    (props `title`, `items`; each item has a `label` and `links`, each link a
+    (props `title`, `items`; columns `#`, Item, Note, Links: each item has a `label`, a short `note` and `links`, each link a
     `text`, `href` and optional `kind`: `source`, `reference`, `guide` or
     `sample`). Put one at the end of a Topic for its source and reference links.
     It replaces the `info[Source and references]` admonition, so links don't

@@ -14,6 +14,8 @@ export type RelatedLink = {
 
 export type RelatedItem = {
   label: string;
+  /** One short line on what the item is or why it is related. */
+  note?: string;
   links: RelatedLink[];
 };
 
@@ -32,8 +34,8 @@ const KIND_LABELS: Record<RelatedKind, string> = {
 
 /**
  * A numbered table of links related to a Topic: its source files, the Reference Topics that list the details, the
- * Guide that shows how to use it, the sample app. Put one at the end of a Topic. Each row is one item, and its links
- * sit in the last column with a small label for what each one is. The table takes the full page width like every other
+ * Guide that shows how to use it, the sample app. Put one at the end of a Topic. Each row is an item, a short note and its links.
+ * The links sit in the last column with a small label for what each one is. The table takes the full page width like every other
  * table (see CONVENTIONS.md, Section 6).
  */
 export default function Related({title = 'Related', items}: RelatedProps): ReactNode {
@@ -45,6 +47,7 @@ export default function Related({title = 'Related', items}: RelatedProps): React
           <tr>
             <th className={styles.number}>#</th>
             <th>Item</th>
+            <th>Note</th>
             <th>Links</th>
           </tr>
         </thead>
@@ -53,6 +56,7 @@ export default function Related({title = 'Related', items}: RelatedProps): React
             <tr key={item.label}>
               <td className={styles.number}>{i + 1}</td>
               <td>{item.label}</td>
+              <td>{item.note}</td>
               <td>
                 {item.links.map((link) => (
                   <span key={link.href + link.text} className={styles.link}>

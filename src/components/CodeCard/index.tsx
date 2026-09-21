@@ -5,13 +5,14 @@ import TabItem from '@theme/TabItem';
 import CodeBlock from '@theme/CodeBlock';
 import styles from './styles.module.css';
 
-export type CodeCardColor = 'blue' | 'yellow' | 'red' | 'green';
+export type CodeCardColor = 'gray' | 'blue' | 'yellow' | 'red' | 'green';
 
 export type CodeCardProps = {
   /** Optional heading above the frame. */
   title?: string;
   /** Optional description next to the title. */
   subtitle?: ReactNode;
+  /** Light gray by default. Use a color only where it carries meaning, so the page doesn't get too colorful. */
   color?: CodeCardColor;
   /**
    * One snippet as a string, highlighted as `language`. Or several snippets keyed by language
@@ -41,7 +42,7 @@ const LANGUAGES: {value: string; label: string; highlight: string}[] = [
  *    use groupId="language", so the choice is shared with every other language tab on the page.
  * 3. Purely presentational: the frame colors are `--card-bezel` per `color` in styles.module.css.
  */
-export default function CodeCard({title, subtitle, color = 'blue', code, language = 'kotlin', footnote}: CodeCardProps): ReactNode {
+export default function CodeCard({title, subtitle, color = 'gray', code, language = 'kotlin', footnote}: CodeCardProps): ReactNode {
   const tabs =
     typeof code === 'string'
       ? []
