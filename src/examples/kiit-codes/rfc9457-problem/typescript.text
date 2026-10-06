@@ -1,0 +1,8 @@
+// A validation failure as an RFC 9457 problem, written as JSON
+const fieldErrors = ErrorList(
+  [Err.on("title", "", "must be 1-100 characters"), Err.on("listId", "x", "unknown list")],
+  "Validation failed",
+);
+const body = ProblemConverter().convert(Invalid.INVALID_VALUE, fieldErrors);
+
+console.log(JSON.stringify(body, null, 2));

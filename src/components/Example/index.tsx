@@ -28,7 +28,7 @@ interface Snippet {
 interface Item {
   id: string;
   name?: string;
-  kind: 'code' | 'install' | 'imports';
+  kind: 'code' | 'install' | 'imports' | 'output';
   snippets: Record<string, Snippet[]>;
 }
 interface Entry {
@@ -105,6 +105,23 @@ export default function Example({
   const items = name ? entry.items.filter((item) => item.name === name) : entry.items;
   if (!items.length) {
     throw new Error(`<Example>: "${key}" has no item named "${name}".`);
+  }
+
+  // An output (a JSON response, say) is shown as it is, with no language tabs.
+  if (items.every((item) => item.kind === 'output')) {
+    return (
+      <>
+        {items.flatMap((item) =>
+          Object.values(item.snippets)
+            .flat()
+            .map((snippet) => (
+              <CodeBlock key={`${item.id}-${snippet.file}`} language={snippet.lang} title={snippet.title}>
+                {codeOf(files, snippet)}
+              </CodeBlock>
+            )),
+        )}
+      </>
+    );
   }
 
   // A title is only shown when a language has several blocks (Maven and Gradle for Java), to tell them apart.

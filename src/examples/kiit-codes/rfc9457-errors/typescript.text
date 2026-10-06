@@ -1,0 +1,7 @@
+// An Err.ErrorList fills detail and errors (errors is a kiit extension member, not part of the RFC)
+const validation = ErrorList(
+  [Err.on("title", "", "must be 1-100 characters"), Err.on("listId", "x", "unknown list")],
+  "Validation failed",
+);
+const withErrors = problems.convert(Invalid.INVALID_VALUE, validation);
+console.log(`${withErrors.detail}, ${withErrors.errors?.length} errors`); // Validation failed, 2 errors

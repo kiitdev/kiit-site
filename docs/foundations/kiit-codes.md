@@ -68,9 +68,10 @@ domain modeling: a domain error explains *what* happened in one domain, and the 
 | 1 | **[Status classification](#taxonomy)** | The core `Passed`/`Failed` split, with a fixed `Group` and an open `Code` beneath it for finer-grained classification. |
 | 2 | **[Extensibility](#usage)** | Add domain-specific codes within the same fixed groups, without forking the taxonomy or losing shared meaning. |
 | 3 | **[Protocol mappings](#protocols-1)** | Map statuses to HTTP, gRPC, or any custom protocol via `CodeLookup`/`CompositeLookup`. |
-| 4 | **[Validation](#usage)** | `Checked`, `Err`, and `collect` report every problem found at once, instead of stopping at the first. |
-| 5 | **[Typed exceptions](#usage)** | `StatusException` and `Failed.toException()` for boundaries that only understand exceptions. |
-| 6 | **Result integration** | The separate [kiit-result](https://github.com/kiitdev/kiit-result) module builds a `Result<T, E>` type on top of this same taxonomy. |
+| 4 | **[Problem details](#formats)** | Convert a status to an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `Problem`, or to kiit's own lighter `CodeDetail`, with a type URL and a list of errors. |
+| 5 | **[Validation](#usage)** | `Checked`, `Err`, and `collect` report every problem found at once, instead of stopping at the first. |
+| 6 | **[Typed exceptions](#usage)** | `StatusException` and `Failed.toException()` for boundaries that only understand exceptions. |
+| 7 | **Result integration** | The separate [kiit-result](https://github.com/kiitdev/kiit-result) module builds a `Result<T, E>` type on top of this same taxonomy. |
 
 <Spacer />
 
@@ -81,6 +82,7 @@ domain modeling: a domain error explains *what* happened in one domain, and the 
 | 1 | HTTP status codes | Validated against, not derived from — the most common HTTP codes map onto kiit-codes' eight groups without needing a ninth. |
 | 2 | gRPC status codes | Same validation as HTTP — every gRPC code maps onto the existing eight groups. |
 | 3 | Scala's `Either`/`Try` | Built on `Either`'s two-branch shape, structured around `Try`'s branches, with the `Status` taxonomy incorporated on top. |
+| 4 | [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem details | The shape of `Problem` (`type`, `title`, `status`, `detail`, `instance`), with `errors` added as an extension member. `CodeDetail` is the lighter kiit version for calls where HTTP and a public URL don't apply. See [Formats](#formats). |
 
 <Spacer />
 
@@ -238,6 +240,8 @@ case .failed(let failed):
 | 5 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L34">Err</ConceptTermLink> | Error representation for use with `Result`/`Outcome`-style types. | <MoreLink href="#err" /> |
 | 6 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Checked.kt#L22">Checked</ConceptTermLink> | Non-monadic validation result reporting every problem, not just the first. | <MoreLink href="#checked" /> |
 | 7 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/StatusException.kt#L46">StatusException</ConceptTermLink> | Sealed exception hierarchy carrying a `Checked`, for exception-only boundaries. | <MoreLink href="#exceptions" /> |
+| 8 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/Problem.kt#L22">Problem</ConceptTermLink> | kiit's name for an RFC 9457 problem details object: `type`, `title`, `status`, plus optional `detail`, `instance` and `errors`. | <MoreLink href="#formats" /> |
+| 9 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/CodeDetail.kt#L33">CodeDetail</ConceptTermLink> | kiit's own lighter shape for the same job: `path`, `code`, `success` and `message`, with no public URL needed. | <MoreLink href="#formats" /> |
 
 <Spacer />
 
@@ -567,6 +571,50 @@ your own via `CodeLookup`.
 
 <Spacer />
 
+### Formats
+
+How a status and its errors become a response body: an RFC 9457 `Problem` for an HTTP API, or kiit's lighter `CodeDetail`.
+
+<Example section="explanation" topic="formats" name="json" />
+
+<Example section="explanation" topic="formats" name="code" />
+
+`Problem` is kiit's name for the RFC 9457 problem details object, and `CodeDetail` is kiit's lighter version for
+calls between your own services. Each entry in `errors` is an `ErrorItem` with only a field and a message. The
+cause and the value that failed validation are left out on purpose, since echoing them back is a disclosure risk.
+
+:::tip[Which one?]
+1. **Problem**: An HTTP API that other parties call.
+2. **CodeDetail**: Calls between your own services, and jobs.
+3. **Neither**: When the status alone is enough.
+:::
+
+<Related
+  title="Source and references"
+  items={[
+    {
+      label: 'Problem',
+      note: 'The RFC 9457 shape and its converter',
+      links: [
+        {text: 'Problem.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/Problem.kt', kind: 'source'},
+        {text: 'ProblemConverter.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/ProblemConverter.kt', kind: 'source'},
+        {text: 'RFC 9457', href: 'https://www.rfc-editor.org/rfc/rfc9457.html', kind: 'reference'},
+        {text: 'Problem details', href: '#problem-details', kind: 'guide'},
+      ],
+    },
+    {
+      label: 'CodeDetail',
+      note: 'The kiit native shape',
+      links: [
+        {text: 'CodeDetail.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/CodeDetail.kt', kind: 'source'},
+        {text: 'ErrorDetail.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/ErrorDetail.kt', kind: 'source'},
+      ],
+    },
+  ]}
+/>
+
+<Spacer />
+
 ### Limitations
 
 What kiit-codes doesn't do, and why.
@@ -702,6 +750,20 @@ on this same taxonomy:
 
 See the [kiit-result docs](/docs/kiit-result) for the full API.
 
+<Spacer />
+
+### Error Responses
+
+When the caller is an HTTP client, send an RFC 9457 problem instead of a bare code. Convert a status:
+
+<Example section="tutorial" topic="error-responses" name="status" />
+
+Pass the validation errors from earlier to fill `detail` and `errors`:
+
+<Example section="tutorial" topic="error-responses" name="errors" />
+
+See the [Guide](#problem-details) to write it as JSON.
+
 <BackToTop />
 
 ## Guide
@@ -719,9 +781,7 @@ See the [kiit-result docs](/docs/kiit-result) for the full API.
 | 7 |  | Throw and catch | Cross an exception-only boundary with `toException()` | <MoreLink href="#usage" /> |
 | 8 | Protocols | Map to HTTP | Convert a status to an HTTP code | <MoreLink href="#usage" /> |
 | 9 |  | Map to gRPC | Convert a status to a gRPC code | <MoreLink href="#usage" /> |
-| 10 | Problem details | Return Problem details | Convert a status to an RFC 9457 `Problem`, with `errors` and `scope` | <MoreLink href="#usage" /> |
-| 11 |  | Set the type URL | Domain origin, plain id, or registered base URLs | <MoreLink href="#usage" /> |
-| 12 |  | Serialize to JSON | Write a `Problem` with Jackson | <MoreLink href="#usage" /> |
+| 10 | Problem details | Return Problem details | Convert a status and its errors to an RFC 9457 `Problem` and write it as JSON | <MoreLink href="#problem-details" /> |
 
 **Status only**, when the outcome itself is enough:
 
@@ -841,6 +901,14 @@ val lookup = CompositeLookup(
 )
 lookup.toCode(PAYMENT_DECLINED)     // 402
 ```
+
+<Spacer />
+
+### Problem details
+
+Return an RFC 9457 problem and write it as JSON:
+
+<Example section="guide" topic="problem-details" />
 
 <BackToTop />
 

@@ -1,0 +1,11 @@
+// A status and a list of errors become an RFC 9457 problem
+val failures =
+    Err.ErrorList(
+        errors = listOf(Err.on("title", "", "must be 1-100 characters"), Err.on("listId", "x", "unknown list")),
+        message = "Validation failed",
+    )
+val problem = ProblemConverter().convert(Invalid.INVALID_VALUE, failures)
+
+println(problem.status) // 400
+println(problem.detail) // Validation failed
+println(problem.errors?.size) // 2

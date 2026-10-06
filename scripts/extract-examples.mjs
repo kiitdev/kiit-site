@@ -50,7 +50,7 @@ if (!MAP) {
   process.exit(1);
 }
 const KNOWN_ATTRS = new Set(['id', 'tags']);
-const KINDS = new Set(['code', 'install', 'imports']);
+const KINDS = new Set(['code', 'install', 'imports', 'output']);
 const LANGS = ['kotlin', 'java', 'typescript', 'swift'];
 
 const errors = [];
@@ -178,6 +178,18 @@ for (const entry of map.map) {
   const items = [];
   for (const item of entry.items) {
     usedIds.add(item.id);
+    if (item.file) {
+      // A file the sample checks against its own output, shown as it is (a JSON response, say), with no language tabs.
+      const target = resolve(repo, item.file);
+      if (!existsSync(target)) {
+        errors.push(`${where}: file "${item.file}" does not exist`);
+        continue;
+      }
+      const lang = item.lang ?? 'text';
+      const snippet = {lang, ...(item.title ? {title: item.title} : {}), code: readFileSync(target, 'utf8').replace(/\n+$/, '')};
+      items.push({id: item.id, ...(item.name ? {name: item.name} : {}), kind: 'output', tags: [], snippets: {[lang]: [snippet]}});
+      continue;
+    }
     const kind = item.kind ?? 'code';
     if (!KINDS.has(kind)) errors.push(`${where}: unknown kind "${kind}" for ${item.id}`);
     const snippets = {};
@@ -188,7 +200,8 @@ for (const entry of map.map) {
         if (map.sources?.[lang]) warnings.push(`${where}: "${item.id}" is not in the ${lang} sample yet`);
         continue;
       }
-      snippets[lang] = hit.snippets;
+      // A copy per placement: the writer below deletes `code` from each snippet, and one id can be placed twice.
+      snippets[lang] = hit.snippets.map((snippet) => ({...snippet}));
       tags = [...new Set([...tags, ...hit.tags])];
     }
     if (!Object.keys(snippets).length) errors.push(`${where}: "${item.id}" was not found in any sample`);

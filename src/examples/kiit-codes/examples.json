@@ -15,7 +15,7 @@
               {
                 "lang": "kotlin",
                 "title": "build.gradle.kts",
-                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:26",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:28",
                 "file": "setup-install/kotlin.text"
               }
             ],
@@ -68,6 +68,138 @@
                 "lang": "ts",
                 "source": "samples/sample-ts/src/index.ts:17",
                 "file": "setup-imports/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "explanation/formats": {
+      "section": "explanation",
+      "topic": "formats",
+      "items": [
+        {
+          "id": "rfc9457-problem-json",
+          "name": "json",
+          "kind": "output",
+          "tags": [],
+          "snippets": {
+            "json": [
+              {
+                "lang": "json",
+                "title": "RFC 9457 problem",
+                "file": "rfc9457-problem-json/json.text"
+              }
+            ]
+          }
+        },
+        {
+          "id": "rfc9457-convert",
+          "name": "code",
+          "kind": "code",
+          "tags": [
+            "rfc9457",
+            "conversion"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:467",
+                "file": "rfc9457-convert/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:213",
+                "file": "rfc9457-convert/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tutorial/error-responses": {
+      "section": "tutorial",
+      "topic": "error-responses",
+      "items": [
+        {
+          "id": "rfc9457-minimal",
+          "name": "status",
+          "kind": "code",
+          "tags": [
+            "rfc9457",
+            "conversion"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:442",
+                "file": "rfc9457-minimal/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:201",
+                "file": "rfc9457-minimal/typescript.text"
+              }
+            ]
+          }
+        },
+        {
+          "id": "rfc9457-errors",
+          "name": "errors",
+          "kind": "code",
+          "tags": [
+            "rfc9457",
+            "usage"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:454",
+                "file": "rfc9457-errors/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:242",
+                "file": "rfc9457-errors/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "guide/problem-details": {
+      "section": "guide",
+      "topic": "problem-details",
+      "items": [
+        {
+          "id": "rfc9457-problem",
+          "kind": "code",
+          "tags": [
+            "rfc9457",
+            "json"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:484",
+                "file": "rfc9457-problem/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:229",
+                "file": "rfc9457-problem/typescript.text"
               }
             ]
           }

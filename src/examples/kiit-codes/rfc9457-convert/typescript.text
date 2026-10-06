@@ -1,0 +1,10 @@
+// A status and a list of errors become an RFC 9457 problem
+const failures = ErrorList(
+  [Err.on("title", "", "must be 1-100 characters"), Err.on("listId", "x", "unknown list")],
+  "Validation failed",
+);
+const problem = ProblemConverter().convert(Invalid.INVALID_VALUE, failures);
+
+console.log(problem.status); // 400
+console.log(problem.detail); // Validation failed
+console.log(problem.errors?.length); // 2

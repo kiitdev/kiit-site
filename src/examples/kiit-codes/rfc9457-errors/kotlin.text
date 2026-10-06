@@ -1,0 +1,8 @@
+// An Err.ErrorList fills detail and errors (errors is a kiit extension member, not part of the RFC)
+val validation =
+    Err.ErrorList(
+        errors = listOf(Err.on("title", "", "must be 1-100 characters"), Err.on("listId", "x", "unknown list")),
+        message = "Validation failed",
+    )
+val withErrors = problems.convert(Invalid.INVALID_VALUE, validation)
+println("${withErrors.detail}, ${withErrors.errors?.size} errors") // Validation failed, 2 errors
