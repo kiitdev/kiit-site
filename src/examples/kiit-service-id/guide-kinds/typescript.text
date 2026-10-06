@@ -1,0 +1,7 @@
+const frontend = ServiceId.of({ origin: "acme", scope: "storefront", kind: Kind.Web, env: "pro" });
+const edge = ServiceId.of({ origin: "acme", scope: "edge", kind: Kind.Gateway, env: "pro" });
+const assistant = ServiceId.of({ origin: "acme", scope: "support.assistant", kind: Kind.Agent, env: "pro" });
+
+console.log(frontend.name); // acme:storefront:web
+console.log(edge.name); // acme:edge:gateway
+console.log(assistant.name); // acme:support.assistant:agent

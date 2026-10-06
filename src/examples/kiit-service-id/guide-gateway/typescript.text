@@ -1,0 +1,5 @@
+/** At the edge: replace the internal id with the external one before a call leaves your infrastructure. */
+function toExternal(headers: Record<string, string>): Record<string, string> {
+  const internal = ServiceId.parse(headers["caller-id"]);
+  return { ...headers, "caller-id": internal.externalId };
+}

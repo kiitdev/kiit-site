@@ -1,0 +1,5 @@
+val id = ServiceId.api(origin = "acme", scope = "accounts.signup", env = "qat")
+
+println(id.name) // acme:accounts.signup:api
+println(id.install) // acme:accounts.signup:api:qat:latest
+println(id.externalId) // acme:accounts.signup

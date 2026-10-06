@@ -1,6 +1,11 @@
 #!/usr/bin/env node
-// Extracts documentation examples from the kiit-codes sample apps into src/examples/<module>/, which the
-// <Example section="..." topic="..." /> component (src/components/Example) reads. Run with `npm run examples`.
+// Extracts documentation examples from a module's sample apps into src/examples/<module>/, which the
+// <Example section="..." topic="..." /> component (src/components/Example) reads.
+//
+//   npm run examples                      kiit-codes
+//   npm run examples -- kiit-service-id   any module repo that sits next to kiit-site
+//
+// A module keeps its wiring in <repo>/doc/docs.json. kiit-codes still uses samples/docs-map.json until it moves.
 //
 // Output, in src/examples/<module>/ (for kiit-codes, src/examples/kiit-codes/):
 //   <id>/<language>.text        the code of an example, one file per language (<language>-1.text, -2.text when a
@@ -9,7 +14,7 @@
 //   files.ts                    one import per .text file, so the component can load them (generated)
 //
 // Markers carry only an id (and optional tags). Where an example goes on the site is decided by the map in
-// kiit-codes/samples/docs-map.json, so the site can be reorganized without touching the samples.
+// the module's docs map, so the site can be reorganized without touching the samples.
 //
 // Two kinds of marker, both opened by <example id="..." tags="a,b">:
 // 1. Inline, around real code in the file, in // comments:
@@ -31,14 +36,19 @@
 // Placeholders {{module.name}}, {{module.group}}, {{module.artifact}}, {{module.package}} and {{module.version}} are
 // filled in at extraction. The version comes from the build file of the language the example is written in.
 // The output has no timestamps, so running it twice gives identical files.
-import {readFileSync, writeFileSync, mkdirSync, rmSync} from 'node:fs';
+import {readFileSync, writeFileSync, mkdirSync, rmSync, existsSync} from 'node:fs';
 import {dirname, resolve, relative} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const site = resolve(here, '..');
-const codes = resolve(site, '../kiit-codes');
-const MAP = resolve(codes, 'samples/docs-map.json');
+const moduleName = process.argv.slice(2).find((a) => !a.startsWith('--')) ?? 'kiit-codes';
+const repo = resolve(site, '..', moduleName);
+const MAP = ['doc/docs.json', 'samples/docs-map.json'].map((p) => resolve(repo, p)).find((p) => existsSync(p));
+if (!MAP) {
+  console.error(`error: no doc/docs.json (or samples/docs-map.json) in ${repo}`);
+  process.exit(1);
+}
 const KNOWN_ATTRS = new Set(['id', 'tags']);
 const KINDS = new Set(['code', 'install', 'imports']);
 const LANGS = ['kotlin', 'java', 'typescript', 'swift'];
@@ -46,12 +56,15 @@ const LANGS = ['kotlin', 'java', 'typescript', 'swift'];
 const errors = [];
 const warnings = [];
 const map = JSON.parse(readFileSync(MAP, 'utf8'));
+if (map.module?.name !== moduleName) {
+  errors.push(`${relative(repo, MAP)}: module.name is "${map.module?.name}", expected "${moduleName}"`);
+}
 
 // ---- placeholders
 function versionFor(lang) {
   const v = map.versions?.[lang];
   if (!v) return undefined;
-  const text = readFileSync(resolve(codes, v.file), 'utf8');
+  const text = readFileSync(resolve(repo, v.file), 'utf8');
   if (v.json) return JSON.parse(text)[v.json];
   return text.match(new RegExp(v.regex))?.[1];
 }
@@ -81,12 +94,12 @@ const found = {};
 for (const lang of LANGS) {
   const rel = map.sources?.[lang];
   if (!rel) continue;
-  const file = resolve(codes, rel);
+  const file = resolve(repo, rel);
   const lines = readFileSync(file, 'utf8').split('\n');
   const ex = (found[lang] = {});
   const register = (attrs, snippets, where) => {
     if (!attrs.id) {
-      errors.push(`${where}: <example> needs an id (placement is set in samples/docs-map.json)`);
+      errors.push(`${where}: <example> needs an id (placement is set in the module's docs map)`);
       return;
     }
     for (const key of Object.keys(attrs)) {
@@ -100,7 +113,7 @@ for (const lang of LANGS) {
     ex[attrs.id] = {where, tags, snippets: snippets.map((s) => ({...s, code: fill(s.code, lang, where), source: where}))};
   };
   for (let i = 0; i < lines.length; i++) {
-    const where = `${relative(codes, file)}:${i + 1}`;
+    const where = `${relative(repo, file)}:${i + 1}`;
     const inline = lines[i].match(/^\s*\/\/\s*<example\b(.*)>\s*$/);
     if (inline) {
       const body = [];
@@ -131,10 +144,10 @@ for (const lang of LANGS) {
         code: m[3].replace(/\n+$/, ''),
       }));
       if (!snippets.length) {
-        errors.push(`${relative(codes, file)}:${start + 1}: block <example> has no fenced code block`);
+        errors.push(`${relative(repo, file)}:${start + 1}: block <example> has no fenced code block`);
         continue;
       }
-      register(parseAttrs(open[1]), snippets, `${relative(codes, file)}:${start + 1}`);
+      register(parseAttrs(open[1]), snippets, `${relative(repo, file)}:${start + 1}`);
     }
   }
 }

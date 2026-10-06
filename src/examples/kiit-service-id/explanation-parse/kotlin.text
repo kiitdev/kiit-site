@@ -1,0 +1,4 @@
+val parsed = ServiceId.parse("acme:accounts.signup:api:qat:1.4.2:4a3b300b")
+
+println(parsed.provenance) // Parsed
+println(parsed.tags) // []

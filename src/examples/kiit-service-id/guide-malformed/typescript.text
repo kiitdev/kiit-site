@@ -1,0 +1,5 @@
+try {
+  ServiceId.parse("acme:accounts.signup");
+} catch (e) {
+  console.log((e as Error).message); // expected 6 segments (origin:scope:kind:env:version:instance), got 2: ...
+}

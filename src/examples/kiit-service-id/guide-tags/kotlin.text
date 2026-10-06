@@ -1,0 +1,4 @@
+val tags = listOf(Tag.Basic("retry"), Tag.parse("region=us-east-1"))
+val tagged = ServiceId.job("acme", "accounts.signup").with(inst = null, tags = tags)
+
+println(tagged.tags) // [Basic(value=retry), Keyed(key=region, value=us-east-1)]

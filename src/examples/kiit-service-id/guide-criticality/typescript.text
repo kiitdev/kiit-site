@@ -1,0 +1,15 @@
+const worker = ServiceId.of({
+  origin: "acme",
+  scope: "accounts.signup",
+  kind: Kind.Worker,
+  env: "pro",
+  version: "1.0.2",
+  about: "Sends the welcome email after signup",
+  uri: "worker-7.acme.internal",
+  criticality: Criticality.High,
+  team: "payments-platform",
+});
+
+console.log(worker.criticality); // High
+console.log(worker.team); // payments-platform
+console.log(worker.provenance); // Declared

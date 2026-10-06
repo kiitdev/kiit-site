@@ -1,0 +1,8 @@
+const id = ServiceId.api("acme", "accounts.signup", "qat");
+
+console.log(`path=${id.path}`);
+console.log(`name=${id.name}`);
+console.log(`fullName=${id.fullName}`);
+console.log(`install=${id.install}`);
+console.log(`privateId=${id.privateId}`);
+console.log(`externalId=${id.externalId}`);

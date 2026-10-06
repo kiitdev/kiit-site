@@ -1,0 +1,5 @@
+val original = ServiceId.job("acme", "accounts.signup")
+val tagged = original.with(inst = null, tags = listOf(Tag.Basic("retry"), Tag.Keyed("batch", "42")))
+
+println("original tags=${original.tags}") // []
+println("tagged tags=${tagged.tags}")

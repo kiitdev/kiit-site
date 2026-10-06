@@ -141,9 +141,15 @@ time of writing). An unknown placeholder is an error.
 From `kiit-site`:
 
 ```bash
-npm run examples              # writes src/examples/kiit-codes/
-npm run examples -- --verbose # also lists the sample examples that aren't in the map
+npm run examples                                # kiit-codes, writes src/examples/kiit-codes/
+npm run examples -- kiit-service-id             # another module, writes src/examples/kiit-service-id/
+npm run examples -- kiit-service-id --verbose   # also lists the sample examples that aren't in the map
 ```
+
+A module repo keeps its wiring in `doc/docs.json` (same keys as the map in section 3). kiit-codes still uses
+`samples/docs-map.json` until it moves. A page picks its module with `<Example module="kiit-service-id" ... />`
+(the default is `kiit-codes`). A new module also needs an entry in `MODULES` in `src/components/Example/index.tsx`
+and an `examples.json` and `files.ts` in its `src/examples/<module>/` folder (the first run writes them).
 
 It reads the map and the sample files from the sibling `kiit-codes` folder, so both repos must be checked out side by side.
 Commit the changed files under `src/examples/kiit-codes/` with the change that caused them.

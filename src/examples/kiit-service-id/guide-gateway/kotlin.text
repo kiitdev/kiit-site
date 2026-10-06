@@ -1,0 +1,5 @@
+/** At the edge: replace the internal id with the external one before a call leaves your infrastructure. */
+fun toExternal(headers: Map<String, String>): Map<String, String> {
+    val internal = ServiceId.parse(headers.getValue("caller-id"))
+    return headers + ("caller-id" to internal.externalId)
+}

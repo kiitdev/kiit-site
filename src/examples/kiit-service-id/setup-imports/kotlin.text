@@ -1,0 +1,5 @@
+import kiit.serviceid.Criticality
+import kiit.serviceid.Kind
+import kiit.serviceid.Provenance
+import kiit.serviceid.ServiceId
+import kiit.serviceid.Tag

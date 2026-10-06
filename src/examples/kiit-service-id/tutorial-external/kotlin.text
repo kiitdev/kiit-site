@@ -1,0 +1,3 @@
+val outbound = mapOf("caller-id" to caller.externalId)
+
+println(outbound["caller-id"]) // acme:accounts.signup

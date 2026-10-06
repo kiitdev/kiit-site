@@ -1,0 +1,7 @@
+val frontend = ServiceId.of("acme", "storefront", Kind.Web, "pro")
+val edge = ServiceId.of("acme", "edge", Kind.Gateway, "pro")
+val assistant = ServiceId.of("acme", "support.assistant", Kind.Agent, "pro")
+
+println(frontend.name) // acme:storefront:web
+println(edge.name) // acme:edge:gateway
+println(assistant.name) // acme:support.assistant:agent

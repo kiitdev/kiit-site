@@ -2,16 +2,20 @@ import React, {type ReactNode} from 'react';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import CodeBlock from '@theme/CodeBlock';
-import data from '@site/src/examples/kiit-codes/examples.json';
-import files from '@site/src/examples/kiit-codes/files';
+import codesData from '@site/src/examples/kiit-codes/examples.json';
+import codesFiles from '@site/src/examples/kiit-codes/files';
+import serviceIdData from '@site/src/examples/kiit-service-id/examples.json';
+import serviceIdFiles from '@site/src/examples/kiit-service-id/files';
 
 /**
  * Shows a documentation example, in one tab per language, from the sample apps.
  *
- * 1. `section` and `topic` name where it goes (Setup > Install), as set in kiit-codes/samples/docs-map.json.
+ * 1. `section` and `topic` name where it goes (Setup > Install), as set in the module's docs map.
  *    `name`, when given, picks one item of a topic that has several. Without it every item is shown in order.
+ *    `module` is the module repo the examples come from, `kiit-codes` when not given. A new module is added to
+ *    MODULES below.
  * 2. The data comes from `npm run examples` (scripts/extract-examples.mjs), see SETUP.md. examples.json holds the
- *    placement and metadata, and each snippet's code is a plain-text file under src/examples/kiit-codes/<id>/.
+ *    placement and metadata, and each snippet's code is a plain-text file under src/examples/<module>/<id>/.
  * 3. An unknown section/topic/name throws, so a typo fails `npm run build` instead of showing an empty page.
  * 4. Tabs use groupId="language", so the choice is shared with every other language tab on the page.
  * 5. A code block title is shown only when a language has several blocks in the topic (Maven and Gradle for Java).
@@ -31,6 +35,11 @@ interface Entry {
   items: Item[];
 }
 
+const MODULES: Record<string, {data: {examples: unknown}; files: Record<string, string>}> = {
+  'kiit-codes': {data: codesData, files: codesFiles},
+  'kiit-service-id': {data: serviceIdData, files: serviceIdFiles},
+};
+
 const LANGUAGES: {value: string; label: string}[] = [
   {value: 'kotlin', label: 'Kotlin'},
   {value: 'java', label: 'Java'},
@@ -44,7 +53,7 @@ interface Block {
   code: string;
 }
 
-function codeOf(snippet: Snippet): string {
+function codeOf(files: Record<string, string>, snippet: Snippet): string {
   const text = files[snippet.file];
   if (text === undefined) {
     throw new Error(`<Example>: missing file ${snippet.file}. Run \`npm run examples\`.`);
@@ -53,17 +62,17 @@ function codeOf(snippet: Snippet): string {
 }
 
 /** Blocks for one language. Imports are put at the top of the code that follows them, in the same block. */
-function blocksFor(items: Item[], language: string): Block[] {
+function blocksFor(files: Record<string, string>, items: Item[], language: string): Block[] {
   const blocks: Block[] = [];
   let imports: string[] = [];
   for (const item of items) {
     const snippets = item.snippets[language] ?? [];
     if (item.kind === 'imports') {
-      imports = imports.concat(snippets.map((s) => codeOf(s)));
+      imports = imports.concat(snippets.map((s) => codeOf(files, s)));
       continue;
     }
     for (const snippet of snippets) {
-      const text = codeOf(snippet);
+      const text = codeOf(files, snippet);
       const code = imports.length ? `${imports.join('\n')}\n\n${text}` : text;
       imports = [];
       blocks.push({lang: snippet.lang, title: snippet.title, code});
@@ -72,11 +81,26 @@ function blocksFor(items: Item[], language: string): Block[] {
   return blocks;
 }
 
-export default function Example({section, topic, name}: {section: string; topic: string; name?: string}): ReactNode {
+export default function Example({
+  section,
+  topic,
+  name,
+  module = 'kiit-codes',
+}: {
+  section: string;
+  topic: string;
+  name?: string;
+  module?: string;
+}): ReactNode {
+  const source = MODULES[module];
+  if (!source) {
+    throw new Error(`<Example>: unknown module "${module}". Add it to MODULES in src/components/Example.`);
+  }
+  const {data, files} = source;
   const key = `${section}/${topic}`;
   const entry = (data.examples as Record<string, Entry>)[key];
   if (!entry) {
-    throw new Error(`<Example>: no examples for "${key}". Check samples/docs-map.json and run \`npm run examples\`.`);
+    throw new Error(`<Example>: no examples for "${key}" in ${module}. Check its docs map and run \`npm run examples -- ${module}\`.`);
   }
   const items = name ? entry.items.filter((item) => item.name === name) : entry.items;
   if (!items.length) {
@@ -86,7 +110,7 @@ export default function Example({section, topic, name}: {section: string; topic:
   // A title is only shown when a language has several blocks (Maven and Gradle for Java), to tell them apart.
   // With one block the Section and Topic headings already say what it is.
   const tabs = LANGUAGES.map((language) => {
-    const blocks = blocksFor(items, language.value);
+    const blocks = blocksFor(files, items, language.value);
     return {...language, blocks: blocks.length > 1 ? blocks : blocks.map((b) => ({...b, title: undefined}))};
   }).filter((tab) => tab.blocks.length > 0);
   const defaultValue = tabs.find((tab) => tab.value === 'kotlin')?.value ?? tabs[0].value;

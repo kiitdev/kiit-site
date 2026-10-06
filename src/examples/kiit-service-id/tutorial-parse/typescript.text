@@ -1,0 +1,4 @@
+const received = ServiceId.parse(headers["caller-id"]);
+
+console.log(received.origin); // acme
+console.log(received.scope); // accounts.signup

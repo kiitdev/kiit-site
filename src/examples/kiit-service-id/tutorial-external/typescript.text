@@ -1,0 +1,3 @@
+const outbound: Record<string, string> = { "caller-id": caller.externalId };
+
+console.log(outbound["caller-id"]); // acme:accounts.signup

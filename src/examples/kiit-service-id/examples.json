@@ -1,0 +1,439 @@
+{
+  "examples": {
+    "setup/imports": {
+      "section": "setup",
+      "topic": "imports",
+      "items": [
+        {
+          "id": "setup-imports",
+          "kind": "code",
+          "tags": [
+            "setup"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/Sample.kt:3",
+                "file": "setup-imports/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:8",
+                "file": "setup-imports/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "setup/example": {
+      "section": "setup",
+      "topic": "example",
+      "items": [
+        {
+          "id": "overview-usage",
+          "kind": "code",
+          "tags": [
+            "overview"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/Sample.kt:45",
+                "file": "overview-usage/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:41",
+                "file": "overview-usage/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "explanation/construction": {
+      "section": "explanation",
+      "topic": "construction",
+      "items": [
+        {
+          "id": "explanation-immutable",
+          "kind": "code",
+          "tags": [
+            "explanation"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/Sample.kt:62",
+                "file": "explanation-immutable/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:58",
+                "file": "explanation-immutable/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "explanation/security": {
+      "section": "explanation",
+      "topic": "security",
+      "items": [
+        {
+          "id": "explanation-security",
+          "kind": "code",
+          "tags": [
+            "explanation"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/Sample.kt:84",
+                "file": "explanation-security/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:80",
+                "file": "explanation-security/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "explanation/parsing": {
+      "section": "explanation",
+      "topic": "parsing",
+      "items": [
+        {
+          "id": "explanation-parse",
+          "kind": "code",
+          "tags": [
+            "explanation"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/Sample.kt:73",
+                "file": "explanation-parse/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:69",
+                "file": "explanation-parse/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tutorial/create": {
+      "section": "tutorial",
+      "topic": "create",
+      "items": [
+        {
+          "id": "tutorial-create",
+          "kind": "code",
+          "tags": [
+            "tutorial"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/Sample.kt:99",
+                "file": "tutorial-create/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:102",
+                "file": "tutorial-create/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tutorial/copy": {
+      "section": "tutorial",
+      "topic": "copy",
+      "items": [
+        {
+          "id": "tutorial-copy",
+          "kind": "code",
+          "tags": [
+            "tutorial"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/Sample.kt:113",
+                "file": "tutorial-copy/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:116",
+                "file": "tutorial-copy/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tutorial/send": {
+      "section": "tutorial",
+      "topic": "send",
+      "items": [
+        {
+          "id": "tutorial-header",
+          "kind": "code",
+          "tags": [
+            "tutorial"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/Sample.kt:124",
+                "file": "tutorial-header/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:127",
+                "file": "tutorial-header/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tutorial/receive": {
+      "section": "tutorial",
+      "topic": "receive",
+      "items": [
+        {
+          "id": "tutorial-parse",
+          "kind": "code",
+          "tags": [
+            "tutorial"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/Sample.kt:132",
+                "file": "tutorial-parse/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:135",
+                "file": "tutorial-parse/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "tutorial/send-outside": {
+      "section": "tutorial",
+      "topic": "send-outside",
+      "items": [
+        {
+          "id": "tutorial-external",
+          "kind": "code",
+          "tags": [
+            "tutorial"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/Sample.kt:142",
+                "file": "tutorial-external/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:145",
+                "file": "tutorial-external/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "guide/choose-a-kind": {
+      "section": "guide",
+      "topic": "choose-a-kind",
+      "items": [
+        {
+          "id": "guide-kinds",
+          "kind": "code",
+          "tags": [
+            "guide"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/Sample.kt:163",
+                "file": "guide-kinds/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:166",
+                "file": "guide-kinds/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "guide/strip-at-the-gateway": {
+      "section": "guide",
+      "topic": "strip-at-the-gateway",
+      "items": [
+        {
+          "id": "guide-gateway",
+          "kind": "code",
+          "tags": [
+            "guide"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/Sample.kt:151",
+                "file": "guide-gateway/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:154",
+                "file": "guide-gateway/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "guide/attach-tags": {
+      "section": "guide",
+      "topic": "attach-tags",
+      "items": [
+        {
+          "id": "guide-tags",
+          "kind": "code",
+          "tags": [
+            "guide"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/Sample.kt:180",
+                "file": "guide-tags/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:183",
+                "file": "guide-tags/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "guide/set-ownership-and-criticality": {
+      "section": "guide",
+      "topic": "set-ownership-and-criticality",
+      "items": [
+        {
+          "id": "guide-criticality",
+          "kind": "code",
+          "tags": [
+            "guide"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/Sample.kt:190",
+                "file": "guide-criticality/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:193",
+                "file": "guide-criticality/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "guide/handle-a-bad-id": {
+      "section": "guide",
+      "topic": "handle-a-bad-id",
+      "items": [
+        {
+          "id": "guide-malformed",
+          "kind": "code",
+          "tags": [
+            "guide"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/Sample.kt:213",
+                "file": "guide-malformed/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:215",
+                "file": "guide-malformed/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

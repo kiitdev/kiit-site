@@ -1,0 +1,4 @@
+const tags = [Tag.Basic("retry"), Tag.parse("region=us-east-1")];
+const tagged = ServiceId.job("acme", "accounts.signup").with(null, tags);
+
+console.log(tagged.tags.map((t) => t.raw)); // [ 'retry', 'region=us-east-1' ]

@@ -1,0 +1,4 @@
+val id = ServiceId.of("acme", "accounts.signup", Kind.API, "qat", version = "1.4.2", instance = "4a3b300b")
+
+println(id.privateId) // acme:accounts.signup:api:qat:1.4.2:4a3b300b, for internal calls only
+println(id.externalId) // acme:accounts.signup, safe to send outside

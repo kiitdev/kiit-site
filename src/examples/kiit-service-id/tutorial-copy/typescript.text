@@ -1,0 +1,5 @@
+const original = ServiceId.job("acme", "accounts.signup");
+const tagged = original.with(null, [Tag.Basic("retry"), Tag.Keyed("batch", "42")]);
+
+console.log(`original tags=[${original.tags.map((t) => t.raw).join(", ")}]`); // []
+console.log(`tagged tags=[${tagged.tags.map((t) => t.raw).join(", ")}]`);

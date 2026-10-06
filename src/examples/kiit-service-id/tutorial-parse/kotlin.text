@@ -1,0 +1,4 @@
+val received = ServiceId.parse(headers.getValue("caller-id"))
+
+println(received.origin) // acme
+println(received.scope) // accounts.signup

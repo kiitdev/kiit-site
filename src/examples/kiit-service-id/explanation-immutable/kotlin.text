@@ -1,0 +1,5 @@
+val first = ServiceId.job("acme", "accounts.signup")
+val second = first.newInstance()
+
+println(first == second) // false: a new instance id gives a new privateId
+println(first.path == second.path) // true: everything above the instance is the same

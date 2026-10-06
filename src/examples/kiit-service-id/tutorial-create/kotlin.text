@@ -1,0 +1,8 @@
+val id = ServiceId.api("acme", "accounts.signup", "qat")
+
+println("path=${id.path}")
+println("name=${id.name}")
+println("fullName=${id.fullName}")
+println("install=${id.install}")
+println("privateId=${id.privateId}")
+println("externalId=${id.externalId}")

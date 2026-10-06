@@ -1,0 +1,5 @@
+const first = ServiceId.job("acme", "accounts.signup");
+const second = first.newInstance();
+
+console.log(first.equals(second)); // false: a new instance id gives a new privateId
+console.log(first.path === second.path); // true: everything above the instance is the same

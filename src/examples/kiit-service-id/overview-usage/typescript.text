@@ -1,0 +1,5 @@
+const id = ServiceId.api("acme", "accounts.signup", "qat");
+
+console.log(id.name); // acme:accounts.signup:api
+console.log(id.install); // acme:accounts.signup:api:qat:latest
+console.log(id.externalId); // acme:accounts.signup

@@ -1,0 +1,3 @@
+const headers: Record<string, string> = { "caller-id": caller.privateId };
+
+console.log(headers["caller-id"]); // acme:accounts.signup:api:qat:1.4.2:4a3b300b
