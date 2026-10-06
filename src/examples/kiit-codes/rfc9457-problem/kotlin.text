@@ -2,7 +2,11 @@
 // kiit-codes classes aren't @Serializable, so the JSON is built from the problem's members.
 val fieldErrors =
     Err.ErrorList(
-        errors = listOf(Err.on("title", "", "must be 1-100 characters"), Err.on("listId", "x", "unknown list")),
+        errors =
+            listOf(
+                Err.on("title", "", "must be 1-100 characters"),
+                Err.on("listId", "x", "unknown list"),
+            ),
         message = "Validation failed",
     )
 val body = ProblemConverter().convert(Invalid.INVALID_VALUE, fieldErrors)

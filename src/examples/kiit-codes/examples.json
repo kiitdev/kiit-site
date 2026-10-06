@@ -94,26 +94,16 @@
           }
         },
         {
-          "id": "rfc9457-convert",
-          "name": "code",
-          "kind": "code",
-          "tags": [
-            "rfc9457",
-            "conversion"
-          ],
+          "id": "codedetail-output",
+          "name": "codedetail",
+          "kind": "output",
+          "tags": [],
           "snippets": {
-            "kotlin": [
+            "json": [
               {
-                "lang": "kotlin",
-                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:467",
-                "file": "rfc9457-convert/kotlin.text"
-              }
-            ],
-            "typescript": [
-              {
-                "lang": "typescript",
-                "source": "samples/sample-ts/src/index.ts:213",
-                "file": "rfc9457-convert/typescript.text"
+                "lang": "json",
+                "title": "CodeDetail",
+                "file": "codedetail-output/json.text"
               }
             ]
           }
@@ -126,7 +116,6 @@
       "items": [
         {
           "id": "rfc9457-minimal",
-          "name": "status",
           "kind": "code",
           "tags": [
             "rfc9457",
@@ -148,31 +137,6 @@
               }
             ]
           }
-        },
-        {
-          "id": "rfc9457-errors",
-          "name": "errors",
-          "kind": "code",
-          "tags": [
-            "rfc9457",
-            "usage"
-          ],
-          "snippets": {
-            "kotlin": [
-              {
-                "lang": "kotlin",
-                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:454",
-                "file": "rfc9457-errors/kotlin.text"
-              }
-            ],
-            "typescript": [
-              {
-                "lang": "typescript",
-                "source": "samples/sample-ts/src/index.ts:242",
-                "file": "rfc9457-errors/typescript.text"
-              }
-            ]
-          }
         }
       ]
     },
@@ -191,15 +155,45 @@
             "kotlin": [
               {
                 "lang": "kotlin",
-                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:484",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:469",
                 "file": "rfc9457-problem/kotlin.text"
               }
             ],
             "typescript": [
               {
                 "lang": "typescript",
-                "source": "samples/sample-ts/src/index.ts:229",
+                "source": "samples/sample-ts/src/index.ts:226",
                 "file": "rfc9457-problem/typescript.text"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "guide/code-details": {
+      "section": "guide",
+      "topic": "code-details",
+      "items": [
+        {
+          "id": "codedetail-json",
+          "kind": "code",
+          "tags": [
+            "codedetail",
+            "json"
+          ],
+          "snippets": {
+            "kotlin": [
+              {
+                "lang": "kotlin",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:509",
+                "file": "codedetail-json/kotlin.text"
+              }
+            ],
+            "typescript": [
+              {
+                "lang": "typescript",
+                "source": "samples/sample-ts/src/index.ts:242",
+                "file": "codedetail-json/typescript.text"
               }
             ]
           }

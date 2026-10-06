@@ -6,14 +6,13 @@ import f3 from './setup-install/typescript.text';
 import f4 from './setup-imports/kotlin.text';
 import f5 from './setup-imports/typescript.text';
 import f6 from './rfc9457-problem-json/json.text';
-import f7 from './rfc9457-convert/kotlin.text';
-import f8 from './rfc9457-convert/typescript.text';
-import f9 from './rfc9457-minimal/kotlin.text';
-import f10 from './rfc9457-minimal/typescript.text';
-import f11 from './rfc9457-errors/kotlin.text';
-import f12 from './rfc9457-errors/typescript.text';
-import f13 from './rfc9457-problem/kotlin.text';
-import f14 from './rfc9457-problem/typescript.text';
+import f7 from './codedetail-output/json.text';
+import f8 from './rfc9457-minimal/kotlin.text';
+import f9 from './rfc9457-minimal/typescript.text';
+import f10 from './rfc9457-problem/kotlin.text';
+import f11 from './rfc9457-problem/typescript.text';
+import f12 from './codedetail-json/kotlin.text';
+import f13 from './codedetail-json/typescript.text';
 
 const files: Record<string, string> = {
   'setup-install/kotlin.text': f0,
@@ -23,14 +22,13 @@ const files: Record<string, string> = {
   'setup-imports/kotlin.text': f4,
   'setup-imports/typescript.text': f5,
   'rfc9457-problem-json/json.text': f6,
-  'rfc9457-convert/kotlin.text': f7,
-  'rfc9457-convert/typescript.text': f8,
-  'rfc9457-minimal/kotlin.text': f9,
-  'rfc9457-minimal/typescript.text': f10,
-  'rfc9457-errors/kotlin.text': f11,
-  'rfc9457-errors/typescript.text': f12,
-  'rfc9457-problem/kotlin.text': f13,
-  'rfc9457-problem/typescript.text': f14,
+  'codedetail-output/json.text': f7,
+  'rfc9457-minimal/kotlin.text': f8,
+  'rfc9457-minimal/typescript.text': f9,
+  'rfc9457-problem/kotlin.text': f10,
+  'rfc9457-problem/typescript.text': f11,
+  'codedetail-json/kotlin.text': f12,
+  'codedetail-json/typescript.text': f13,
 };
 
 export default files;
