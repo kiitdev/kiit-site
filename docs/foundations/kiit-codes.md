@@ -292,7 +292,7 @@ And this is the same Status as it appears in an API response:
     "name"   : "INVALID_VALUE",
     "group"  : "Invalid",
     "origin" : "kiit.dev",
-    "scope"  : "",
+    "scope"  : "codes",
     "message": "The request had an invalid value."
 }`}
 />
@@ -583,7 +583,7 @@ The same validation failure in both shapes:
 
 `Problem` is kiit's name for the [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem details object, and `CodeDetail` is kiit's lighter version for
 calls between your own services. `CodeDetail.code` is the origin, the scope and then the status code, so one field
-says which status it is. Each entry in `errors` is an `ErrorItem` with only a field and a message. The
+says which status it is. Built-in statuses use the scope `codes`. A custom status with no scope leaves an empty value, so `code` always has five `:`-separated values. Each entry in `errors` is an `ErrorItem` with only a field and a message. The
 cause and the value that failed validation are left out on purpose, since echoing them back is a disclosure risk.
 
 :::tip[Which one?]
