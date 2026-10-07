@@ -15,7 +15,7 @@
               {
                 "lang": "kotlin",
                 "title": "build.gradle.kts",
-                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:28",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:27",
                 "file": "setup-install/kotlin.text"
               }
             ],
@@ -125,7 +125,7 @@
             "kotlin": [
               {
                 "lang": "kotlin",
-                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:442",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:443",
                 "file": "rfc9457-minimal/kotlin.text"
               }
             ],
@@ -155,7 +155,7 @@
             "kotlin": [
               {
                 "lang": "kotlin",
-                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:469",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:470",
                 "file": "rfc9457-problem/kotlin.text"
               }
             ],
@@ -185,7 +185,7 @@
             "kotlin": [
               {
                 "lang": "kotlin",
-                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:509",
+                "source": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt:511",
                 "file": "codedetail-json/kotlin.text"
               }
             ],

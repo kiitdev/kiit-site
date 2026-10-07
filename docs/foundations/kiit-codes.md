@@ -68,7 +68,7 @@ domain modeling: a domain error explains *what* happened in one domain, and the 
 | 1 | **[Status classification](#taxonomy)** | The core `Passed`/`Failed` split, with a fixed `Group` and an open `Code` beneath it for finer-grained classification. |
 | 2 | **[Extensibility](#usage)** | Add domain-specific codes within the same fixed groups, without forking the taxonomy or losing shared meaning. |
 | 3 | **[Protocol mappings](#protocols-1)** | Map statuses to HTTP, gRPC, or any custom protocol via `CodeLookup`/`CompositeLookup`. |
-| 4 | **[Problem details](#formats)** | Convert a status to an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `Problem`, or to kiit's own lighter `CodeDetail`, with a type URL and a list of errors. |
+| 4 | **[Problem details](#formats)** | Convert a status to an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `Problem`, or to kiit's own lighter `CodeDetail`, with a type URL, an exact `code` and a list of errors. |
 | 5 | **[Validation](#usage)** | `Checked`, `Err`, and `collect` report every problem found at once, instead of stopping at the first. |
 | 6 | **[Typed exceptions](#usage)** | `StatusException` and `Failed.toException()` for boundaries that only understand exceptions. |
 | 7 | **Result integration** | The separate [kiit-result](https://github.com/kiitdev/kiit-result) module builds a `Result<T, E>` type on top of this same taxonomy. |
@@ -82,7 +82,7 @@ domain modeling: a domain error explains *what* happened in one domain, and the 
 | 1 | HTTP status codes | Validated against, not derived from — the most common HTTP codes map onto kiit-codes' eight groups without needing a ninth. |
 | 2 | gRPC status codes | Same validation as HTTP — every gRPC code maps onto the existing eight groups. |
 | 3 | Scala's `Either`/`Try` | Built on `Either`'s two-branch shape, structured around `Try`'s branches, with the `Status` taxonomy incorporated on top. |
-| 4 | [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem details | The shape of `Problem` (`type`, `title`, `status`, `detail`, `instance`), with `errors` added as an extension member. `CodeDetail` is the lighter kiit version for calls where HTTP and a public URL don't apply. See [Formats](#formats). |
+| 4 | [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem details | The shape of `Problem` (`type`, `title`, `status`, `detail`, `instance`), with `errors` and `code` added as extension members. `CodeDetail` is the kiit version for calls where HTTP and a public URL don't apply. See [Formats](#formats). |
 
 <Spacer />
 
@@ -138,10 +138,10 @@ What to import to use the library.
 | # | Item | Link |
 |---:|---|---|
 | 1 | Git Repo | [github.com/kiitdev/kiit-codes](https://github.com/kiitdev/kiit-codes) |
-| 2 | Root folder of sources in repo | [kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin](https://github.com/kiitdev/kiit-codes/tree/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin) |
+| 2 | Root folder of sources in repo | [kiit-codes/src/commonMain/kotlin](https://github.com/kiitdev/kiit-codes/tree/main/kiit-codes/src/commonMain/kotlin) |
 | 3 | Sample app | [samples/sample-kotlin](https://github.com/kiitdev/kiit-codes/tree/main/samples/sample-kotlin) |
-| 4 | Package Name | [kiit.codes](https://github.com/kiitdev/kiit-codes/tree/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes) |
-| 5 | Unit Tests | [kiit-codes-kotlin/kiit-codes/src/commonTest](https://github.com/kiitdev/kiit-codes/tree/main/kiit-codes-kotlin/kiit-codes/src/commonTest) |
+| 4 | Package Name | [kiit.codes](https://github.com/kiitdev/kiit-codes/tree/main/kiit-codes/src/commonMain/kotlin/kiit/codes) |
+| 5 | Unit Tests | [kiit-codes/src/commonTest](https://github.com/kiitdev/kiit-codes/tree/main/kiit-codes/src/commonTest) |
 
 Licensed [Apache 2.0](https://github.com/kiitdev/kiit-codes/blob/main/LICENSE).
 
@@ -161,7 +161,7 @@ fun authorize(userId: String, requesterId: String): Status =
 
 when (val status = authorize(userId, requesterId)) {
     is Passed -> log.info("ok: ${status.name}")
-    is Failed -> log.warn("failed: ${status.name} — ${status.message}")
+    is Failed -> log.warn("failed: ${status.name} — ${status.title}")
 }
 ```
 
@@ -199,7 +199,7 @@ const status = authorize(userId, requesterId);
 if (status.success) {
   log.info(`ok: ${status.name}`);
 } else {
-  log.warn(`failed: ${status.name} — ${status.message}`);
+  log.warn(`failed: ${status.name} — ${status.title}`);
 }
 ```
 
@@ -218,7 +218,7 @@ switch onEnum(of: status) {
 case .passed(let passed):
     print("ok: \(passed.name)")
 case .failed(let failed):
-    print("failed: \(failed.name) — \(failed.message)")
+    print("failed: \(failed.name) — \(failed.title)")
 }
 ```
 
@@ -234,14 +234,14 @@ case .failed(let failed):
 | # | Term | Definition | |
 |---:|---|---|---|
 | 1 | Taxonomy | The overall `Status → Group → Code` classification system. | <MoreLink href="#taxonomy" /> |
-| 2 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L44">Status</ConceptTermLink> | Sealed interface for an operation's outcome: `Passed` or `Failed`. | <MoreLink href="#status" /> |
-| 3 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L92">Group</ConceptTermLink> | Second tier: a fixed subtype of `Passed`/`Failed` (e.g. `Restricted`). | <MoreLink href="#taxonomy" /> |
-| 4 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L22">Code</ConceptTermLink> | Third tier: an open `Status` instance within a group (e.g. `DENIED`). | <MoreLink href="#taxonomy" /> |
-| 5 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L34">Err</ConceptTermLink> | Error representation for use with `Result`/`Outcome`-style types. | <MoreLink href="#err" /> |
-| 6 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Checked.kt#L22">Checked</ConceptTermLink> | Non-monadic validation result reporting every problem, not just the first. | <MoreLink href="#checked" /> |
-| 7 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/StatusException.kt#L46">StatusException</ConceptTermLink> | Sealed exception hierarchy carrying a `Checked`, for exception-only boundaries. | <MoreLink href="#exceptions" /> |
-| 8 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/Problem.kt#L22">Problem</ConceptTermLink> | kiit's name for an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem details object: `type`, `title`, `status`, plus optional `detail`, `instance` and `errors`. | <MoreLink href="#formats" /> |
-| 9 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/CodeDetail.kt#L33">CodeDetail</ConceptTermLink> | kiit's own lighter shape for the same job: `code`, `success` and `message`, with no public URL needed. `code` holds the origin, scope, group and name. | <MoreLink href="#formats" /> |
+| 2 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L51">Status</ConceptTermLink> | Sealed interface for an operation's outcome: `Passed` or `Failed`. | <MoreLink href="#status" /> |
+| 3 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L100">Group</ConceptTermLink> | Second tier: a fixed subtype of `Passed`/`Failed` (e.g. `Restricted`). | <MoreLink href="#taxonomy" /> |
+| 4 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L22">Code</ConceptTermLink> | Third tier: an open `Status` instance within a group (e.g. `DENIED`). | <MoreLink href="#taxonomy" /> |
+| 5 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L34">Err</ConceptTermLink> | Error representation for use with `Result`/`Outcome`-style types. | <MoreLink href="#err" /> |
+| 6 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Checked.kt#L22">Checked</ConceptTermLink> | Non-monadic validation result reporting every problem, not just the first. | <MoreLink href="#checked" /> |
+| 7 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/StatusException.kt#L46">StatusException</ConceptTermLink> | Sealed exception hierarchy carrying a `Checked`, for exception-only boundaries. | <MoreLink href="#exceptions" /> |
+| 8 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/Problem.kt#L31">Problem</ConceptTermLink> | kiit's name for an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem details object: `type`, `title`, `status`, plus optional `detail`, `instance` and `errors`. | <MoreLink href="#formats" /> |
+| 9 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/CodeDetail.kt#L32">CodeDetail</ConceptTermLink> | kiit's own lighter shape for the same job: `code`, `success` and `title`, with no public URL needed. `code` holds the origin, scope, group and name. | <MoreLink href="#formats" /> |
 
 <Spacer />
 
@@ -265,7 +265,7 @@ that built-in code is defined:
   code={{
     kotlin: `val INVALID_VALUE = Invalid(
     name = "INVALID_VALUE",
-    message = "The request had an invalid value.",
+    title = "The request had an invalid value.",
     origin = StatusConstants.KIIT,
 )`,
     java: `Failed.Invalid INVALID_VALUE = new Failed.Invalid(
@@ -293,7 +293,7 @@ And this is the same Status as it appears in an API response:
     "group"  : "Invalid",
     "origin" : "kiit.dev",
     "scope"  : "codes",
-    "message": "The request had an invalid value."
+    "title"  : "The request had an invalid value."
 }`}
 />
 
@@ -301,17 +301,17 @@ Every Status carries the same six fields, built-in or custom:
 
 | Field | Why it exists |
 |---|---|
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L89">success</ConceptTermLink> | `true` for `Passed`, `false` for `Failed`. A quick check that doesn't need the group. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L49">name</ConceptTermLink> | A stable, `SCREAMING_SNAKE_CASE` key that logs, metrics and clients can match on. Never built from runtime data. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L92">group</ConceptTermLink> | The kind of outcome (`Succeeded`, `Invalid`, ...). Lets generic code handle any Status, including custom ones, without knowing its name. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L62">origin</ConceptTermLink> | Who owns the code: `kiit.dev` for built-ins, your domain or a name of your own for custom codes. Keeps custom codes apart from the built-in ones and other teams', and becomes the host of an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `type`. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L76">scope</ConceptTermLink> | An optional label inside an origin, such as a department or product area (`payments.cards`). Empty when unset. Never parsed. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L83">message</ConceptTermLink> | A constant description of the code, not of one occurrence. Per-occurrence detail lives in an `Err`. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L97">success</ConceptTermLink> | `true` for `Passed`, `false` for `Failed`. A quick check that doesn't need the group. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L56">name</ConceptTermLink> | A stable, `SCREAMING_SNAKE_CASE` key that logs, metrics and clients can match on. Never built from runtime data. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L100">group</ConceptTermLink> | The kind of outcome (`Succeeded`, `Invalid`, ...). Lets generic code handle any Status, including custom ones, without knowing its name. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L70">origin</ConceptTermLink> | Who owns the code: `kiit.dev` for built-ins, your domain or a name of your own for custom codes. Keeps custom codes apart from the built-in ones and other teams', and becomes the host of an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `type`. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L84">scope</ConceptTermLink> | An optional label inside an origin, such as a department or product area (`payments.cards`). Empty when unset. Never parsed. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L91">title</ConceptTermLink> | A constant, human-readable title for the code, not a description of one occurrence. It fills `title` in a `Problem` and a `CodeDetail`. Per-occurrence detail lives in an `Err`. |
 
 :::warning[Choose a specific origin]
 1. **Domain**: A domain you own is unique through DNS, so your codes can't collide with anyone else's.
 2. **Plain id**: A plain id such as `myapp1` can collide with another team's, and kiit-codes can't detect it. Pick a specific name.
-3. **Also a host**: The origin becomes the host of the [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `type`, for example `https://samples.kiit.dev/problems/...`.
+3. **Also a host**: A domain origin becomes the host of the [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `type`, for example `https://samples.kiit.dev/docs/codes/...`. A plain id is not a host, so its `type` is the relative `/docs/codes/...`. Register a base URL to get an absolute one.
 :::
 
 <Related
@@ -321,7 +321,7 @@ Every Status carries the same six fields, built-in or custom:
       label: 'Status',
       note: 'The sealed base type of every code',
       links: [
-        {text: 'Status.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L44', kind: 'source'},
+        {text: 'Status.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L51', kind: 'source'},
         {text: 'Passed', href: '#passed', kind: 'reference'},
         {text: 'Failed', href: '#failed', kind: 'reference'},
         {text: 'Defaults', href: '#defaults', kind: 'reference'},
@@ -368,7 +368,7 @@ within them.
       label: 'Passed',
       note: 'The success side of the taxonomy',
       links: [
-        {text: 'Status.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L172', kind: 'source'},
+        {text: 'Status.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L182', kind: 'source'},
         {text: 'Passed', href: '#passed', kind: 'reference'},
       ],
     },
@@ -376,7 +376,7 @@ within them.
       label: 'Failed',
       note: 'The failure side of the taxonomy',
       links: [
-        {text: 'Status.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L485', kind: 'source'},
+        {text: 'Status.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L522', kind: 'source'},
         {text: 'Failed', href: '#failed', kind: 'reference'},
       ],
     },
@@ -384,7 +384,7 @@ within them.
       label: 'Defaults',
       note: 'The DEFAULT code of each group',
       links: [
-        {text: 'Status.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt', kind: 'source'},
+        {text: 'Status.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt', kind: 'source'},
         {text: 'Defaults', href: '#defaults', kind: 'reference'},
       ],
     },
@@ -410,7 +410,7 @@ Error representation for use with Validation, Exceptions, and Result types. This
       label: 'Err',
       note: 'Error info a status can carry',
       links: [
-        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L34', kind: 'source'},
+        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L34', kind: 'source'},
         {text: 'Err types', href: '#err-types', kind: 'reference'},
       ],
     },
@@ -418,7 +418,7 @@ Error representation for use with Validation, Exceptions, and Result types. This
       label: 'ErrorInfo',
       note: 'One error with a message',
       links: [
-        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L40', kind: 'source'},
+        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L40', kind: 'source'},
         {text: 'Err types', href: '#err-types', kind: 'reference'},
       ],
     },
@@ -426,7 +426,7 @@ Error representation for use with Validation, Exceptions, and Result types. This
       label: 'ErrorField',
       note: 'An error on a named field',
       links: [
-        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L53', kind: 'source'},
+        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L53', kind: 'source'},
         {text: 'Err types', href: '#err-types', kind: 'reference'},
       ],
     },
@@ -434,7 +434,7 @@ Error representation for use with Validation, Exceptions, and Result types. This
       label: 'ErrorList',
       note: 'Several errors together',
       links: [
-        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L67', kind: 'source'},
+        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L67', kind: 'source'},
         {text: 'Err types', href: '#err-types', kind: 'reference'},
       ],
     },
@@ -442,7 +442,7 @@ Error representation for use with Validation, Exceptions, and Result types. This
       label: 'Builders',
       note: 'Helpers that create each kind',
       links: [
-        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L79', kind: 'source'},
+        {text: 'Err.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L79', kind: 'source'},
         {text: 'Err types', href: '#err-types', kind: 'reference'},
       ],
     },
@@ -526,7 +526,7 @@ your own via `CodeLookup`.
 
 :::info[One way only]
 1. **No reverse conversion**: There is no way to get a `Status` back from an HTTP or gRPC code, because many statuses share one code.
-2. **Carry the status instead**: To send a status across a boundary, use the `code` of a `CodeDetail`, or the [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `type`.
+2. **Carry the status instead**: To send a status across a boundary, use the `code` of a `CodeDetail` or of a `Problem`. Both are the exact origin, scope and status code.
 :::
 
 <Diagram src="/img/kiit-codes/kiit-codes-protocols.png" alt="Kiit Codes protocol mappings" />
@@ -538,7 +538,7 @@ your own via `CodeLookup`.
       label: 'CodesToHttp',
       note: 'Status to HTTP code',
       links: [
-        {text: 'Codes.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L89', kind: 'source'},
+        {text: 'Codes.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L89', kind: 'source'},
         {text: 'Protocol mappings', href: '#protocol-mappings', kind: 'reference'},
       ],
     },
@@ -546,7 +546,7 @@ your own via `CodeLookup`.
       label: 'CodesToGrpc',
       note: 'Status to gRPC code',
       links: [
-        {text: 'Codes.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L148', kind: 'source'},
+        {text: 'Codes.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L148', kind: 'source'},
         {text: 'Protocol mappings', href: '#protocol-mappings', kind: 'reference'},
       ],
     },
@@ -554,7 +554,7 @@ your own via `CodeLookup`.
       label: 'CodeLookup',
       note: 'The interface both implement',
       links: [
-        {text: 'Codes.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L72', kind: 'source'},
+        {text: 'Codes.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L72', kind: 'source'},
         {text: 'Protocols', href: '#protocols-1', kind: 'guide'},
       ],
     },
@@ -562,7 +562,7 @@ your own via `CodeLookup`.
       label: 'CompositeLookup',
       note: 'Tries several lookups in order',
       links: [
-        {text: 'Codes.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L215', kind: 'source'},
+        {text: 'Codes.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L215', kind: 'source'},
         {text: 'Protocols', href: '#protocols-1', kind: 'guide'},
       ],
     },
@@ -581,15 +581,60 @@ The same validation failure in both shapes:
 
 <Example section="explanation" topic="formats" name="codedetail" />
 
-`Problem` is kiit's name for the [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem details object, and `CodeDetail` is kiit's lighter version for
-calls between your own services. `CodeDetail.code` is the origin, the scope and then the status code, so one field
-says which status it is. Built-in statuses use the scope `codes`. A custom status with no scope leaves an empty value, so `code` always has five `:`-separated values. Each entry in `errors` is an `ErrorItem` with only a field and a message. The
-cause and the value that failed validation are left out on purpose, since echoing them back is a disclosure risk.
+`Problem` is kiit's name for the [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem details object, and `CodeDetail` is kiit's version for
+calls between your own services. They use the same field names, so the two shapes line up:
+
+| Field | Problem | CodeDetail |
+|---|---|---|
+| `type` | the problem's identity and its docs URL | none |
+| `code` | the exact status, an extension member | the exact status |
+| `title` | the fixed text of the status | the fixed text of the status |
+| `detail` | this occurrence | this occurrence |
+| `instance` | this occurrence | this occurrence |
+| `errors` | every error, an extension member | every error |
+| `status` | the HTTP status, always set | the HTTP status, optional |
+| `success` | none | `true` or `false` |
+
+:::info[Three differences on purpose]
+1. **type**: Only `Problem` has it. RFC 9457 makes `type` the primary identifier of a problem and a pointer to its documentation.
+2. **status**: Optional on `CodeDetail`. An HTTP status only makes sense over HTTP, and kiit-codes is a status taxonomy that works anywhere.
+3. **success**: Only on `CodeDetail`, so a reader can tell success from failure without reading the `Passed` or `Failed` prefix of `code`.
+:::
+
+`type` and `code` name the same status in different ways:
+
+| | `Problem.type` | `code` |
+|---|---|---|
+| Identity | yes, RFC 9457's primary identifier | yes, exact |
+| Docs | yes, when it resolves | no |
+| Self-contained | no, needs a host or a base | yes |
+| Case | lowercase with dashes | as written |
+
+`code` is the origin, the scope and then the status code, so one field says which status it is. Built-in statuses use the scope `codes`.
+A custom status with no scope leaves an empty value, so `code` always has five `:`-separated values. A client reads `code` instead of
+parsing `type`, which is lowercase and may not carry the origin. When `code` is missing, as with a server that isn't kiit, the last three
+segments of a kiit `type` are `status/group/name`. They give passed or failed and the group, but not the exact name, scope or origin.
+That is a kiit convention, not something RFC 9457 expects of a client.
+
+:::info[The type URL]
+1. **Shape**: `{base}/{scope}/{status}/{group}/{name}`, lowercase with dashes. `status` is `passed` or `failed`, and each `.` in a scope starts a new segment, so `payments.cards` becomes `payments/cards`.
+2. **Domain origin**: `https://stripe.com/docs/codes/payments/cards/failed/rejected/duplicate-charge`.
+3. **Plain id**: `/docs/codes/failed/rejected/out-of-stock`, a relative path, since `myapp1` is not a host. RFC 9457 prefers absolute URIs, and a relative `type` resolves against the host of the response, so register a base URL to get an absolute one.
+4. **Registered base URL**: Always absolute. kiit-codes only builds the part after it.
+5. **Resolvable**: RFC 9457 encourages a `type` that opens documentation but does not require it. kiit-codes never checks DNS, so a domain origin can still return a 404.
+6. **Stable and unique**: `type` is the identity, so pick the base once and keep it. Two statuses must not produce the same `type`, which can happen when names or scopes differ only by case, `_` against `-`, or `a.b` against `a/b`.
+:::
+
+Every error in an `Err` goes into `errors`. An `Err.ErrorList` is expanded, including lists inside lists, and a single `Err.on("email", "Missing")`
+is one entry that keeps its field. `detail` is the error's message, or the first error message that isn't blank when that is blank. Each
+entry in `errors` is an `ErrorItem` with only a field and a message. The cause and the value that failed validation are left out on purpose,
+since echoing them back is a disclosure risk.
 
 :::tip[Which one?]
 1. **Problem**: An HTTP API that other parties call.
 2. **CodeDetail**: Calls between your own services, and jobs.
 3. **Neither**: When the status alone is enough.
+4. **Success codes**: The taxonomy covers `Passed` and `Failed`, which is why the path is `/docs/codes` and not `/docs/problems`. RFC 9457 describes problems, so use a `Problem` for a `Failed` status and a `CodeDetail` to report a `Passed` one.
 :::
 
 <Related
@@ -599,8 +644,8 @@ cause and the value that failed validation are left out on purpose, since echoin
       label: 'Problem',
       note: 'The [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) shape and its converter',
       links: [
-        {text: 'Problem.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/Problem.kt', kind: 'source'},
-        {text: 'ProblemConverter.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/ProblemConverter.kt', kind: 'source'},
+        {text: 'Problem.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/Problem.kt', kind: 'source'},
+        {text: 'ProblemConverter.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/ProblemConverter.kt', kind: 'source'},
         {text: 'RFC 9457', href: 'https://www.rfc-editor.org/rfc/rfc9457.html', kind: 'reference'},
         {text: 'Problem details', href: '#problem-details', kind: 'guide'},
       ],
@@ -609,9 +654,9 @@ cause and the value that failed validation are left out on purpose, since echoin
       label: 'CodeDetail',
       note: 'The kiit native shape',
       links: [
-        {text: 'CodeDetail.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/CodeDetail.kt', kind: 'source'},
+        {text: 'CodeDetail.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/CodeDetail.kt', kind: 'source'},
         {text: 'Code details', href: '#code-details', kind: 'guide'},
-        {text: 'ErrorDetail.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/ErrorDetail.kt', kind: 'source'},
+        {text: 'ErrorDetail.kt', href: 'https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/ErrorDetail.kt', kind: 'source'},
       ],
     },
   ]}
@@ -759,7 +804,7 @@ See the [kiit-result docs](/docs/kiit-result) for the full API.
 ### Error Responses
 
 When the caller is an HTTP client, send an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem instead of a bare code. Convert a status, then pass
-the validation errors from earlier to fill `detail` and `errors`:
+the validation errors from earlier to fill `detail` and `errors`. The problem also carries `code`, the exact status:
 
 <Example section="tutorial" topic="error-responses" />
 
@@ -775,7 +820,7 @@ See the [Guide](#problem-details) to write it as JSON, or [Code details](#code-d
 |---:|---|---|---|---|
 | 1 | Statuses | Return a status | Return a `Status` instead of throwing | <MoreLink href="#usage" /> |
 | 2 |  | Branch on a status | Check `success`, `Passed`/`Failed`, or a group with `when` | <MoreLink href="#usage" /> |
-| 3 |  | Define custom codes | Add codes with a name, message, origin and scope | <MoreLink href="#usage" /> |
+| 3 |  | Define custom codes | Add codes with a name, title, origin and scope | <MoreLink href="#usage" /> |
 | 4 |  | Test a status | Assert on a status or `isDefault` in a test | <MoreLink href="#usage" /> |
 | 5 | Errors | Attach error details | Carry `Err` info with a status | <MoreLink href="#usage" /> |
 | 6 |  | Validate and collect errors | Report every problem with `Checked` and `collect()` | <MoreLink href="#usage" /> |
@@ -783,14 +828,15 @@ See the [Guide](#problem-details) to write it as JSON, or [Code details](#code-d
 | 8 | Protocols | Map to HTTP | Convert a status to an HTTP code | <MoreLink href="#usage" /> |
 | 9 |  | Map to gRPC | Convert a status to a gRPC code | <MoreLink href="#usage" /> |
 | 10 | Problem details | Return Problem details | Convert a status and its errors to an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `Problem` and write it as JSON | <MoreLink href="#problem-details" /> |
-| 11 |  | Return a CodeDetail | Convert a status and its errors to a `CodeDetail` and write it as JSON | <MoreLink href="#code-details" /> |
+| 11 |  | Set your own type URL | Build the `type` yourself, with a type builder, a base URL, or by replacing the field | <MoreLink href="#custom-type-url" /> |
+| 12 |  | Return a CodeDetail | Convert a status and its errors to a `CodeDetail` and write it as JSON | <MoreLink href="#code-details" /> |
 
 **Status only**, when the outcome itself is enough:
 
 ```kotlin
 when (val status = authorize(userId, requesterId)) {
     is Passed -> log.info("ok: ${status.name}")
-    is Failed -> log.warn("failed: ${status.name} — ${status.message}")
+    is Failed -> log.warn("failed: ${status.name} — ${status.title}")
 }
 ```
 
@@ -799,7 +845,7 @@ when (val status = authorize(userId, requesterId)) {
 ```kotlin
 val PAYMENT_DECLINED = Failed.Rejected(
     name = "PAYMENT_DECLINED",
-    message = "Payment declined",
+    title = "Payment declined",
     origin = "payments",
 )
 ```
@@ -838,7 +884,7 @@ fun requireAuthorized(id: String, requesterId: String) {
     "name"   : "INVALID_VALUE",
     "group"  : "Invalid",
     "origin" : "kiit.dev",
-    "message": "The request had an invalid value."
+    "title"  : "The request had an invalid value."
 }`}
 />
 
@@ -908,9 +954,58 @@ lookup.toCode(PAYMENT_DECLINED)     // 402
 
 ### Problem details
 
-Return an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem and write it as JSON:
+Return an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem and write it as JSON. It carries `code`, the exact status, next to the `type` URL:
 
 <Example section="guide" topic="problem-details" />
+
+<Spacer />
+
+### Custom type URL
+
+The default `type` is the lowercase docs URL described in [Formats](#formats). For your own URLs there is no new API. Pick
+the way that fits how much of the URL you control:
+
+1. **A type builder**: Builds the part after the base URL. Wrap it once so callers don't repeat it.
+2. **A base URL and an empty suffix**: `convertWithUrl` gives exactly that URL.
+3. **Replace the field**: A `Problem` is a data class (a plain object in TypeScript), so copy it with any `type`, even one on another host.
+
+<CodeCard
+  title="Custom type"
+  subtitle="Three ways to set your own type URL"
+  code={{
+    kotlin: `// 1. A type builder, wrapped once
+fun taskType(status: Status) = "tasks/\${status.name.lowercase().replace('_', '-')}"
+
+fun toProblem(status: Status) = problems.convert(status, typeBuilder = ::taskType)
+toProblem(EMPTY_TITLE).type // https://samples.kiit.dev/docs/codes/tasks/empty-title
+
+// 2. A base URL and an empty suffix
+problems.convertWithUrl(
+    EMPTY_TITLE,
+    baseUrl = "https://example.com/probs/empty-title",
+    typeBuilder = { "" },
+).type // https://example.com/probs/empty-title
+
+// 3. Replace the field
+problems.convert(EMPTY_TITLE).copy(type = "https://other.example.org/probs/empty-title")`,
+    typescript: `// 1. A type builder, wrapped once
+const taskType = (status: Status): string => \`tasks/\${status.name.toLowerCase().replace(/_/g, "-")}\`;
+const toProblem = (status: Status) => problems.convert(status, undefined, taskType);
+toProblem(EMPTY_TITLE).type; // https://samples.kiit.dev/docs/codes/tasks/empty-title
+
+// 2. A base URL and an empty suffix
+problems.convertWithUrl(EMPTY_TITLE, undefined, "https://example.com/probs/empty-title", () => "").type;
+// https://example.com/probs/empty-title
+
+// 3. Replace the field
+const replaced = { ...problems.convert(EMPTY_TITLE), type: "https://other.example.org/probs/empty-title" };`,
+  }}
+/>
+
+:::info[code does not change]
+`code` is built from the status, not from `type`, so it is the same in all three. A client that reads `code` is not affected by how
+`type` was built.
+:::
 
 <Spacer />
 
@@ -1020,7 +1115,7 @@ code, so `Succeeded.DEFAULT` is `Succeeded.SUCCESS`: the same instance, not a se
 
 :::note[isDefault compares by value]
 1. **Only the default**: `isDefault` is true for a group's default code and for no other.
-2. **Every field counts**: A copy with any field changed, such as the message, is not the default.
+2. **Every field counts**: A copy with any field changed, such as the title, is not the default.
 :::
 
 <Spacer />
@@ -1116,8 +1211,8 @@ code.
 
 | Mapping | Source |
 |---|---|
-| HTTP | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L89">CodesToHttp</ConceptTermLink>, its <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L110">overrides</ConceptTermLink> |
-| gRPC | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L148">CodesToGrpc</ConceptTermLink>, its <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes-kotlin/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L169">overrides</ConceptTermLink> |
+| HTTP | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L89">CodesToHttp</ConceptTermLink>, its <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L110">overrides</ConceptTermLink> |
+| gRPC | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L148">CodesToGrpc</ConceptTermLink>, its <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L169">overrides</ConceptTermLink> |
 
 <BackToTop />
 

@@ -90,7 +90,7 @@ Both shapes use the same comment syntax in Kotlin, Java, TypeScript and Swift (`
     "typescript": "samples/sample-ts/src/index.ts"
   },
   "versions": {
-    "kotlin": {"file": "kiit-codes-kotlin/kiit-codes/build.gradle.kts", "regex": "val libraryVersion = \"([^\"]+)\""},
+    "kotlin": {"file": "kiit-codes/build.gradle.kts", "regex": "val libraryVersion = \"([^\"]+)\""},
     "typescript": {"file": "ports/kiit-codes-ts/package.json", "json": "version"}
   },
   "map": [
@@ -213,7 +213,7 @@ import Example from '@site/src/components/Example';
 
 1. **Write it in the Kotlin sample** (`SampleApp2.kt`) between inline tags, or in a block comment for install-type
    content. Give it a new `id`. Keep its `verify(...)` outside the tags.
-2. **Run the sample** from `kiit-codes/kiit-codes-kotlin`: `./gradlew :sample-kotlin:runSample2`. It must end with
+2. **Run the sample** from the `kiit-codes` repo root: `./gradlew :samples:sample-kotlin:runSample2`. It must end with
    "All N checks passed".
 3. **Add the same `id`** to the Java, TypeScript and Swift samples. The `id` must match. Until a language has it, that
    tab is missing and the script warns.

@@ -27,6 +27,7 @@ val json =
                 )
             }
         }
+        body.code?.let { put("code", it) }
     }
 
 println(Json { prettyPrint = true; prettyPrintIndent = "  " }.encodeToString(JsonObject.serializer(), json))

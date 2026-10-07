@@ -5,7 +5,7 @@ println(minimal.type) // https://www.kiit.dev/docs/kiit-codes?code=Failed:Reject
 println(minimal.title) // The request conflicts with the current state.
 println(minimal.status) // 409
 
-// An Err.ErrorList fills detail and errors (errors is a kiit extension member, not part of the RFC)
+// Every error goes into errors, and an Err.ErrorList is expanded (errors is a kiit extension member, not part of the RFC)
 val validation =
     Err.ErrorList(
         errors =

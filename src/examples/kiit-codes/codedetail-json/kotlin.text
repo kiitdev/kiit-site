@@ -15,7 +15,7 @@ val codeJson =
     buildJsonObject {
         put("code", codeDetail.code)
         put("success", codeDetail.success)
-        put("message", codeDetail.message)
+        put("title", codeDetail.title)
         codeDetail.detail?.let { put("detail", it) }
         putJsonArray("errors") {
             codeDetail.errors?.forEach { e ->
