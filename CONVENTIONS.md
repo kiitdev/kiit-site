@@ -275,12 +275,12 @@ never registered globally.
 4. **The Defaults table shows the group on every row** — `Reference > Defaults`
    (`Group | Alias | Code | Description`) has exactly one row per group, so
    the `GroupBadge` repeats instead of collapsing to a first row as in the
-   Passed/Failed tables. Its Descriptions are the codes' own messages, the
+   Passed/Failed tables. Its Descriptions are the codes' own titles, the
    same text as in those tables.
 
 5. **The Protocol mappings table is generated, not typed** — `Reference >
    Protocol mappings` (`Group | Code | HTTP | gRPC`) comes from
-   `./gradlew -q :sample-kotlin:printMappingTable` in the kiit-codes repo
+   `./gradlew -q :samples:sample-kotlin:printMappingTable` in the kiit-codes repo
    (`MappingTable.kt`), which computes every value from `CodesToHttp` and
    `CodesToGrpc` over `Codes.all`. After a code or mapping change, run it and
    paste the output over the table. Like the Passed/Failed tables it shows the
