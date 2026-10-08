@@ -91,9 +91,11 @@ Listed in top-to-bottom order as they appear on the page:
 6. **Setup Topics** — `Install` (the code, plus a table of the published
    artifacts by language), `Imports`, `Sources`, `Example`.
 7. **Code examples come from the sample apps** — a code block in the page is
-   an `<Example section="..." topic="..." />` (see Section 4 and `SETUP.md`),
-   not code typed into the page, so the docs can't drift from the library. A
-   block that is still hand-written is being converted, one Topic at a time.
+   an `<Example id="..." />` (see Section 4 and `SETUP.md`), not code typed
+   into the page, so the docs can't drift from the library. JSON output and
+   the Goals construction snippet are the exceptions, written into the page.
+   kiit-service-id still uses the older `<Example section topic />` until it
+   moves.
 8. **Versioned URL path** — the intended final URL shape is `/docs/v1/{module}`
    once the two-instance versioned docs plugin setup lands (Step 4 of the
    redesign plan). Until then, pages live under the default single docs
@@ -180,10 +182,11 @@ never registered globally.
    syntax it replaces.
 
 9. **`Example`** — shows a code example in one tab per language (Kotlin, Java,
-   TypeScript, Swift), looked up by `section` and `topic`. The code comes
-   from the kiit-codes sample apps through `npm run examples`, see
-   `SETUP.md`. An unknown `section`/`topic` throws, so a typo fails the build.
-   A code block title only shows when a language has several blocks.
+   TypeScript, Swift), looked up by `id`. The code comes from the sample apps
+   through the examples plugin, see `SETUP.md`. An unknown `id` throws, so a
+   typo fails the build. A code block title only shows when a language has
+   several blocks. The older `section`/`topic` lookup is still used by
+   kiit-service-id.
 10. **`TocCollapse`** — the state and the "Expand all / Collapse all" buttons
     for the right-hand TOC. Used by the swizzled `TOC` and `TOCItems/Tree`
     (Section 11), not imported by a doc page.

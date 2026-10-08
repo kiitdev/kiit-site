@@ -434,7 +434,7 @@ Use it to say which field failed and why. Leave the value out for a sensitive fi
 ### Error Handling: Exceptions
 
 Use it when a framework or a callback only understands exceptions. `toException()` picks the subclass for the status group, so
-the caller can catch the kind of failure it cares about.
+the caller can catch the kind of failure it cares about. In Java it is a checked exception. Kotlin exceptions do not bridge to Swift's `Error`, so there is no Swift tab.
 
 <Example id="guide-exceptions" />
 
@@ -452,6 +452,7 @@ this same taxonomy.
 Use a `Problem` for an HTTP API that other parties call, and a `CodeDetail` between your own services. kiit-codes has no JSON dependency.
 In Kotlin its classes are not `@Serializable`, so map each one to a small class of your own, and the order you declare the fields is the order in the JSON.
 In TypeScript they are plain objects, so `JSON.stringify` works on them and listing the fields sets the order.
+Java and Swift have no example here, so use the JSON library you already have.
 
 <Example id="guide-json" />
 
@@ -484,7 +485,7 @@ Use it to know which `type` your statuses produce, and to make it point at your 
 
 ### Response: Custom type URL
 
-Use it when the default suffix or base does not fit, such as docs that live under your own path. There is no new API, so pick the way that fits how much of the URL you control.
+Use it when the default suffix or base does not fit, such as docs that live under your own path. There is no new API, so pick the way that fits how much of the URL you control. Kotlin and TypeScript can also copy the `Problem` with any `type`, the Java and Swift examples leave that out.
 
 <Example id="guide-custom-type-url" />
 

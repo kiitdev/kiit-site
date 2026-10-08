@@ -1,60 +1,62 @@
 # kiit-site setup: doc examples
 
-Code examples for the docs are written once, in the kiit-codes sample apps, and pulled onto the site. This page covers the
-three pieces you set up: the **tags** in the sample files, the **map** that says where each example goes, and the
-**script** that extracts them. Terms follow [CONVENTIONS.md](./CONVENTIONS.md): a **Section** is an H2 on a doc page
-and a **Topic** is an H3 under it.
+Every code block on a module's docs page comes from that module's **sample apps**. The samples are real programs that
+compile and run, so the docs can't drift from the library. A page names an example by its `id`, and the site shows it in
+one tab per language. Terms follow [CONVENTIONS.md](./CONVENTIONS.md): a **Section** is an H2 on a doc page and a
+**Topic** is an H3 under it.
 
-Proven so far for **Setup > Install** in Kotlin, Java and TypeScript. Other examples, Swift, and the `imports` kind on a
-real page are not done yet, see section 8.
+This page describes the way kiit-codes works. kiit-service-id still uses an older script, see section 8.
 
 ## 1. The flow
 
 ```
-kiit-codes/samples/                                        kiit-site/
-  sample-kotlin/.../SampleApp2.kt   ─┐  tags (id)
-  sample-java/.../SampleApp.java    ─┼───────────────┐
-  sample-ts/src/index.ts            ─┘               ▼
-  docs-map.json  (id -> section/topic) ──────>  npm run examples
-                                                     │
-                                                     ▼
-                                       src/examples/kiit-codes/  (committed)
-                                         setup-install/kotlin.text, java-1.text, ...
-                                         examples.json, files.ts
-                                                     │
-                            <Example section="setup" topic="install" />  ──> language tabs on the page
+kiit-codes/                                              kiit-site/
+  module.json  (name, artifacts, sample files, versions) ─┐
+  samples/sample-kotlin/.../SampleApp.kt  ─┐               │   plugins/examples  (reads them at build and dev time)
+  samples/sample-java/.../SampleApp.java   ─┤  <example id> │              │
+  samples/sample-ts/src/index.ts           ─┤  regions      ▼              ▼
+  samples/sample-swift/.../main.swift      ─┘──────────────────>  id -> { language -> code }
+                                                                           │
+                                  <Example id="guide-builtins" />  ───────▶  one tab per language on the page
 ```
 
-1. **Tags** in each sample file mark a piece of code or a block of text with an `id`.
-2. **The map** (`docs-map.json`) says which `id`s go in which Section and Topic. Placement is only in the map, never in
-   the tags.
-3. **The script** reads the tags and the map and writes a folder per module, `src/examples/kiit-codes/`. It is committed,
-   so a site build doesn't need the kiit-codes repo. See section 5.
-4. **The `<Example>` component** reads that folder and shows one tab per language.
+1. **Regions** in each sample file mark a piece of code with an `id`.
+2. **`module.json`** in the module repo lists the sample file per language and where each language's version is.
+3. **The plugin** (`plugins/examples/index.ts`) reads those files when the site builds or the dev server runs, fills in the
+   placeholders, and gives the page a map of `id` to code per language. **Nothing is generated or committed.**
+4. **The `<Example>` component** looks up the `id` and shows one tab per language that has it.
 
-## 2. Tags
+A module repo sits next to `kiit-site` (`../kiit-codes`), so both must be checked out side by side.
 
-Every tag opens with `<example id="..." tags="a,b">`. `id` is required and must be unique within a file. `tags` is
-optional, it is kept in the JSON for filtering and nothing reads it yet. There are two shapes.
+## 2. Regions
+
+A region is code between two comment lines. Both open with `<example id="..." tags="a,b">`. `id` is required and must be
+unique within a file. `tags` is optional and nothing reads it yet.
 
 ### 2.1 Inline, around real code
 
 ```kotlin
-// <example id="overview-checks" tags="concepts">
-val outcome = tasks.create("buy milk")
-println("created: ${outcome.name}")
+// <example id="guide-builtins" tags="guide">
+// A specific built-in code
+val created = Succeeded.CREATED
+// The group's default, when you only know the kind of outcome
+val failed = Invalid.DEFAULT
+// INVALID_VALUE
+println(failed.name)
 // </example>
-verify("overview-checks", outcome.success)
+verify("guide-builtins: default", failed == Invalid.INVALID_VALUE && failed.isDefault)
 ```
 
-1. The example is the code between the two `//` lines. It compiles and runs with the rest of the sample.
-2. Keep the `verify(...)` checks **outside** the tags. They fail the sample run if an API changes, so the docs can't drift
-   from the library.
-3. Use this for every API example.
+1. The example is the code between the two lines. It compiles and runs with the rest of the sample.
+2. Keep the `verify(...)` (Kotlin) or `check(...)` (Java, TypeScript, Swift) calls **outside** the region. They fail the
+   run if a claim the example makes stops being true.
+3. Put the expected result in a comment **above** the line that produces it, not to the right of it.
+4. Each region stands alone. It defines the names it uses, so a reader can paste it and run it.
+5. Java and Swift have no local functions for a recipe to declare, so a recipe there uses a lambda or a nested function.
 
 ### 2.2 In a comment, outside the code
 
-For content that can't be code in that file, such as a Gradle dependency, Maven XML or `npm install`.
+For content that can't be code in that file, such as a Gradle dependency, Maven XML, `npm install` or an import line.
 
 ````kotlin
 /*
@@ -69,176 +71,138 @@ dependencies {
 ````
 
 1. `/*` and the opening tag are on their own lines, with no leading `*`, so the markdown fences stay intact.
-2. The code goes in fenced blocks. The fence language (`kotlin`, `xml`, `groovy`, `bash`) is used for highlighting.
-   `title="..."` on the fence becomes the title of the code block. Several fences are allowed in one tag (a Maven and a
-   Gradle snippet, for example).
-3. The closing `</example>` is optional, the end of the comment also ends the example.
-4. Kotlin and Swift block comments nest, so a fence must not contain `/*`. Java and TypeScript don't nest.
-5. These aren't compiled, so use the placeholders in section 4 for versions and names.
+2. The code goes in fenced blocks. The fence language is used for highlighting, and `title="..."` becomes the title of
+   the code block. Several fences are allowed in one region (a Maven and a Gradle snippet, for example).
+3. The closing `</example>` is optional, the end of the comment also ends the region.
+4. These aren't compiled, so use the placeholders in section 4.
 
 Both shapes use the same comment syntax in Kotlin, Java, TypeScript and Swift (`//` and `/* */`).
 
-## 3. The map: `kiit-codes/samples/docs-map.json`
+## 3. `module.json`
+
+The module repo keeps its static facts in `module.json` at the root. The README, the docs page and the plugin all read from
+it. The plugin uses these keys:
 
 ```json
 {
-  "module": {"name": "kiit-codes", "group": "dev.kiit", "artifact": "kiit-codes", "package": "@kiitdev/codes"},
-  "page": "docs/foundations/kiit-codes.md",
-  "sources": {
-    "kotlin": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp2.kt",
-    "java": "samples/sample-java/src/main/java/sample/SampleApp.java",
-    "typescript": "samples/sample-ts/src/index.ts"
+  "name": "kiit-codes",
+  "artifacts": {
+    "maven": {"group": "dev.kiit", "id": "kiit-codes"},
+    "npm": {"name": "@kiitdev/codes"}
   },
-  "versions": {
-    "kotlin": {"file": "kiit-codes/build.gradle.kts", "regex": "val libraryVersion = \"([^\"]+)\""},
-    "typescript": {"file": "ports/kiit-codes-ts/package.json", "json": "version"}
-  },
-  "map": [
-    {"section": "setup", "topic": "install", "items": [{"id": "setup-install", "kind": "install"}]}
-  ]
+  "examples": {
+    "sources": {
+      "kotlin": "samples/sample-kotlin/src/main/kotlin/sample/SampleApp.kt",
+      "java": "samples/sample-java/src/main/java/sample/SampleApp.java",
+      "typescript": "samples/sample-ts/src/index.ts",
+      "swift": "samples/sample-swift/Sources/sample-swift/main.swift"
+    },
+    "versions": {
+      "kotlin": {"file": "kiit-codes/build.gradle.kts", "regex": "val libraryVersion = \"([^\"]+)\""},
+      "typescript": {"file": "ports/kiit-codes-ts/package.json", "json": "version"}
+    }
+  }
 }
 ```
 
 | Key | Meaning |
 |---|---|
-| `module` | Values for the `{{module.*}}` placeholders |
-| `page` | The docs page (relative to `kiit-site`). Used to check that every `section` and `topic` is a real heading |
-| `sources` | One sample file per language. A language with no entry is skipped |
-| `versions` | Where each language's `{{module.version}}` comes from: a regex on a file, or a JSON key |
-| `map` | Placements. Each has a `section`, a `topic`, and `items` |
+| `name` | The module name. A page's `<Example>` uses it as `module`, `kiit-codes` when not given |
+| `artifacts` | Values for the `{{module.*}}` placeholders |
+| `examples.sources` | One sample file per language. A language with no entry is skipped |
+| `examples.versions` | Where each language's `{{module.version}}` comes from: a regex on a file, or a JSON key |
 
-An item in `map` has:
-
-| Field | Required | Meaning |
-|---|---|---|
-| `id` | yes | The tag `id`. The same `id` in each language's file is the same example, that is how the tabs line up |
-| `kind` | no | `code` (default), `install`, or `imports`. An `imports` item is shown at the top of the code block of the item after it |
-| `name` | no | A name for picking one item when a Topic has several: `<Example ... name="http" />` |
-
-1. `section` and `topic` are the heading slugs on the page (`setup`, `install`). Both are needed because two headings on
-   the page are called "Protocols".
-2. **One `id` can be placed in many places**: list it in more than one `map` entry.
-3. The order of `items` is the order they are shown.
-4. Tags that aren't in the map are sample-only. They stay in the sample and are reported, not treated as an error.
+The plugin is registered in `docusaurus.config.ts` with the modules to read:
+`[examplesPlugin, {modules: ['kiit-codes']}]`. A new module is one more name in that list and a `module.json`.
 
 ## 4. Placeholders
 
-Use these in tags instead of typing a version or a name, so they can't go stale.
+Use these in a region instead of typing a version or a name, so they can't go stale.
 
 | Placeholder | Value |
 |---|---|
-| `{{module.name}}` | `module.name` from the map (`kiit-codes`) |
-| `{{module.group}}` | `module.group` (`dev.kiit`, the Maven group) |
-| `{{module.artifact}}` | `module.artifact` (`kiit-codes`) |
-| `{{module.package}}` | `module.package` (`@kiitdev/codes`, the npm package) |
-| `{{module.version}}` | The version for the **language of the file the tag is in** (`versions` in the map) |
+| `{{module.name}}` | `name` (`kiit-codes`) |
+| `{{module.group}}` | `artifacts.maven.group` (`dev.kiit`) |
+| `{{module.artifact}}` | `artifacts.maven.id` (`kiit-codes`) |
+| `{{module.package}}` | `artifacts.npm.name` (`@kiitdev/codes`) |
+| `{{module.version}}` | The version for the **language of the file the region is in** (`examples.versions`) |
 
-`{{module.version}}` depends on the language because the Maven version and the npm version differ (1.1.0 and 0.9.0 at the
-time of writing). An unknown placeholder is an error.
+`{{module.version}}` depends on the language because the Maven and npm versions differ. An unknown placeholder is an error.
 
-## 5. Running the script
-
-From `kiit-site`:
-
-```bash
-npm run examples                                # kiit-codes, writes src/examples/kiit-codes/
-npm run examples -- kiit-service-id             # another module, writes src/examples/kiit-service-id/
-npm run examples -- kiit-service-id --verbose   # also lists the sample examples that aren't in the map
-```
-
-A module repo keeps its wiring in `doc/docs.json` (same keys as the map in section 3). kiit-codes still uses
-`samples/docs-map.json` until it moves. A page picks its module with `<Example module="kiit-service-id" ... />`
-(the default is `kiit-codes`). A new module also needs an entry in `MODULES` in `src/components/Example/index.tsx`
-and an `examples.json` and `files.ts` in its `src/examples/<module>/` folder (the first run writes them).
-
-It reads the map and the sample files from the sibling `kiit-codes` folder, so both repos must be checked out side by side.
-Commit the changed files under `src/examples/kiit-codes/` with the change that caused them.
-
-### 5.1 What it writes
-
-The output goes in a folder named for the module (`module.name` in the map), one folder per example `id`:
-
-```
-src/examples/kiit-codes/
-  setup-install/
-    kotlin.text          the code, one file per language
-    java-1.text          a language with several snippets gets -1, -2, ... (pom.xml, then build.gradle)
-    java-2.text
-    typescript.text
-  examples.json          placement and metadata
-  files.ts               one import per .text file (generated)
-```
-
-1. **`<id>/<language>.text`** holds exactly the code that will be shown, with the placeholders already filled in. The
-   `.text` extension is on purpose: editors and build tools don't treat the snippets as real Kotlin, Gradle or shell
-   files. Plain files also give a readable, line-by-line diff in review.
-2. **`examples.json`** has, for each `section/topic`, its items (`id`, `kind`, `tags`) and, for each language, the
-   snippets: the highlight language, the title, the file name, and the sample file and line it came from. It has no code.
-3. **`files.ts`** imports every `.text` file so the component can look one up by file name. It is generated, don't edit it.
-4. Each run deletes the module folder first, so an example that was removed from the map or the samples doesn't leave
-   files behind.
-5. Nothing here is edited by hand. Change the tag in the sample or the map, and run the script.
-
-### 5.2 Rules
-
-1. The output has no timestamps and is sorted by the map, so running it twice gives identical files.
-2. **Errors** stop it (exit 1): a tag with no `id`, a duplicate `id` in a file, an unclosed tag, a block with no fenced
-   code, an unknown `kind`, an unknown placeholder, or an `id` in the map that no sample has.
-3. **Warnings** don't stop it:
-   - a `section`/`topic` that isn't a heading on the page
-   - an `id` in the map that a language's sample doesn't have yet
-   - an unknown attribute on a tag
-4. The last lines say how many topics, examples and code files were written, and how many sample examples are
-   sample-only.
-
-## 6. Showing an example on a page
+## 5. Showing an example on a page
 
 ```mdx
 import Example from '@site/src/components/Example';
 
-### Install
+#### Collect errors
 
-<Example section="setup" topic="install" />                 {/* every item in that Topic */}
-<Example section="guide" topic="protocols" name="http" />   {/* one item, by its map name */}
+<Example id="guide-collect-errors" />
 ```
 
 1. Import it in each page that uses it, as CONVENTIONS.md section 4 requires. It isn't registered globally.
-   The component reads `examples.json` for what to show and `files.ts` for the code.
-2. It shows one tab per language that has the example, in the order Kotlin, Java, TypeScript, Swift. The tabs use
+2. It shows one tab per language that has the `id`, in the order Kotlin, Java, TypeScript, Swift. The tabs use
    `groupId="language"`, so the choice is shared with the other language tabs on the page and remembered in the browser.
-3. An unknown `section`, `topic` or `name` throws, so a typo fails `npm run build` and can't ship an empty block.
-4. `docs/foundations/example-test.md` is an unlisted scratch page that uses it. It can be deleted.
+3. A language that doesn't have the `id` has no tab. That is allowed, and the page text says why when it matters (for
+   example, the TypeScript port has no gRPC mapping yet).
+4. An unknown `id` throws, so a typo fails `npm run build` and can't ship an empty block.
+5. The same `id` can be used in more than one place on a page.
+
+## 6. What the plugin checks
+
+1. **Errors** stop the build: a region with no `id`, a duplicate `id` in a file, an unclosed region, a block with no
+   fenced code, an unknown placeholder, or a page that asks for an `id` no sample has.
+2. **A warning** lists the ids in a sample that no page uses. They aren't an error, but an unused region is dead weight, so
+   remove it.
+3. The dev server (`npm run start`) watches `module.json` and the `samples` folder, so editing a region updates the page.
 
 ## 7. Adding an example
 
-1. **Write it in the Kotlin sample** (`SampleApp2.kt`) between inline tags, or in a block comment for install-type
-   content. Give it a new `id`. Keep its `verify(...)` outside the tags.
-2. **Run the sample** from the `kiit-codes` repo root: `./gradlew :samples:sample-kotlin:runSample2`. It must end with
+1. **Write it in the Kotlin sample** (`SampleApp.kt`) between inline regions. Give it a new `id` and keep its `verify(...)`
+   outside the region.
+2. **Run the sample.** From the `kiit-codes` repo root: `./gradlew :samples:sample-kotlin:run`. It must end with
    "All N checks passed".
-3. **Add the same `id`** to the Java, TypeScript and Swift samples. The `id` must match. Until a language has it, that
-   tab is missing and the script warns.
-4. **Place it** by adding it to a `map` entry in `docs-map.json`.
-5. **Extract:** `npm run examples` in `kiit-site`. Fix any error, read any warning.
-6. **Use it:** add `<Example section="..." topic="..." />` to the page, then `npm run build`.
+3. **Add the same `id`** to the other samples. The `id` must match, that is how the tabs line up.
+   - Java: `./gradlew :samples:sample-java:run`
+   - TypeScript: in `samples/sample-ts`, `npm run typecheck && npm run build && npm run start`
+   - Swift: build the framework with `./gradlew :kiit-codes:linkDebugFrameworkIosSimulatorArm64`, then `./run.sh` in
+     `samples/sample-swift`. It runs in the iOS simulator.
+4. **Use it:** add `<Example id="..." />` to the page, then `npm run build` in `kiit-site`.
 
-## 8. State and known gaps
+Write the page first and the sample from it. Draft the code block as the reader should see it, agree on it, then make the
+sample produce exactly that and verify it.
 
-1. **Done:** the tag format, the map, placeholders, the script, and the component, checked for `setup/install` in Kotlin,
-   Java and TypeScript, including one `id` placed in two places.
-2. **Not done:** Swift (no source in the map yet, and the SwiftPM coordinates aren't confirmed), the `imports` kind on a
-   real page, any example other than install, and using `<Example>` in `kiit-codes.md` (it still has the hand-written
-   snippets).
-3. **Java and TypeScript examples are block comments for now.** They aren't compiled. Real inline examples come when those
-   samples are rewritten to match the Kotlin one.
-4. **`tags`** are stored but not used yet.
-5. **Restart the dev server** after adding the component, a new theme file, or changing `docusaurus.config.ts`
-   (`npm run start`). Hot reload doesn't pick those up.
+## 8. The older way: kiit-service-id
+
+kiit-service-id has not moved to the plugin yet. It still uses `npm run examples`, which runs
+`scripts/extract-examples.mjs`.
+
+```bash
+npm run examples                                # kiit-service-id, writes src/examples/kiit-service-id/
+npm run examples -- <module>                    # another module with a doc/docs.json
+npm run examples -- <module> --verbose          # also lists the sample examples that aren't in the map
+```
+
+1. The module keeps a map in `doc/docs.json` that places each `id` in a `section` and a `topic`.
+2. The script writes `src/examples/<module>/`: one `.text` file per snippet, `examples.json` and `files.ts`. This output is
+   committed.
+3. A page asks for a Topic, not an `id`: `<Example module="kiit-service-id" section="setup" topic="imports" />`. A new
+   module on this way also needs an entry in `MODULES` in `src/components/Example/index.tsx`.
+4. The `*.text` files are imported as strings by `textFilesPlugin` in `docusaurus.config.ts`, and `src/examples/text.d.ts`
+   types them.
+
+Both ways use the same region syntax in the samples. When kiit-service-id moves, it gets a `module.json` with an
+`examples` block, its map and its generated folder are deleted, and the script, `textFilesPlugin` and `text.d.ts` go with
+them.
 
 ## 9. Pieces to know about
 
-1. **`textFilesPlugin` in `docusaurus.config.ts`:** a small plugin that lets a page import a `*.text` file as a plain
-   string. The `Example` component needs it.
-2. **`src/examples/text.d.ts`:** tells TypeScript that `*.text` imports are strings.
-3. **`scripts/extract-examples.mjs`:** the extractor, run with `npm run examples`.
-4. **`src/components/Example/`:** the component.
-5. **`kiit-codes/samples/docs-map.json`:** the map, in the kiit-codes repo next to the samples.
+| Piece | What it is |
+|---|---|
+| `plugins/examples/index.ts` | The plugin that reads the samples and gives the page its map of `id` to code |
+| `src/components/Example/` | The component. `id` mode reads the plugin's data, the older mode reads `src/examples/` |
+| `<module>/module.json` | The static facts and the sample file per language, in the module repo |
+| `<module>/samples/` | The sample apps, one per language, with the regions |
+| `scripts/extract-examples.mjs` | The older script, for kiit-service-id only |
+
+Restart the dev server after changing `docusaurus.config.ts` or adding a new module to the plugin. Hot reload doesn't pick
+those up.
