@@ -89,7 +89,7 @@ Listed in top-to-bottom order as they appear on the page:
    the fields every Status carries). Prefer a table for an API shape, and
    keep any block in those Sections small.
 6. **Setup Topics** — `Install` (the code, plus a table of the published
-   artifacts by language), `Imports`, `Source`, `Example`.
+   artifacts by language), `Imports`, `Sources`, `Example`.
 7. **Code examples come from the sample apps** — a code block in the page is
    an `<Example section="..." topic="..." />` (see Section 4 and `SETUP.md`),
    not code typed into the page, so the docs can't drift from the library. A
@@ -291,7 +291,7 @@ never registered globally.
 
 6. **A short links table is fine** — now that every table fills the page width
    (item 2), a short table of links no longer looks awkward, and the Setup
-   Topics use them (`Install` artifacts, `Source`). At the end of an
+   Topics use them (`Install` artifacts, `Sources`). At the end of an
    `Explanation` Topic, the source file and Reference links go in a `Related`
    table (Section 4). A table is for data with columns worth comparing, like
    the code and mapping tables.

@@ -15,6 +15,7 @@ import PageTitle from '@site/src/components/PageTitle';
 import Icon from '@site/src/components/Icon';
 import Example from '@site/src/components/Example';
 import StatusBadge from '@site/src/components/StatusBadge';
+import CodeCard from '@site/src/components/CodeCard';
 import Diagram from '@site/src/components/Diagram';
 
 <PageTitle title="kiit-codes" logo="/img/modules/kiit-codes-logo.png" />
@@ -33,28 +34,41 @@ extensible codes, protocol mappings, validation, typed exceptions, and
 
 Every outcome gets a `Status` in one of eight fixed groups, with open codes underneath. Services, jobs,
 validation and APIs then classify success and failure the same way, and a status maps to HTTP, gRPC or an
-[RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem when it crosses a boundary. This is the shape of a status:
+[RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem when it crosses a boundary. This is how a code is constructed: a name, a title, an origin that says who owns it, and an optional scope inside that origin.
 
-```json title="Status"
-{
-  "success": false,
-  "name": "INVALID_VALUE",
-  "group": "Invalid",
-  "origin": "kiit.dev",
-  "scope": "codes",
-  "title": "The request had an invalid value."
-}
-```
+<CodeCard
+  language="kotlin"
+  code={{
+    kotlin: `val MISSING_DATE = Invalid(
+      name = "MISSING_DATE",
+      title = "Date not supplied",
+      origin = "samples.kiit.dev",
+      scope = "tasks",
+  )`,
+    java: `Failed.Invalid MISSING_DATE = new Failed.Invalid(
+      "MISSING_DATE",
+      "Date not supplied",
+      "samples.kiit.dev",
+      "tasks");`,
+    typescript: `const MISSING_DATE: Invalid = Invalid(
+    "MISSING_DATE",
+    "Date not supplied",
+    "samples.kiit.dev",
+    "tasks",
+  );`,
+    swift: `let MISSING_DATE = Failed.Invalid(
+      name: "MISSING_DATE",
+      title: "Date not supplied",
+      origin: "samples.kiit.dev",
+      scope: "tasks"
+  )`,
+  }}
+/>
 
-<Spacer />
-
-### Inspiration
-
-| # | Source | What was drawn from it |
-|---:|---|---|
-| 1 | HTTP status codes | Validated against, not derived from. The most common HTTP codes map onto the eight groups without needing a ninth. |
-| 2 | [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem details | The shape of `Problem` (`type`, `title`, `status`, `detail`, `instance`), with `errors` and `code` added as extension members. `CodeDetail` is the kiit version for calls where HTTP and a public URL don't apply. See [RFC 9457](#rfc-9457). |
-| 3 | gRPC status codes | Same validation as HTTP. Every gRPC code maps onto the existing eight groups. |
+:::info[Inspiration]
+1. **HTTP and gRPC**: The eight groups were validated against their status codes, not derived from them.
+2. **RFC 9457**: The problem details format shaped how a status becomes a response body.
+:::
 
 <Spacer />
 
@@ -65,16 +79,6 @@ validation and APIs then classify success and failure the same way, and a status
 | 1 | Kotlin | Original | <StatusBadge status="Live" /> | Canonical model, in production use for years. |
 | 2 | Swift | Multiplatform | <StatusBadge status="Beta" /> | XCFramework through SKIE. |
 | 3 | TypeScript | Native port | <StatusBadge status="Beta" /> | Same model, written in TypeScript. |
-
-<Spacer />
-
-### Links
-
-| # | Link | Details |
-|---:|---|---|
-| 1 | Repository | [github.com/kiitdev/kiit-codes](https://github.com/kiitdev/kiit-codes) |
-| 2 | TypeScript port | [ports/kiit-codes-ts](https://github.com/kiitdev/kiit-codes/tree/main/ports/kiit-codes-ts) |
-| 3 | Sample apps | [samples](https://github.com/kiitdev/kiit-codes/tree/main/samples) |
 
 <Spacer />
 
@@ -101,6 +105,17 @@ Refer to the [LICENSE](https://github.com/kiitdev/kiit-codes/blob/main/LICENSE) 
 ### Imports
 
 <Example id="setup-imports" />
+
+<Spacer />
+
+### Sources
+
+| # | Link | Details |
+|---:|---|---|
+| 1 | Repository | [github.com/kiitdev/kiit-codes](https://github.com/kiitdev/kiit-codes) |
+| 2 | Kotlin source | [kiit-codes/src/commonMain/kotlin](https://github.com/kiitdev/kiit-codes/tree/main/kiit-codes/src/commonMain/kotlin) |
+| 3 | TypeScript port | [ports/kiit-codes-ts](https://github.com/kiitdev/kiit-codes/tree/main/ports/kiit-codes-ts) |
+| 4 | Sample apps | [samples](https://github.com/kiitdev/kiit-codes/tree/main/samples) |
 
 <BackToTop />
 
