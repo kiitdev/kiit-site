@@ -392,18 +392,7 @@ Recipes for common tasks, grouped like the topics in Explanation.
 
 Use a built-in code for a standard outcome. When you only know the kind of outcome and not the exact code, use the group's default. Statuses are values, so a test can compare them directly with `assertEquals(Rejected.CONFLICT, tasks.create("groceries"))`.
 
-```kotlin
-// a specific built-in code
-val created = Succeeded.CREATED
-// the group's default, when you only know the kind of outcome
-val failed = Invalid.DEFAULT
-// INVALID_VALUE
-println(failed.name)
-// true
-println(failed.isDefault)
-// false
-println(Invalid.BAD_REQUEST.isDefault)
-```
+<Example id="guide-builtins" />
 
 <Spacer />
 
@@ -412,15 +401,7 @@ println(Invalid.BAD_REQUEST.isDefault)
 Use it when a built-in code is too generic for your domain, such as a payment that was declined. A custom code stays in one of the
 eight groups, so generic handling still works on it. Pick an origin you own, such as a domain.
 
-```kotlin
-val PAYMENT_DECLINED =
-    Rejected(
-        name = "PAYMENT_DECLINED",
-        title = "Payment declined",
-        origin = "payments.example.com",
-        scope = "payments.cards",
-    )
-```
+<Example id="guide-custom-code" />
 
 <Spacer />
 
@@ -429,42 +410,7 @@ val PAYMENT_DECLINED =
 Use it to turn a status into a response, a log level or a retry decision. Match a code first, then a group, then the broad
 branches, because the first branch that fits wins and a broader branch above a specific one means the specific one never runs.
 
-```kotlin
-// 1. Passed or Failed
-fun binary(status: Status): String =
-    when (status) {
-        is Passed -> "ok: ${status.name}"
-        is Failed -> "failed: ${status.name}"
-    }
-
-// 2. Passed or Failed, each by its four groups. The compiler flags a missing group.
-fun nested(status: Status): String =
-    when (status) {
-        is Passed ->
-            when (status) {
-                is Succeeded -> "done"
-                is Pending -> "in progress"
-                is Excluded -> "skipped"
-                is Information -> "for your information"
-            }
-        is Failed ->
-            when (status) {
-                is Restricted -> "not allowed"
-                is Invalid -> "fix the input"
-                is Rejected -> "refused by a rule"
-                is Unserved -> "try again later"
-            }
-    }
-
-// 3. Specific to broad: a code, then a group, then Failed or Passed
-fun hybrid(status: Status): String =
-    when (status) {
-        Rejected.CONFLICT -> "already exists"
-        is Invalid -> "fix the input"
-        is Failed -> "failed: ${status.name}"
-        is Passed -> "ok: ${status.name}"
-    }
-```
+<Example id="guide-pattern-matching" />
 
 <Spacer />
 
@@ -472,15 +418,7 @@ fun hybrid(status: Status): String =
 
 Use it for a form or a request with several fields, so the caller sees every problem in one response and not one at a time.
 
-```kotlin
-val checked =
-    collect(
-        validateTitle(""),
-        validateListId("unknown-list"),
-    )
-// valid = false, errors = 2
-println("valid = ${checked.isValid}, errors = ${checked.errors.size}")
-```
+<Example id="guide-collect-errors" />
 
 <Spacer />
 
@@ -488,16 +426,7 @@ println("valid = ${checked.isValid}, errors = ${checked.errors.size}")
 
 Use it to say which field failed and why. Leave the value out for a sensitive field, so it is never echoed back.
 
-```kotlin
-// a plain message
-val plain = Err.of("title is required")
-// an error on one field, with its value
-val title = Err.on("title", "", "must be 1-100 characters")
-// the same, without the value
-val password = Err.on("password", "must be at least 12 characters")
-// several plain messages under one message
-val many = Err.list(listOf("title is required", "list is unknown"), "Validation failed")
-```
+<Example id="guide-error-details" />
 
 <Spacer />
 
@@ -506,20 +435,7 @@ val many = Err.list(listOf("title is required", "list is unknown"), "Validation 
 Use it when a framework or a callback only understands exceptions. `toException()` picks the subclass for the status group, so
 the caller can catch the kind of failure it cares about.
 
-```kotlin
-fun createOrThrow(title: String): Task {
-    val status = tasks.create(title)
-    if (status is Failed) throw status.toException()
-    return Task(title)
-}
-
-try {
-    createOrThrow("groceries")
-} catch (e: StatusException.RejectedException) {
-    // CONFLICT
-    println(e.status.name)
-}
-```
+<Example id="guide-exceptions" />
 
 <Spacer />
 
@@ -532,46 +448,11 @@ this same taxonomy.
 
 ### Response: JSON
 
-Use a `Problem` for an HTTP API that other parties call, and a `CodeDetail` between your own services. kiit-codes has no JSON dependency and its
-classes are not `@Serializable`, so map each one to a small class of your own. The order you declare the fields is the order in the JSON.
+Use a `Problem` for an HTTP API that other parties call, and a `CodeDetail` between your own services. kiit-codes has no JSON dependency.
+In Kotlin its classes are not `@Serializable`, so map each one to a small class of your own, and the order you declare the fields is the order in the JSON.
+In TypeScript they are plain objects, so `JSON.stringify` works on them and listing the fields sets the order.
 
-```kotlin
-@Serializable
-data class ErrorJson(val field: String? = null, val message: String)
-
-@Serializable
-data class ProblemJson(
-    val type: String,
-    val title: String,
-    val detail: String? = null,
-    val code: String? = null,
-    val status: Int? = null,
-    val errors: List<ErrorJson>? = null,
-)
-
-@Serializable
-data class CodeDetailJson(
-    val code: String,
-    val title: String,
-    val detail: String? = null,
-    val success: Boolean,
-    val errors: List<ErrorJson>? = null,
-)
-
-fun Problem<ErrorDetail>.toJson() =
-    ProblemJson(type, title, detail, code, status, errors?.map { ErrorJson(it.field, it.message) })
-
-fun CodeDetail<ErrorDetail>.toJson() =
-    CodeDetailJson(code, title, detail, success, errors?.map { ErrorJson(it.field, it.message) })
-
-val json = Json { prettyPrint = true }
-val errors = Err.ErrorList(listOf(Err.on("title", "", "must be 1-100 characters")), "Validation failed")
-
-// an RFC 9457 problem, for an HTTP API
-println(json.encodeToString(ProblemConverter().convert(Invalid.INVALID_VALUE, errors).toJson()))
-// a CodeDetail, for your own services
-println(json.encodeToString(toCodeDetail(Invalid.INVALID_VALUE, errors).toJson()))
-```
+<Example id="guide-json" />
 
 <Spacer />
 
@@ -596,23 +477,7 @@ Use it to know which `type` your statuses produce, and to make it point at your 
 7. **Unique**: Pick the base once and keep it. Names or scopes that differ only by case, `_` against `-`, or `a.b` against `a/b` produce the same `type`.
 :::
 
-```kotlin
-val stripe = Rejected("DUPLICATE_CHARGE", "Duplicate charge", origin = "stripe.com", scope = "payments.cards")
-val plain = Rejected("OUT_OF_STOCK", "Out of stock", origin = "myapp1")
-
-// 1. A domain origin and nothing registered
-// https://stripe.com/docs/codes/payments/cards/failed/rejected/duplicate-charge
-println(ProblemConverter().convert(stripe).type)
-
-// 2. A plain id is not a domain, so the type is relative
-// /docs/codes/failed/rejected/out-of-stock
-println(ProblemConverter().convert(plain).type)
-
-// 3. A base URL registered for the origin
-// https://stripe.com/errors/payments/cards/failed/rejected/duplicate-charge
-val registered = ProblemConverter(baseUrls = mapOf("stripe.com" to "https://stripe.com/errors"))
-println(registered.convert(stripe).type)
-```
+<Example id="guide-type-url" />
 
 <Spacer />
 
@@ -620,28 +485,7 @@ println(registered.convert(stripe).type)
 
 Use it when the default suffix or base does not fit, such as docs that live under your own path. There is no new API, so pick the way that fits how much of the URL you control.
 
-```kotlin
-val stripe = Rejected("DUPLICATE_CHARGE", "Duplicate charge", origin = "stripe.com", scope = "payments.cards")
-val problems = ProblemConverter()
-
-// 1. Your own suffix, with a type builder
-// https://stripe.com/docs/codes/charges/duplicate
-println(problems.convert(stripe, typeBuilder = { "charges/duplicate" }).type)
-
-// 2. Exactly one URL, a base with an empty suffix
-// https://example.com/probs/duplicate-charge
-println(
-    problems.convertWithUrl(
-        stripe,
-        baseUrl = "https://example.com/probs/duplicate-charge",
-        typeBuilder = { "" },
-    ).type,
-)
-
-// 3. Any URL at all, by copying the Problem
-// https://other.example.org/probs/duplicate
-println(problems.convert(stripe).copy(type = "https://other.example.org/probs/duplicate").type)
-```
+<Example id="guide-custom-type-url" />
 
 :::info[code does not change]
 `code` is built from the status, not from `type`, so it is the same however `type` was built. A client that reads `code` is not affected.
@@ -652,38 +496,18 @@ println(problems.convert(stripe).copy(type = "https://other.example.org/probs/du
 ### Response: HTTP and gRPC
 
 Use it at the edge of your service, where an outcome becomes a response code. There is no reverse conversion, because many statuses share one code.
+The TypeScript port has HTTP only for now, with no gRPC mapping.
 
-```kotlin
-val http = CodesToHttp()
-val grpc = CodesToGrpc()
-
-// 201
-println(http.toCode(Succeeded.CREATED))
-// 409
-println(http.toCode(Rejected.CONFLICT))
-
-// 0 (OK)
-println(grpc.toCode(Succeeded.CREATED))
-// 6 (ALREADY_EXISTS)
-println(grpc.toCode(Rejected.CONFLICT))
-```
+<Example id="guide-http" />
 
 <Spacer />
 
 ### Response: Custom protocol
 
-Use it when a custom code needs its own protocol value, such as HTTP 402 for a declined payment. `CompositeLookup` tries your values first
-and falls back to the base mapping for everything else.
+Use it when a custom code needs its own protocol value, such as HTTP 402 for a declined payment. Your values come first and the base mapping answers for everything else.
+Kotlin has `CompositeLookup` for this. The TypeScript port does not yet, so the lookup is written by hand.
 
-```kotlin
-val http =
-    CompositeLookup(
-        base = CodesToHttp(),
-        extensions = mapOf(PAYMENT_DECLINED to 402),
-    )
-// 402
-println(http.toCode(PAYMENT_DECLINED))
-```
+<Example id="guide-custom-protocol" />
 
 <BackToTop />
 
