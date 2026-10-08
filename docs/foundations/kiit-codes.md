@@ -131,11 +131,17 @@ Return a `Status` instead of throwing for a failure you expect:
 
 <Spacer />
 
-### Validate and pattern match
+### Validate and Match
 
-Return a `Checked` to carry the status and the errors together, then match on the group of the status:
+Return a `Checked` to carry the status and the errors together, then match on whether it passed or failed:
 
 <Example id="tutorial-validate" />
+
+:::note[Match in more depth]
+1. **By group**: Branch on `Restricted`, `Invalid`, `Rejected` or `Unserved` inside `Failed`.
+2. **By code**: Branch on one specific code, such as `Rejected.CONFLICT`, before the broader branches.
+3. **More**: See [Match on a status](#match-on-a-status).
+:::
 
 See [Checked](#checked) for the type.
 
@@ -147,6 +153,24 @@ Send the failure to an HTTP client as an [RFC 9457](https://www.rfc-editor.org/r
 and the problem also carries `code`, the exact status:
 
 <Example id="tutorial-problem" />
+
+The problem as JSON:
+
+```json title="RFC 9457 problem"
+{
+  "type": "https://www.kiit.dev/docs/kiit-codes?code=Failed:Invalid:INVALID_VALUE#taxonomy",
+  "title": "The request had an invalid value.",
+  "status": 400,
+  "detail": "Validation failed",
+  "errors": [
+    {
+      "field": "title",
+      "message": "must not be blank"
+    }
+  ],
+  "code": "kiit.dev:codes:Failed:Invalid:INVALID_VALUE"
+}
+```
 
 See the [Guide](#return-a-problem-as-json) to write the problem as JSON.
 
@@ -402,6 +426,14 @@ Add a code to any of the eight groups with a name, a title, an origin and an opt
 and keeps its own identity:
 
 <Example id="taxonomy-custom" />
+
+<Spacer />
+
+### Match on a status
+
+Three ways to branch on a `Status`. Put the most specific branch first, since a broader branch above it would match first and the specific one would never run:
+
+<Example id="guide-match" />
 
 <Spacer />
 
