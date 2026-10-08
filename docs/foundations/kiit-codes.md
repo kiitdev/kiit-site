@@ -147,10 +147,11 @@ See [Errors](#errors) for the types.
 
 <Spacer />
 
-### Build a problem
+### Build an RFC 9457 problem
 
-Send the failure to an HTTP client as an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem. The errors fill `detail` and `errors`,
-and the problem also carries `code`, the exact status:
+Send the failure to an HTTP client as an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem, the IETF standard for API errors that clients and tools already understand.
+The errors fill `detail` and `errors`, and the problem also carries `code`, the exact status. For calls between your own services, the same failure as kiit's
+self-contained `CodeDetail` takes one more line:
 
 <Example id="tutorial-problem" />
 
@@ -172,7 +173,24 @@ The problem as JSON:
 }
 ```
 
-See the [Guide](#response-json) to write the problem as JSON.
+The `CodeDetail` as JSON:
+
+```json title="CodeDetail (self-contained)"
+{
+  "code": "kiit.dev:codes:Failed:Invalid:INVALID_VALUE",
+  "title": "The request had an invalid value.",
+  "detail": "Validation failed",
+  "success": false,
+  "errors": [
+    {
+      "field": "title",
+      "message": "must not be blank"
+    }
+  ]
+}
+```
+
+See the [Guide](#response-json) to write both as JSON.
 
 <BackToTop />
 
@@ -360,20 +378,19 @@ Recipes for common tasks, grouped like the topics in Explanation.
 | 1 | [Status: Built-ins](#status-built-ins) | Use a standard outcome, or a group's default |
 | 2 | [Status: Custom code](#status-custom-code) | Name an outcome that is specific to your domain |
 | 3 | [Status: Pattern matching](#status-pattern-matching) | Turn a status into a response or a decision |
-| 4 | [Status: Test](#status-test) | Assert the exact outcome in a unit test |
-| 5 | [Error Handling: Collect errors](#error-handling-collect-errors) | Report all the problems at once |
-| 6 | [Error Handling: Error details](#error-handling-error-details) | Say which field failed and why |
-| 7 | [Error Handling: Exceptions](#error-handling-exceptions) | Cross a boundary that only understands exceptions |
-| 8 | [Error Handling: Result](#error-handling-result) | Pair a value with a status, with kiit-result |
-| 9 | [Response: JSON](#response-json) | Send an error body to a client |
-| 10 | [Response: Type URL](#response-type-url) | Know which `type` a status produces |
-| 11 | [Response: Custom type URL](#response-custom-type-url) | Change the suffix, the base, or the whole URL |
-| 12 | [Response: HTTP and gRPC](#response-http-and-grpc) | Pick the response code at the edge of your service |
-| 13 | [Response: Custom protocol](#response-custom-protocol) | Give a custom code its own value, such as 402 |
+| 4 | [Error Handling: Collect errors](#error-handling-collect-errors) | Report all the problems at once |
+| 5 | [Error Handling: Error details](#error-handling-error-details) | Say which field failed and why |
+| 6 | [Error Handling: Exceptions](#error-handling-exceptions) | Cross a boundary that only understands exceptions |
+| 7 | [Error Handling: Result](#error-handling-result) | Pair a value with a status, with kiit-result |
+| 8 | [Response: JSON](#response-json) | Send an error body to a client |
+| 9 | [Response: Type URL](#response-type-url) | Know which `type` a status produces |
+| 10 | [Response: Custom type URL](#response-custom-type-url) | Change the suffix, the base, or the whole URL |
+| 11 | [Response: HTTP and gRPC](#response-http-and-grpc) | Pick the response code at the edge of your service |
+| 12 | [Response: Custom protocol](#response-custom-protocol) | Give a custom code its own value, such as 402 |
 
 ### Status: Built-ins
 
-Use a built-in code for a standard outcome. When you only know the kind of outcome and not the exact code, use the group's default.
+Use a built-in code for a standard outcome. When you only know the kind of outcome and not the exact code, use the group's default. Statuses are values, so a test can compare them directly with `assertEquals(Rejected.CONFLICT, tasks.create("groceries"))`.
 
 ```kotlin
 // a specific built-in code
@@ -447,17 +464,6 @@ fun hybrid(status: Status): String =
         is Failed -> "failed: ${status.name}"
         is Passed -> "ok: ${status.name}"
     }
-```
-
-<Spacer />
-
-### Status: Test
-
-Use it in a unit test to assert the exact outcome of a call, not only that it failed. Statuses are values, so they compare with equals.
-
-```kotlin
-assertEquals(Rejected.CONFLICT, tasks.create("groceries"))
-assertEquals(Succeeded.CREATED, tasks.create("buy milk"))
 ```
 
 <Spacer />
