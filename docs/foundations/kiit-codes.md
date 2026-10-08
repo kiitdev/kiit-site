@@ -160,9 +160,9 @@ The problem as JSON:
 {
   "type": "https://www.kiit.dev/docs/kiit-codes?code=Failed:Invalid:INVALID_VALUE#taxonomy",
   "title": "The request had an invalid value.",
+  "detail": "Validation failed",
   "code": "kiit.dev:codes:Failed:Invalid:INVALID_VALUE",
   "status": 400,
-  "detail": "Validation failed",
   "errors": [
     {
       "field": "title",
@@ -244,7 +244,7 @@ See [Validate and Match](#validate-and-match) and [Cross an exception boundary](
 
 ### Responses
 
-How a status leaves your app: as a protocol code, or as a response body.
+How a status becomes a protocol code. For a response body, see [RFC 9457](#rfc-9457).
 
 <Diagram src="/img/kiit-codes/kiit-codes-protocols.png" alt="Kiit Codes protocol mappings" />
 
@@ -260,8 +260,55 @@ How a status leaves your app: as a protocol code, or as a response body.
 2. **Carry the status instead**: Send the `code` of a `CodeDetail` or `Problem`, the exact status.
 :::
 
-For a response body there are two shapes. `Problem` is kiit's name for an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem details object, for an HTTP API.
-`CodeDetail` is kiit's lighter version, for calls between your own services. They use the same field names:
+<Spacer />
+
+### RFC 9457
+
+[RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) is the IETF standard for error responses from HTTP APIs, and it replaces RFC 7807.
+kiit-codes returns it as a `Problem`, so clients and tools that already understand problem details work with it as they are.
+It adds `errors` and `code` as extension members. For calls between your own services, where HTTP and a public URL don't apply,
+`CodeDetail` is a lighter, self-contained shape. The same validation failure in both:
+
+```json title="Problem (RFC 9457)"
+{
+  "type": "https://www.kiit.dev/docs/kiit-codes?code=Failed:Invalid:INVALID_VALUE#taxonomy",
+  "title": "The request had an invalid value.",
+  "detail": "Validation failed",
+  "code": "kiit.dev:codes:Failed:Invalid:INVALID_VALUE",
+  "status": 400,
+  "errors": [
+    {
+      "field": "title",
+      "message": "must be 1-100 characters"
+    },
+    {
+      "field": "listId",
+      "message": "unknown list"
+    }
+  ]
+}
+```
+
+```json title="CodeDetail (self-contained)"
+{
+  "code": "kiit.dev:codes:Failed:Invalid:INVALID_VALUE",
+  "title": "The request had an invalid value.",
+  "detail": "Validation failed",
+  "success": false,
+  "errors": [
+    {
+      "field": "title",
+      "message": "must be 1-100 characters"
+    },
+    {
+      "field": "listId",
+      "message": "unknown list"
+    }
+  ]
+}
+```
+
+They use the same field names:
 
 | Field | Problem | CodeDetail |
 |---|---|---|
@@ -275,9 +322,9 @@ For a response body there are two shapes. `Problem` is kiit's name for an [RFC 9
 | `success` | none | `true` or `false` |
 
 :::info[Three differences on purpose]
-1. **type**: Only `Problem` has it. RFC 9457 makes `type` the primary identifier of a problem and a pointer to its documentation.
-2. **status**: Optional on `CodeDetail`. An HTTP status only makes sense over HTTP, and kiit-codes is a status taxonomy that works anywhere.
-3. **success**: Only on `CodeDetail`, so a reader can tell success from failure without reading the `Passed` or `Failed` prefix of `code`.
+1. **type**: Only `Problem` has it. RFC 9457 makes it the problem's identifier and docs link.
+2. **status**: Optional on `CodeDetail`, since an HTTP status only makes sense over HTTP.
+3. **success**: Only on `CodeDetail`, so a reader sees pass or fail without parsing `code`.
 :::
 
 `code` is the origin, the scope and then the status code, so one field says which status it is. Built-in statuses use the scope `codes`.
@@ -297,7 +344,7 @@ on purpose, since echoing them back is a disclosure risk.
 1. **Problem**: An HTTP API that other parties call.
 2. **CodeDetail**: Calls between your own services, and jobs.
 3. **Neither**: When the status alone is enough.
-4. **Success codes**: The taxonomy covers `Passed` and `Failed`, which is why the path is `/docs/codes` and not `/docs/problems`. RFC 9457 describes problems, so use a `Problem` for a `Failed` status and a `CodeDetail` to report a `Passed` one.
+4. **Passed statuses**: RFC 9457 describes problems, so use a `Problem` for `Failed` and a `CodeDetail` for `Passed`.
 :::
 
 <BackToTop />
