@@ -121,35 +121,34 @@ Refer to the [LICENSE](https://github.com/kiitdev/kiit-codes/blob/main/LICENSE) 
 
 ## Tutorial
 
-A to-do list service, one step at a time. Each step builds on the last.
+A to-do list, one quick win at a time. Each step builds on the last.
 
 ### Return a status
 
-Return a `Status` instead of throwing for an outcome you expect. A custom code and two built-in codes, then a check on the result:
+Return a `Status` instead of throwing for a failure you expect:
 
-<Example id="overview-usage" />
-
-<Example id="overview-checks" />
+<Example id="tutorial-status" />
 
 <Spacer />
 
-### Return a problem
+### Validate and pattern match
 
-When the caller is an HTTP client, send an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem instead of a bare code. Convert the status, and pass
-the errors to fill `detail` and `errors`. The problem also carries `code`, the exact status:
+Return a `Checked` to carry the status and the errors together, then match on the group of the status:
 
-<Example id="rfc9457-minimal" />
+<Example id="tutorial-validate" />
+
+See [Checked](#checked) for the type.
 
 <Spacer />
 
-### Validate
+### Build a problem
 
-Report every problem at once instead of stopping at the first. `collect` combines the checks, and the combined
-`Checked` is what you pass to the converter above:
+Send the failure to an HTTP client as an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem. The errors fill `detail` and `errors`,
+and the problem also carries `code`, the exact status:
 
-<Example id="usage-checked" />
+<Example id="tutorial-problem" />
 
-See [Checked](#checked) for the type, and the [Guide](#return-a-problem-as-json) to write the problem as JSON.
+See the [Guide](#return-a-problem-as-json) to write the problem as JSON.
 
 <BackToTop />
 
