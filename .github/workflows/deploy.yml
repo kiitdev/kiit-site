@@ -19,6 +19,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # The docs examples are read from the kiit-codes samples, which must sit next to this repo
+      - uses: actions/checkout@v4
+        with:
+          repository: kiitdev/kiit-codes
+          path: kiit-codes
+      - run: mv kiit-codes ../kiit-codes
       - uses: actions/setup-node@v4
         with:
           node-version: 20
