@@ -160,6 +160,7 @@ The problem as JSON:
 {
   "type": "https://www.kiit.dev/docs/kiit-codes?code=Failed:Invalid:INVALID_VALUE#taxonomy",
   "title": "The request had an invalid value.",
+  "code": "kiit.dev:codes:Failed:Invalid:INVALID_VALUE",
   "status": 400,
   "detail": "Validation failed",
   "errors": [
@@ -167,8 +168,7 @@ The problem as JSON:
       "field": "title",
       "message": "must not be blank"
     }
-  ],
-  "code": "kiit.dev:codes:Failed:Invalid:INVALID_VALUE"
+  ]
 }
 ```
 
