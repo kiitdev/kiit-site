@@ -1,2 +1,0 @@
-import { Succeeded, Restricted } from "@kiitdev/codes";
-import type { Status } from "@kiitdev/codes";

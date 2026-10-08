@@ -12,14 +12,11 @@ Listed in top-to-bottom order as they appear on the page:
 
 1. **Page Title** — the H1, with the module's logo beside it (the
    `PageTitle` component).
-2. **Page Tagline** — the styled one-line description directly under the
-   Page Title (rendered via the `.kiit-tagline` class), summarizing what the
-   module is in a single sentence.
-3. **Page Description** — a plain, unstyled 1-2 line paragraph directly under
-   the Page Tagline, giving a bit more detail than the Tagline without
-   turning into full `Overview` prose. Not a special component — just a
-   regular paragraph, so it reads as secondary to the styled Tagline above
-   it.
+2. **Page Tagline** — the styled description directly under the Page Title
+   (rendered via the `.kiit-tagline` class), saying what the module is.
+3. **Page Description** — an unstyled paragraph directly under the Page
+   Tagline, giving more detail than the Tagline without becoming the
+   `Overview`. Not a special component — just a regular paragraph.
 4. **Header Diagram** — the large image directly under the Page Description,
    before `Overview` starts. Distinct from a diagram embedded within a
    specific Topic further down the page (e.g. the taxonomy diagram inside
@@ -70,7 +67,7 @@ Listed in top-to-bottom order as they appear on the page:
    before `Tutorial`, no `Reference`, and call the Section `Concepts`. They
    move when updated.
 2. **Diátaxis discipline per Section** — `Explanation` explains what each thing
-   is and why it is that way, briefly (no step-by-step, no member lists).
+   is and why it is that way (no step-by-step, no member lists).
    `Reference` is lookup tables only: the full code catalog, fields, mappings
    (no narrative). `Tutorial` is the one guided, hands-on first win, requiring
    no prior Explanation knowledge. `Guide` is how-to, assuming existing
@@ -80,20 +77,21 @@ Listed in top-to-bottom order as they appear on the page:
    alternatives), and links to `Explanation` for the why. Rationale that isn't
    needed to finish the task belongs in `Explanation`, not here.
 4. **Explanation is prose** — what things are and why, with illustrative code
-   allowed but kept small. It never tells the reader to follow steps, since
+   allowed. It never tells the reader to follow steps, since
    that makes it a how-to (`Guide`) or a walkthrough (`Tutorial`).
 5. **Code mostly lives in Setup, Tutorial and Guide** — a guideline, not a
-   hard rule. `Explanation` is short prose, diagrams and tables, and
-   `Reference` is tables, so they usually don't need code. Add a short block
+   hard rule. `Explanation` is prose, diagrams and tables, and
+   `Reference` is tables, so they usually don't need code. Add a block
    there when it explains the point better than a table would (for example
-   the fields every Status carries). Prefer a table for an API shape, and
-   keep any block in those Sections small.
+   the fields every Status carries). Prefer a table for an API shape.
 6. **Setup Topics** — `Install` (the code, plus a table of the published
-   artifacts by language), `Imports`, `Source`, `Example`.
+   artifacts by language), `Imports`, `Sources`, `Example`.
 7. **Code examples come from the sample apps** — a code block in the page is
-   an `<Example section="..." topic="..." />` (see Section 4 and `SETUP.md`),
-   not code typed into the page, so the docs can't drift from the library. A
-   block that is still hand-written is being converted, one Topic at a time.
+   an `<Example id="..." />` (see Section 4 and `SETUP.md`), not code typed
+   into the page, so the docs can't drift from the library. JSON output and
+   the Goals construction snippet are the exceptions, written into the page.
+   kiit-service-id still uses the older `<Example section topic />` until it
+   moves.
 8. **Versioned URL path** — the intended final URL shape is `/docs/v1/{module}`
    once the two-instance versioned docs plugin setup lands (Step 4 of the
    redesign plan). Until then, pages live under the default single docs
@@ -139,7 +137,10 @@ never registered globally.
    of them lines up. Shape borrowed from the active-breadcrumb pill style,
    softened (muted gray instead of bold primary blue, since bold+blue read
    as too strong repeated down a whole table column).
-3. **`ConceptTermLink`** — bold, monospace link to a term's exact source
+3. **`StatusBadge`** — solid pill for a module or target's release status:
+   `Live` green, `Beta` yellow, `POC` red, `WIP` gray. White text, like
+   `GroupBadge`. Used in the Availability table.
+4. **`ConceptTermLink`** — bold, monospace link to a term's exact source
    location on GitHub (file, and a `#L<N>` line anchor for a specific
    field/class where one exists). No border/background box — Infima's
    default inline `<code>` styling includes both, which reads as too busy
@@ -177,10 +178,11 @@ never registered globally.
    syntax it replaces.
 
 9. **`Example`** — shows a code example in one tab per language (Kotlin, Java,
-   TypeScript, Swift), looked up by `section` and `topic`. The code comes
-   from the kiit-codes sample apps through `npm run examples`, see
-   `SETUP.md`. An unknown `section`/`topic` throws, so a typo fails the build.
-   A code block title only shows when a language has several blocks.
+   TypeScript, Swift), looked up by `id`. The code comes from the sample apps
+   through the examples plugin, see `SETUP.md`. An unknown `id` throws, so a
+   typo fails the build. A code block title only shows when a language has
+   several blocks. The older `section`/`topic` lookup is still used by
+   kiit-service-id.
 10. **`TocCollapse`** — the state and the "Expand all / Collapse all" buttons
     for the right-hand TOC. Used by the swizzled `TOC` and `TOCItems/Tree`
     (Section 11), not imported by a doc page.
@@ -288,7 +290,7 @@ never registered globally.
 
 6. **A short links table is fine** — now that every table fills the page width
    (item 2), a short table of links no longer looks awkward, and the Setup
-   Topics use them (`Install` artifacts, `Source`). At the end of an
+   Topics use them (`Install` artifacts, `Sources`). At the end of an
    `Explanation` Topic, the source file and Reference links go in a `Related`
    table (Section 4). A table is for data with columns worth comparing, like
    the code and mapping tables.

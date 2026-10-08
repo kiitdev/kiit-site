@@ -12,4 +12,4 @@ Scratch page for the `<Example>` component. It is unlisted, so it has no sidebar
 
 ### Install
 
-<Example section="setup" topic="install" />
+<Example id="setup-install" />

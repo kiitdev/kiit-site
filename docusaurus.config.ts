@@ -2,6 +2,7 @@ import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import type {Plugin} from '@docusaurus/types';
+import examplesPlugin from './plugins/examples';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
@@ -49,7 +50,7 @@ const config: Config = {
     locales: ['en'],
   },
 
-  plugins: [textFilesPlugin],
+  plugins: [textFilesPlugin, [examplesPlugin, {modules: ['kiit-codes']}]],
 
   presets: [
     [
