@@ -32,9 +32,10 @@ extensible codes, protocol mappings, validation, typed exceptions, and
 
 ### Goals
 
-Every outcome gets a `Status` in one of eight fixed groups, with open codes underneath. Services, jobs,
-validation and APIs then classify success and failure the same way, and a status maps to HTTP, gRPC or an
-[RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem when it crosses a boundary. This is how a code is constructed: a name, a title, an origin that says who owns it, and an optional scope inside that origin.
+General-purpose status codes. Like HTTP status codes, but not tied to HTTP or a specific protocol. A three-tier status taxonomy (Status → Group → Code) for any
+layer of your app, with built-in [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) Problem Details output.
+
+This is how a code is constructed: a name, a title, an origin that says who owns it, and an optional scope inside that origin.
 
 <CodeCard
   language="kotlin"
@@ -72,7 +73,7 @@ validation and APIs then classify success and failure the same way, and a status
 
 <Spacer />
 
-### Availability
+### Languages
 
 | # | Target | Role | Status | Notes |
 |---:|---|---|---|---|

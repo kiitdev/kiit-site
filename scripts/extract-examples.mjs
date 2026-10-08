@@ -2,12 +2,13 @@
 // Extracts documentation examples from a module's sample apps into src/examples/<module>/, which the
 // <Example section="..." topic="..." /> component (src/components/Example) reads.
 //
-//   npm run examples                      kiit-codes
-//   npm run examples -- kiit-service-id   any module repo that sits next to kiit-site
+//   npm run examples                      kiit-service-id
+//   npm run examples -- <module>          any module repo that sits next to kiit-site and has a doc/docs.json
 //
-// A module keeps its wiring in <repo>/doc/docs.json. kiit-codes still uses samples/docs-map.json until it moves.
+// This is the older way. kiit-codes no longer uses it: its examples are read straight from the samples by the plugin in
+// plugins/examples, see SETUP.md. A module keeps its wiring in <repo>/doc/docs.json until it moves to the plugin too.
 //
-// Output, in src/examples/<module>/ (for kiit-codes, src/examples/kiit-codes/):
+// Output, in src/examples/<module>/:
 //   <id>/<language>.text        the code of an example, one file per language (<language>-1.text, -2.text when a
 //                               language has several snippets). Plain text, so tools don't treat it as source.
 //   examples.json               placement and metadata: section, topic, kind, tags, and each snippet's language, title, file
@@ -42,11 +43,11 @@ import {fileURLToPath} from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const site = resolve(here, '..');
-const moduleName = process.argv.slice(2).find((a) => !a.startsWith('--')) ?? 'kiit-codes';
+const moduleName = process.argv.slice(2).find((a) => !a.startsWith('--')) ?? 'kiit-service-id';
 const repo = resolve(site, '..', moduleName);
-const MAP = ['doc/docs.json', 'samples/docs-map.json'].map((p) => resolve(repo, p)).find((p) => existsSync(p));
+const MAP = ['doc/docs.json'].map((p) => resolve(repo, p)).find((p) => existsSync(p));
 if (!MAP) {
-  console.error(`error: no doc/docs.json (or samples/docs-map.json) in ${repo}`);
+  console.error(`error: no doc/docs.json in ${repo}`);
   process.exit(1);
 }
 const KNOWN_ATTRS = new Set(['id', 'tags']);

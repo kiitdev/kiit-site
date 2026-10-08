@@ -7,17 +7,18 @@ import serviceIdData from '@site/src/examples/kiit-service-id/examples.json';
 import serviceIdFiles from '@site/src/examples/kiit-service-id/files';
 
 /**
- * Shows a documentation example, in one tab per language, from the sample apps.
+ * Shows a documentation example, in one tab per language, from the sample apps. Two ways to ask for one:
  *
- * 1. `section` and `topic` name where it goes (Setup > Install), as set in the module's docs map.
- *    `name`, when given, picks one item of a topic that has several. Without it every item is shown in order.
- *    `module` is the module repo the examples come from, `kiit-codes` when not given. A new module is added to
- *    MODULES below.
- * 2. The data comes from `npm run examples` (scripts/extract-examples.mjs), see SETUP.md. examples.json holds the
- *    placement and metadata, and each snippet's code is a plain-text file under src/examples/<module>/<id>/.
- * 3. An unknown section/topic/name throws, so a typo fails `npm run build` instead of showing an empty page.
+ * 1. `<Example id="x" />` (the current way, used by kiit-codes). `id` is the id of an `<example id="x">` region in the
+ *    module's sample files. The plugin in plugins/examples reads the samples at build time, so nothing is generated or
+ *    committed. `module` is the module repo, `kiit-codes` when not given. See SETUP.md.
+ * 2. `<Example module="..." section="..." topic="..." />` (the older way, still used by kiit-service-id). `section` and
+ *    `topic` name where it goes (Setup > Install) as set in the module's doc/docs.json, and `name` picks one item of a
+ *    topic that has several. The data comes from `npm run examples` (scripts/extract-examples.mjs). A new module on the
+ *    older way is added to MODULES below.
+ * 3. An unknown id, section, topic or name throws, so a typo fails `npm run build` instead of showing an empty page.
  * 4. Tabs use groupId="language", so the choice is shared with every other language tab on the page.
- * 5. A code block title is shown only when a language has several blocks in the topic (Maven and Gradle for Java).
+ * 5. A code block title is shown only when a language has several blocks (Maven and Gradle for Java).
  */
 interface Snippet {
   lang: string;

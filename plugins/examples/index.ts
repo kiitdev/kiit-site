@@ -111,8 +111,9 @@ function pagesIn(dir: string): string[] {
   });
 }
 
-export default function examplesPlugin(context: LoadContext, options: {modules: string[]}): Plugin<ExamplesData> {
-  const repos = options.modules.map((name) => resolve(context.siteDir, '..', name));
+export default function examplesPlugin(context: LoadContext, options: unknown): Plugin<unknown> {
+  const {modules} = options as {modules: string[]};
+  const repos = modules.map((name) => resolve(context.siteDir, '..', name));
   return {
     name: 'kiit-examples',
     getPathsToWatch: () => repos.flatMap((repo) => [join(repo, 'module.json'), join(repo, 'samples')]),
