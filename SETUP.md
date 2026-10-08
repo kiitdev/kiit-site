@@ -50,9 +50,7 @@ verify("guide-builtins: default", failed == Invalid.INVALID_VALUE && failed.isDe
 1. The example is the code between the two lines. It compiles and runs with the rest of the sample.
 2. Keep the `verify(...)` (Kotlin) or `check(...)` (Java, TypeScript, Swift) calls **outside** the region. They fail the
    run if a claim the example makes stops being true.
-3. Put the expected result in a comment **above** the line that produces it, not to the right of it.
-4. Each region stands alone. It defines the names it uses, so a reader can paste it and run it.
-5. Java and Swift have no local functions for a recipe to declare, so a recipe there uses a lambda or a nested function.
+3. Java and Swift have no local functions for a recipe to declare, so a recipe there uses a lambda or a nested function.
 
 ### 2.2 In a comment, outside the code
 
