@@ -2,8 +2,7 @@ import React, {type ReactNode} from 'react';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import CodeBlock from '@theme/CodeBlock';
-import codesData from '@site/src/examples/kiit-codes/examples.json';
-import codesFiles from '@site/src/examples/kiit-codes/files';
+import {usePluginData} from '@docusaurus/useGlobalData';
 import serviceIdData from '@site/src/examples/kiit-service-id/examples.json';
 import serviceIdFiles from '@site/src/examples/kiit-service-id/files';
 
@@ -36,7 +35,6 @@ interface Entry {
 }
 
 const MODULES: Record<string, {data: {examples: unknown}; files: Record<string, string>}> = {
-  'kiit-codes': {data: codesData, files: codesFiles},
   'kiit-service-id': {data: serviceIdData, files: serviceIdFiles},
 };
 
@@ -81,17 +79,44 @@ function blocksFor(files: Record<string, string>, items: Item[], language: strin
   return blocks;
 }
 
-export default function Example({
-  section,
-  topic,
-  name,
-  module = 'kiit-codes',
-}: {
-  section: string;
-  topic: string;
-  name?: string;
-  module?: string;
-}): ReactNode {
+/** A language's tabs. */
+function LanguageTabs({tabs}: {tabs: {value: string; label: string; blocks: Block[]}[]}): ReactNode {
+  const defaultValue = tabs.find((tab) => tab.value === 'kotlin')?.value ?? tabs[0].value;
+  return (
+    <Tabs groupId="language" defaultValue={defaultValue} values={tabs.map(({value, label}) => ({value, label}))}>
+      {tabs.map((tab) => (
+        <TabItem key={tab.value} value={tab.value}>
+          {tab.blocks.map((block, i) => (
+            <CodeBlock key={i} language={block.lang} title={block.title}>
+              {block.code}
+            </CodeBlock>
+          ))}
+        </TabItem>
+      ))}
+    </Tabs>
+  );
+}
+
+/** A title is only shown when a language has several blocks (Maven and Gradle for Java), to tell them apart. */
+function tabsFor(blocksOf: (language: string) => Block[]) {
+  return LANGUAGES.map((language) => {
+    const blocks = blocksOf(language.value);
+    return {...language, blocks: blocks.length > 1 ? blocks : blocks.map((b) => ({...b, title: undefined}))};
+  }).filter((tab) => tab.blocks.length > 0);
+}
+
+/** One example by id, from the module's samples (plugins/examples). */
+function ExampleById({id, module}: {id: string; module: string}): ReactNode {
+  const data = usePluginData('kiit-examples') as Record<string, Record<string, Record<string, Block[]>>> | undefined;
+  const byLanguage = data?.[module]?.[id];
+  if (!byLanguage) {
+    throw new Error(`<Example>: no example "${id}" in ${module}. Check the <example id="${id}"> marker in its samples.`);
+  }
+  return <LanguageTabs tabs={tabsFor((language) => byLanguage[language] ?? [])} />;
+}
+
+/** The older lookup by section and topic through `npm run examples`, still used by kiit-service-id. */
+function ExampleByTopic({section, topic, name, module}: {section: string; topic: string; name?: string; module: string}): ReactNode {
   const source = MODULES[module];
   if (!source) {
     throw new Error(`<Example>: unknown module "${module}". Add it to MODULES in src/components/Example.`);
@@ -123,26 +148,15 @@ export default function Example({
       </>
     );
   }
+  return <LanguageTabs tabs={tabsFor((language) => blocksFor(files, items, language))} />;
+}
 
-  // A title is only shown when a language has several blocks (Maven and Gradle for Java), to tell them apart.
-  // With one block the Section and Topic headings already say what it is.
-  const tabs = LANGUAGES.map((language) => {
-    const blocks = blocksFor(files, items, language.value);
-    return {...language, blocks: blocks.length > 1 ? blocks : blocks.map((b) => ({...b, title: undefined}))};
-  }).filter((tab) => tab.blocks.length > 0);
-  const defaultValue = tabs.find((tab) => tab.value === 'kotlin')?.value ?? tabs[0].value;
-
-  return (
-    <Tabs groupId="language" defaultValue={defaultValue} values={tabs.map(({value, label}) => ({value, label}))}>
-      {tabs.map((tab) => (
-        <TabItem key={tab.value} value={tab.value}>
-          {tab.blocks.map((block, i) => (
-            <CodeBlock key={i} language={block.lang} title={block.title}>
-              {block.code}
-            </CodeBlock>
-          ))}
-        </TabItem>
-      ))}
-    </Tabs>
-  );
+/**
+ * `<Example id="x" />` shows the example marked `<example id="x">` in the module's samples (`module` defaults to
+ * kiit-codes). `<Example module section topic />` is the older lookup, see ExampleByTopic.
+ */
+export default function Example(props: {id?: string; section?: string; topic?: string; name?: string; module?: string}): ReactNode {
+  const module = props.module ?? 'kiit-codes';
+  if (props.id) return <ExampleById id={props.id} module={module} />;
+  return <ExampleByTopic section={props.section ?? ''} topic={props.topic ?? ''} name={props.name} module={module} />;
 }

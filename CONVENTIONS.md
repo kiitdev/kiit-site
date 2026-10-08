@@ -139,7 +139,10 @@ never registered globally.
    of them lines up. Shape borrowed from the active-breadcrumb pill style,
    softened (muted gray instead of bold primary blue, since bold+blue read
    as too strong repeated down a whole table column).
-3. **`ConceptTermLink`** — bold, monospace link to a term's exact source
+3. **`StatusBadge`** — solid pill for a module or target's release status:
+   `Live` green, `Beta` yellow, `POC` red, `WIP` gray. White text, like
+   `GroupBadge`. Used in the Availability table.
+4. **`ConceptTermLink`** — bold, monospace link to a term's exact source
    location on GitHub (file, and a `#L<N>` line anchor for a specific
    field/class where one exists). No border/background box — Infima's
    default inline `<code>` styling includes both, which reads as too busy

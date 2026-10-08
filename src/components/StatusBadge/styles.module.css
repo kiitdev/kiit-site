@@ -1,0 +1,29 @@
+.badge {
+  display: inline-block;
+  width: 4.5rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 6px;
+  color: #fff;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8em;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.live {
+  background-color: #2e7d32;
+}
+
+.beta {
+  background-color: #b7791f;
+}
+
+.poc {
+  background-color: #c62828;
+}
+
+.wip {
+  background-color: #757575;
+}
