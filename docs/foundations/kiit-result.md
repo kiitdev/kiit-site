@@ -413,7 +413,7 @@ Every `Err` carries a `message: String`, a `cause: Throwable?`, and a `ref: Any?
 | `Err.on(field, message)` | `ErrorField` without a value, for a sensitive field like a password |
 | `Err.ex(throwable)` | `ErrorInfo` wrapping a caught exception |
 
-See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#err) for the full API, including `Err.build`/`Err.obj`/`Err.list`. `Err` and `status` are independent facts about the same `Failure`, not a pair that has to agree, see [Relationship](#relationship).
+See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#errors) for the full API, including `Err.build`/`Err.obj`/`Err.list`. `Err` and `status` are independent facts about the same `Failure`, not a pair that has to agree, see [Relationship](#relationship).
 
 <Spacer />
 
@@ -755,7 +755,7 @@ when (val status = result.status) {
 
 ### Responses (HTTP/gRPC)
 
-`Result` doesn't own transport mapping, that's kiit-codes' job. Map `result.status` through `CodesToHttp`/`CodesToGrpc` at the boundary where you actually need a status code, keeping the two concerns separate. See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#protocols) for the full mapping tables.
+`Result` doesn't own transport mapping, that's kiit-codes' job. Map `result.status` through `CodesToHttp`/`CodesToGrpc` at the boundary where you actually need a status code, keeping the two concerns separate. See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#responses) for the full mapping tables.
 
 ```kotlin
 import kiit.codes.CodesToGrpc
@@ -1139,7 +1139,7 @@ Options.none<Int>()
 
 ### Alias: Outcome&lt;T&gt;
 
-`Outcome<T> = Result<T, Err>` pairs a value with kiit-codes' `Err` on failure, the most commonly used alias. `Outcomes` is the ready-made `Builder` implementation for it. See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#err) for `Err`'s full shape (`ErrorInfo`/`ErrorField`/`ErrorList`).
+`Outcome<T> = Result<T, Err>` pairs a value with kiit-codes' `Err` on failure, the most commonly used alias. `Outcomes` is the ready-made `Builder` implementation for it. See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#errors) for `Err`'s full shape (`ErrorInfo`/`ErrorField`/`ErrorList`).
 
 :::success[Outcome&lt;T&gt;]
 1. **Intention**: `Outcome<T>` pairs a value with kiit-codes' `Err` on failure, the most commonly used alias.
@@ -1414,7 +1414,7 @@ Generic type params require `AnyObject` (box `Int`/`String` as `KotlinInt`/`NSSt
 | Question | Answer |
 |---|---|
 | **Can I use my own error type and ignore kiit-codes?** | Only partially. `E` is generic (use `Throwable`, `String`, a domain type), but `Success.status`/`Failure.status` are hard-typed to kiit-codes' `Passed`/`Failed`. There's no way to use `Result<T, E>` without a kiit-codes status on every branch. |
-| **How do I turn a `Result` into an HTTP/gRPC response?** | `Result` doesn't own transport mapping, that's kiit-codes' job. Map `result.status` through `CodesToHttp`/`CodesToGrpc` at the boundary where you actually need a status code, keeping the two concerns separate. See [Responses (HTTP/gRPC)](#responses-httpgrpc) and the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#protocols). |
+| **How do I turn a `Result` into an HTTP/gRPC response?** | `Result` doesn't own transport mapping, that's kiit-codes' job. Map `result.status` through `CodesToHttp`/`CodesToGrpc` at the boundary where you actually need a status code, keeping the two concerns separate. See [Responses (HTTP/gRPC)](#responses-httpgrpc) and the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#responses). |
 | **Does this actually work on JS and iOS today?** | kiit-result's production history is JVM/Android. JS and iOS/Swift are new targets with no production history yet, not just "unexercised" versions of something proven. JS/TS is a deliberately partial pass (`@JsExport`ed, not covered by CI or published to npm, since TypeScript can't compiler-enforce exhaustiveness). iOS uses SKIE for real, compiler-enforced Swift exhaustiveness, a materially better story than JS, including plain Kotlin `object`s (`Outcomes`/`Options`/`Tries`) getting clean `.shared` access with no extra work. |
 
 <Spacer />

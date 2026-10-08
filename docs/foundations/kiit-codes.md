@@ -143,7 +143,7 @@ Return a `Checked` to carry the status and the errors together, then match on wh
 3. **More**: See [Match on a status](#match-on-a-status).
 :::
 
-See [Checked](#checked) for the type.
+See [Errors](#errors) for the types.
 
 <Spacer />
 
@@ -178,40 +178,11 @@ See the [Guide](#return-a-problem-as-json) to write the problem as JSON.
 
 ## Explanation
 
-### Terms
-
-| # | Term | Definition | |
-|---:|---|---|---|
-| 1 | Taxonomy | The overall `Status → Group → Code` classification system. | <MoreLink href="#taxonomy" /> |
-| 2 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L51">Status</ConceptTermLink> | Sealed interface for an operation's outcome: `Passed` or `Failed`. | <MoreLink href="#taxonomy" /> |
-| 3 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L100">Group</ConceptTermLink> | Second tier: a fixed subtype of `Passed`/`Failed` (e.g. `Restricted`). | <MoreLink href="#taxonomy" /> |
-| 4 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Codes.kt#L22">Code</ConceptTermLink> | Third tier: an open `Status` instance within a group (e.g. `DENIED`). | <MoreLink href="#taxonomy" /> |
-| 5 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Err.kt#L34">Err</ConceptTermLink> | Error representation for use with `Result`/`Outcome`-style types. | <MoreLink href="#err" /> |
-| 6 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Checked.kt#L22">Checked</ConceptTermLink> | Non-monadic validation result reporting every problem, not just the first. | <MoreLink href="#checked" /> |
-| 7 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/StatusException.kt#L46">StatusException</ConceptTermLink> | Sealed exception hierarchy carrying a `Checked`, for exception-only boundaries. | <MoreLink href="#exceptions" /> |
-| 8 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/Problem.kt#L31">Problem</ConceptTermLink> | kiit's name for an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem details object: `type`, `title`, `status`, plus optional `detail`, `instance` and `errors`. | <MoreLink href="#rfc-9457" /> |
-| 9 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/formats/CodeDetail.kt#L32">CodeDetail</ConceptTermLink> | kiit's own lighter shape for the same job: `code`, `success` and `title`, with no public URL needed. `code` holds the origin, scope, group and name. | <MoreLink href="#rfc-9457" /> |
-<Spacer />
-
-### Features
-
-| # | Feature | Description |
-|---:|---|---|
-| 1 | **[Status classification](#taxonomy)** | The core `Passed`/`Failed` split, with a fixed `Group` and an open `Code` beneath it. |
-| 2 | **[Problem details](#rfc-9457)** | Convert a status to an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `Problem`, or to kiit's lighter `CodeDetail`, with a type URL, an exact `code` and a list of errors. |
-| 3 | **[Extensibility](#define-custom-codes)** | Add domain codes within the same fixed groups, without forking the taxonomy. |
-| 4 | **[Protocol mappings](#protocols)** | Map statuses to HTTP, gRPC, or any custom protocol with `CodeLookup` and `CompositeLookup`. |
-| 5 | **[Validation](#checked)** | `Checked`, `Err` and `collect` report every problem found at once. |
-| 6 | **[Typed exceptions](#exceptions)** | `StatusException` and `Failed.toException()` for boundaries that only understand exceptions. |
-| 7 | **Result integration** | [kiit-result](https://github.com/kiitdev/kiit-result) builds a `Result<T, E>` type on this taxonomy. |
-
-<Spacer />
-
 ### Taxonomy
 
 A `Status` is the outcome of any operation, at any layer: a service call, a job step, an API request, a CLI command.
 It says what *kind* of success or failure happened, in one shape everywhere, and nothing about this one occurrence.
-Those details belong to an [`Err`](#err). The tiers are `Status`, then `Group`, then `Code`: the two `Status` branches,
+Those details belong to an [`Err`](#errors). The tiers are `Status`, then `Group`, then `Code`: the two `Status` branches,
 the eight groups, and the codes within them.
 
 <Diagram src="/img/kiit-codes/kiit-codes-taxonomy.png" alt="Kiit Codes taxonomy" />
@@ -229,7 +200,6 @@ the eight groups, and the codes within them.
 | | | | <GroupBadge group="Rejected" /> | The caller was allowed, but the business refuses it. |
 | | | | <GroupBadge group="Unserved" /> | The system can't serve it right now, though nothing was wrong with the request. |
 | 3 | <span style={{fontFamily: 'var(--ifm-font-family-monospace)', fontWeight: 800, color: 'var(--ifm-color-primary)'}}>Code</span> | <span style={{display: 'inline-flex', alignItems: 'center', gap: '0.3rem'}}><Icon name="lock-open" size={16} /> Open + Defaults</span> | | Ships with common built-in codes (e.g. `SUCCESS`, `DENIED`); extensible with custom, domain-specific codes within the same group. |
-Built-in codes and your own sit side by side, in the same groups:
 
 <Diagram src="/img/kiit-codes/kiit-codes-custom.png" alt="Kiit Codes custom codes" />
 
@@ -238,11 +208,12 @@ Every Status carries the same six fields, built-in or custom:
 | Field | Why it exists |
 |---|---|
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L97">success</ConceptTermLink> | `true` for `Passed`, `false` for `Failed`. A quick check that doesn't need the group. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L56">name</ConceptTermLink> | A stable, `SCREAMING_SNAKE_CASE` key that logs, metrics and clients can match on. Never built from runtime data. |
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L100">group</ConceptTermLink> | The kind of outcome (`Succeeded`, `Invalid`, ...). Lets generic code handle any Status, including custom ones, without knowing its name. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L56">name</ConceptTermLink> | A stable, `SCREAMING_SNAKE_CASE` key that logs, metrics and clients can match on. Never built from runtime data. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L91">title</ConceptTermLink> | A constant, human-readable title for the code, not a description of one occurrence. It fills `title` in a `Problem` and a `CodeDetail`. Per-occurrence detail lives in an `Err`. |
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L70">origin</ConceptTermLink> | Who owns the code: `kiit.dev` for built-ins, your domain or a name of your own for custom codes. Keeps custom codes apart from the built-in ones and other teams', and becomes the host of an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `type`. |
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L84">scope</ConceptTermLink> | An optional label inside an origin, such as a department or product area (`payments.cards`). Empty when unset. Never parsed. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L91">title</ConceptTermLink> | A constant, human-readable title for the code, not a description of one occurrence. It fills `title` in a `Problem` and a `CodeDetail`. Per-occurrence detail lives in an `Err`. |
+
 :::warning[Choose a specific origin]
 1. **Domain**: A domain you own is unique through DNS, so your codes can't collide with anyone else's.
 2. **Plain id**: A plain id such as `myapp1` can collide with another team's, and kiit-codes can't detect it. Pick a specific name.
@@ -251,9 +222,15 @@ Every Status carries the same six fields, built-in or custom:
 
 <Spacer />
 
-### Err
+### Errors
 
-Error details for one occurrence, used by validation, exceptions and result types. It is the building block of `Checked`'s error list.
+A `Status` is the kind of outcome. The details of one occurrence travel separately, in three types:
+
+| Type | What it is |
+|---|---|
+| `Err` | The details of one occurrence: which field, what value, what message. The variants and builders are in [Err types](#err-types). |
+| `Checked` | A status and its errors together, so they never disagree: a passing `Checked` has no errors, a failing one has at least one. `collect(...)` combines several into one. |
+| `StatusException` | For boundaries that only understand exceptions, with one subclass per failed group: `RestrictedException`, `InvalidException`, `RejectedException` and `UnservedException`. `Failed.toException(errors)` picks the right one. |
 
 :::tip[Status or Err?]
 1. **Status**: The kind of outcome, constant: `Invalid.INVALID_VALUE`.
@@ -261,41 +238,15 @@ Error details for one occurrence, used by validation, exceptions and result type
 3. **Together**: `Checked` carries both, so a status and its errors travel together.
 :::
 
-The variants and builders are in [Err types](#err-types).
+See [Validate and Match](#validate-and-match) and [Cross an exception boundary](#cross-an-exception-boundary).
 
 <Spacer />
 
-### Checked
+### Responses
 
-A validation result that reports every problem at once instead of stopping at the first. It is built only through
-`Checked.success(status)` or `Checked.failure(status, errors)`.
+How a status leaves your app: as a protocol code, or as a response body.
 
-| # | Trait | Details |
-|---:|---|---|
-| 1 | Invariant | `status` and `errors` never disagree: a passing `Checked` has an empty `errors` list, a failing one has at least one entry. |
-| 2 | `isValid` | `true` when `errors` is empty. |
-| 3 | `collect(...)` | Combines several `Checked` into one. If any failed, the result is `Invalid.INVALID_VALUE` with every error pooled. |
-
-<Spacer />
-
-### Exceptions
-
-For boundaries that only understand exceptions. `StatusException` carries a `Checked`, with one subclass per failed group.
-
-| Exception | Matches |
-|---|---|
-| `RestrictedException` | `Failed.Restricted` |
-| `InvalidException` | `Failed.Invalid` |
-| `RejectedException` | `Failed.Rejected` |
-| `UnservedException` | `Failed.Unserved` |
-
-`Failed.toException(errors)` turns a bare `Failed` status into the matching subclass. See [Cross an exception boundary](#cross-an-exception-boundary).
-
-<Spacer />
-
-### Protocols
-
-Maps a `Status` to an external protocol's code: HTTP and gRPC out of the box, or your own protocol through `CodeLookup`.
+<Diagram src="/img/kiit-codes/kiit-codes-protocols.png" alt="Kiit Codes protocol mappings" />
 
 | Type | Purpose |
 |---|---|
@@ -305,18 +256,12 @@ Maps a `Status` to an external protocol's code: HTTP and gRPC out of the box, or
 | `CompositeLookup` | Combines a base `CodeLookup` with per-code overrides. |
 
 :::info[One way only]
-1. **No reverse conversion**: There is no way to get a `Status` back from an HTTP or gRPC code, because many statuses share one code.
-2. **Carry the status instead**: To send a status across a boundary, use the `code` of a `CodeDetail` or of a `Problem`. Both hold the exact origin, scope and status code.
+1. **No reverse conversion**: An HTTP or gRPC code can't give back a `Status`, since many share one code.
+2. **Carry the status instead**: Send the `code` of a `CodeDetail` or `Problem`, the exact status.
 :::
 
-<Diagram src="/img/kiit-codes/kiit-codes-protocols.png" alt="Kiit Codes protocol mappings" />
-
-<Spacer />
-
-### RFC 9457
-
-How a status and its errors become a response body: an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `Problem` for an HTTP API, or kiit's lighter `CodeDetail`.
-`Problem` is kiit's name for the problem details object, and `CodeDetail` is for calls between your own services. They use the same field names:
+For a response body there are two shapes. `Problem` is kiit's name for an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem details object, for an HTTP API.
+`CodeDetail` is kiit's lighter version, for calls between your own services. They use the same field names:
 
 | Field | Problem | CodeDetail |
 |---|---|---|
@@ -328,13 +273,15 @@ How a status and its errors become a response body: an [RFC 9457](https://www.rf
 | `errors` | every error, an extension member | every error |
 | `status` | the HTTP status, always set | the HTTP status, optional |
 | `success` | none | `true` or `false` |
+
 :::info[Three differences on purpose]
 1. **type**: Only `Problem` has it. RFC 9457 makes `type` the primary identifier of a problem and a pointer to its documentation.
 2. **status**: Optional on `CodeDetail`. An HTTP status only makes sense over HTTP, and kiit-codes is a status taxonomy that works anywhere.
 3. **success**: Only on `CodeDetail`, so a reader can tell success from failure without reading the `Passed` or `Failed` prefix of `code`.
 :::
 
-`type` and `code` name the same status in different ways:
+`code` is the origin, the scope and then the status code, so one field says which status it is. Built-in statuses use the scope `codes`.
+`type` names the same status as a URL, and the two differ:
 
 | | `Problem.type` | `code` |
 |---|---|---|
@@ -343,25 +290,8 @@ How a status and its errors become a response body: an [RFC 9457](https://www.rf
 | Self-contained | no, needs a host or a base | yes |
 | Case | lowercase with dashes | as written |
 
-`code` is the origin, the scope and then the status code, so one field says which status it is. Built-in statuses use the scope `codes`.
-A custom status with no scope leaves an empty value, so `code` always has five `:`-separated values. A client reads `code` instead of
-parsing `type`, which is lowercase and may not carry the origin. When `code` is missing, as with a server that isn't kiit, the last three
-segments of a kiit `type` are `status/group/name`. They give passed or failed and the group, but not the exact name, scope or origin.
-That is a kiit convention, not something RFC 9457 expects of a client.
-
-:::info[The type URL]
-1. **Shape**: `{base}/{scope}/{status}/{group}/{name}`, lowercase with dashes. `status` is `passed` or `failed`, and each `.` in a scope starts a new segment, so `payments.cards` becomes `payments/cards`.
-2. **Domain origin**: `https://stripe.com/docs/codes/payments/cards/failed/rejected/duplicate-charge`.
-3. **Plain id**: `/docs/codes/failed/rejected/out-of-stock`, a relative path, since `myapp1` is not a host. RFC 9457 prefers absolute URIs, and a relative `type` resolves against the host of the response, so register a base URL to get an absolute one.
-4. **Registered base URL**: Always absolute. kiit-codes only builds the part after it.
-5. **Resolvable**: RFC 9457 encourages a `type` that opens documentation but does not require it. kiit-codes never checks DNS, so a domain origin can still return a 404.
-6. **Stable and unique**: `type` is the identity, so pick the base once and keep it. Two statuses must not produce the same `type`, which can happen when names or scopes differ only by case, `_` against `-`, or `a.b` against `a/b`.
-:::
-
-Every error in an `Err` goes into `errors`. An `Err.ErrorList` is expanded, including lists inside lists, and a single `Err.on("email", "Missing")`
-is one entry that keeps its field. `detail` is the error's message, or the first error message that isn't blank when that is blank. Each
-entry in `errors` is an `ErrorItem` with only a field and a message. The cause and the value that failed validation are left out on purpose,
-since echoing them back is a disclosure risk.
+Every error goes into `errors`. Each entry has only a field and a message. The cause and the value that failed validation are left out
+on purpose, since echoing them back is a disclosure risk.
 
 :::tip[Which one?]
 1. **Problem**: An HTTP API that other parties call.
@@ -369,20 +299,6 @@ since echoing them back is a disclosure risk.
 3. **Neither**: When the status alone is enough.
 4. **Success codes**: The taxonomy covers `Passed` and `Failed`, which is why the path is `/docs/codes` and not `/docs/problems`. RFC 9457 describes problems, so use a `Problem` for a `Failed` status and a `CodeDetail` to report a `Passed` one.
 :::
-
-<Spacer />
-
-### Limitations
-
-What kiit-codes doesn't do, and why.
-
-| # | Limitation | Details |
-|---:|---|---|
-| 1 | AI framing is unproven | Stable names and explicit classification are expected to reduce ambiguity for AI tooling, but that is a hypothesis, not a benchmarked result. |
-| 2 | No retry logic or severity levels | Retryability cuts across groups rather than aligning with them. `Unserved` alone has both retryable and non-retryable codes. A dedicated `Retry` category was considered and rejected for the same reason. |
-| 3 | No numeric status code field | An earlier version had one, and it invited the wrong inference: a number that looked like an HTTP code but meant something else. Real protocol numbers are available through `CodesToHttp` and `CodesToGrpc`, never implied by the taxonomy. |
-| 4 | No ninth group | Every gRPC code and the most common HTTP codes map onto the existing eight, tested directly against both. |
-| 5 | Single maintainer | The project is Apache 2.0 licensed with the source available, but has no second maintainer or organizational backing yet. |
 
 <BackToTop />
 
@@ -398,8 +314,17 @@ Return an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) problem and wr
 
 ### Set your own type URL
 
-The default `type` is the lowercase docs URL described in [RFC 9457](#rfc-9457). For your own URLs there is no new API. Pick
+The default `type` is the lowercase docs URL for the status. For your own URLs there is no new API. Pick
 the way that fits how much of the URL you control: a base URL registered once, or a type builder, a base URL with an empty suffix, or a copy of the `Problem` with any `type`.
+
+:::info[The type URL]
+1. **Shape**: `{base}/{scope}/{status}/{group}/{name}`, lowercase with dashes. `status` is `passed` or `failed`, and each `.` in a scope starts a new segment, so `payments.cards` becomes `payments/cards`.
+2. **Domain origin**: `https://stripe.com/docs/codes/payments/cards/failed/rejected/duplicate-charge`.
+3. **Plain id**: `/docs/codes/failed/rejected/out-of-stock`, a relative path, since `myapp1` is not a host. RFC 9457 prefers absolute URIs, and a relative `type` resolves against the host of the response, so register a base URL to get an absolute one.
+4. **Registered base URL**: Always absolute. kiit-codes only builds the part after it.
+5. **Resolvable**: RFC 9457 encourages a `type` that opens documentation but does not require it. kiit-codes never checks DNS, so a domain origin can still return a 404.
+6. **Stable and unique**: `type` is the identity, so pick the base once and keep it. Two statuses must not produce the same `type`, which can happen when names or scopes differ only by case, `_` against `-`, or `a.b` against `a/b`.
+:::
 
 <Example id="rfc9457-registered" />
 
@@ -635,6 +560,9 @@ code.
 | **Does this replace domain modeling?** | No. A domain error explains *what* happened in one domain, and the taxonomy explains *what kind* of outcome it was, across every domain in the app. |
 | **Why isn't `Status` just an enum?** | Enums can't be extended by consumers. This lets every application define its own statuses and still use the same taxonomy. |
 | **Why exactly eight groups?** | Every gRPC code and the most common HTTP codes map onto these eight without needing a ninth, tested directly against both. |
+| **Why isn't retry logic or severity built in?** | Retryability cuts across groups rather than aligning with them. `Unserved` alone has both retryable and non-retryable codes, so a dedicated `Retry` category was considered and rejected. |
+| **Why was the numeric status code field removed?** | An earlier version had one, and it invited the wrong inference: a number that looked like an HTTP code but meant something else. Real protocol numbers come from `CodesToHttp` and `CodesToGrpc`, never implied by the taxonomy. |
+| **What about single-maintainer risk?** | It is real. The project is Apache 2.0 licensed with the source available, but has no second maintainer or organizational backing yet. |
 
 <Spacer />
 
@@ -653,6 +581,7 @@ code.
 
 | Question | Answer |
 |---|---|
+| **Is the "built for AI" angle proven?** | No. Stable names and explicit classification are expected to reduce ambiguity for AI tooling, but that is a hypothesis, not a benchmarked result. |
 | **Is the "built for AI" angle just marketing?** | The design is justified on ordinary engineering grounds first: consistency, exhaustive matching, explicit semantics. AI tooling benefits from the same properties, but the library stands on its own without it. |
 
 <BackToTop />
