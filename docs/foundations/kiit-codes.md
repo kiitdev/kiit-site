@@ -160,7 +160,7 @@ The problem as JSON:
 
 ```json title="RFC 9457 problem"
 {
-  "type": "https://www.kiit.dev/docs/kiit-codes?code=Failed:Invalid:INVALID_VALUE#taxonomy",
+  "type": "https://www.kiit.dev/docs/kiit-codes?code=Failed:Invalid:INVALID_VALUE#codes",
   "title": "The request had an invalid value.",
   "detail": "Validation failed",
   "code": "kiit.dev:codes:Failed:Invalid:INVALID_VALUE",
@@ -230,10 +230,10 @@ Every Status carries the same six fields, built-in or custom:
 |---|---|
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L97">success</ConceptTermLink> | `true` for `Passed`, `false` for `Failed`. A quick check that doesn't need the group. |
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L100">group</ConceptTermLink> | The kind of outcome (`Succeeded`, `Invalid`, ...). Lets generic code handle any Status, including custom ones, without knowing its name. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L56">name</ConceptTermLink> | A stable, `SCREAMING_SNAKE_CASE` key that logs, metrics and clients can match on. Never built from runtime data. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L56">name</ConceptTermLink> | A stable, `SCREAMING_SNAKE_CASE` key that logs, metrics and clients can match on. Never built from runtime data. Must not contain `/` or `:`. |
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L91">title</ConceptTermLink> | A constant, human-readable title for the code, not a description of one occurrence. It fills `title` in a `Problem` and a `CodeDetail`. Per-occurrence detail lives in an `Err`. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L70">origin</ConceptTermLink> | Who owns the code: `kiit.dev` for built-ins, your domain or a name of your own for custom codes. Keeps custom codes apart from the built-in ones and other teams', and becomes the host of an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `type`. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L84">scope</ConceptTermLink> | An optional label inside an origin, such as a department or product area (`payments.cards`). Empty when unset. Never parsed. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L70">origin</ConceptTermLink> | Who owns the code: `kiit.dev` for built-ins, which is reserved for kiit-authored codes, and your domain or a name of your own for custom codes. Keeps custom codes apart from the built-in ones and other teams', and becomes the host of an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `type`. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L84">scope</ConceptTermLink> | An optional label inside an origin, such as a department or product area (`payments.cards`). Empty when unset. Never parsed, but must not contain `/` or `:`. |
 
 :::warning[Choose a specific origin]
 1. **Domain**: A domain you own is unique through DNS, so your codes can't collide with anyone else's.
@@ -292,7 +292,7 @@ It adds `errors` and `code` as extension members. For calls between your own ser
 
 ```json title="Problem (RFC 9457)"
 {
-  "type": "https://www.kiit.dev/docs/kiit-codes?code=Failed:Invalid:INVALID_VALUE#taxonomy",
+  "type": "https://www.kiit.dev/docs/kiit-codes?code=Failed:Invalid:INVALID_VALUE#codes",
   "title": "The request had an invalid value.",
   "detail": "Validation failed",
   "code": "kiit.dev:codes:Failed:Invalid:INVALID_VALUE",
@@ -356,7 +356,7 @@ They use the same field names:
 | Identity | yes, RFC 9457's primary identifier | yes, exact |
 | Docs | yes, when it resolves | no |
 | Self-contained | no, needs a host or a base | yes |
-| Case | lowercase with dashes | as written |
+| Case | exact, as written | as written |
 
 Every error goes into `errors`. Each entry has only a field and a message. The cause and the value that failed validation are left out
 on purpose, since echoing them back is a disclosure risk.
@@ -464,19 +464,22 @@ Use it to know which `type` your statuses produce, and to make it point at your 
 
 | You provide | Origin | Base URL |
 |---|---|---|
+| Nothing | `kiit.dev`, a built-in | `https://www.kiit.dev/docs/kiit-codes`, fixed |
 | Nothing | A domain, such as `stripe.com` | `https://stripe.com/docs/codes` |
 | Nothing | A plain id, such as `myapp1` | `/docs/codes`, relative |
-| A `baseUrls` entry for the origin | Any | Your URL, always absolute |
+| A `baseUrls` entry for the origin | Any except `kiit.dev` | Your URL, always absolute |
 | `convertWithUrl(baseUrl = …)` | Any | The URL you pass for that call |
 
 :::info[Rules]
-1. **Lowercase**: Every segment of the suffix is lowercased.
-2. **Dashes**: `_` becomes `-`, so `DUPLICATE_CHARGE` is `duplicate-charge`.
-3. **Scope**: Each `.` becomes `/`, so `payments.cards` is `payments/cards`. An empty scope is skipped.
-4. **Tail**: Always `{status}/{group}/{name}`, where status is `passed` or `failed`.
-5. **Origin**: It is not repeated in the suffix, because the base URL is already specific to it.
-6. **Domain**: An origin counts as a domain by its form alone, labels of letters, digits and hyphens. There is no DNS lookup.
-7. **Unique**: Pick the base once and keep it. Names or scopes that differ only by case, `_` against `-`, or `a.b` against `a/b` produce the same `type`.
+1. **Exact case**: Every segment of the suffix is the exact value of the status. Nothing is lowercased and `_` stays `_`, so `DUPLICATE_CHARGE` stays `DUPLICATE_CHARGE`.
+2. **Scope**: Each `.` becomes `/`, so `payments.cards` is `payments/cards`. An empty scope is skipped.
+3. **Tail**: Always `{status}/{group}/{name}`, where status is `Passed` or `Failed`. These are the values of `Status.code`, with `/` in place of `:`.
+4. **Origin**: It is not repeated in the suffix, because the base URL is already specific to it.
+5. **Domain**: An origin counts as a domain by its form alone, labels of letters, digits and hyphens. There is no DNS lookup.
+6. **Unique**: Pick the base once and keep it. Two statuses give the same `type` only if a name or scope contains a `/`.
+7. **Names**: A name and a scope must not contain `/` or `:`, and should avoid `?`, `#` and `%`. Nothing checks this.
+8. **Built-ins**: A built-in links to the [Codes](#codes) section of this page, as `?code=Failed:Invalid:INVALID_VALUE#codes`, and a `baseUrls` entry for `kiit.dev` is ignored. The origin is reserved for kiit-authored codes, so a custom status must not use it.
+9. **Not parsed**: The tail is a readable form of the same values as `code`. Read `code` for the origin, the scope and the status.
 :::
 
 <Example id="guide-type-url" />
@@ -587,6 +590,7 @@ The first code of each group is its default. `Group.DEFAULT` is an alias for it,
 | | <CodeBadge>DATA_LOSS</CodeBadge> | Unrecoverable data loss or corruption occurred. |
 | | <CodeBadge>DEGRADED</CodeBadge> | This dependency is degraded; some calls may be refused. |
 | | <CodeBadge>LEGAL_BLOCK</CodeBadge> | Access is blocked for legal reasons. |
+| | <CodeBadge>ABORTED</CodeBadge> | The operation was aborted; retrying may help. |
 
 <Spacer />
 
