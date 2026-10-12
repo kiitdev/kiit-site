@@ -356,7 +356,7 @@ They use the same field names:
 | Identity | yes, RFC 9457's primary identifier | yes, exact |
 | Docs | yes, when it resolves | no |
 | Self-contained | no, needs a host or a base | yes |
-| Case | exact, as written | as written |
+| Case | as written | as written |
 
 Every error goes into `errors`. Each entry has only a field and a message. The cause and the value that failed validation are left out
 on purpose, since echoing them back is a disclosure risk.
@@ -460,7 +460,15 @@ Java and Swift have no example here, so use the JSON library you already have.
 
 ### Response: Type URL
 
-Use it to know which `type` your statuses produce, and to make it point at your own docs. `type` is the base URL plus a suffix, and the base is chosen like this:
+Use it to know which `type` your statuses produce, and to make it point at your own docs. A custom code with the origin `stripe.com` gives a `type` like this:
+
+```text
+https://stripe.com/docs/codes/payments/cards/Failed/Rejected/DUPLICATE_CHARGE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^ ^^^^^^ ^^^^^^^^ ^^^^^^^^^^^^^^^^
+base                          scope          status group    name
+```
+
+`type` is the base URL plus a suffix. The suffix is the scope, then the status, group and name. The base is chosen like this:
 
 | You provide | Origin | Base URL |
 |---|---|---|
@@ -471,15 +479,16 @@ Use it to know which `type` your statuses produce, and to make it point at your 
 | `convertWithUrl(baseUrl = …)` | Any | The URL you pass for that call |
 
 :::info[Rules]
-1. **Exact case**: Every segment of the suffix is the exact value of the status. Nothing is lowercased and `_` stays `_`, so `DUPLICATE_CHARGE` stays `DUPLICATE_CHARGE`.
+1. **Tail**: `{scope}/{status}/{group}/{name}`, the values of `Status.code` with `/` in place of `:`.
+   - **Status**: `Passed` or `Failed`.
+   - **Group**: the group of the code, such as `Rejected`.
+   - **Name**: the name of the code, such as `DUPLICATE_CHARGE`.
 2. **Scope**: Each `.` becomes `/`, so `payments.cards` is `payments/cards`. An empty scope is skipped.
-3. **Tail**: Always `{status}/{group}/{name}`, where status is `Passed` or `Failed`. These are the values of `Status.code`, with `/` in place of `:`.
-4. **Origin**: It is not repeated in the suffix, because the base URL is already specific to it.
-5. **Domain**: An origin counts as a domain by its form alone, labels of letters, digits and hyphens. There is no DNS lookup.
-6. **Unique**: Pick the base once and keep it. Two statuses give the same `type` only if a name or scope contains a `/`.
-7. **Names**: A name and a scope must not contain `/` or `:`, and should avoid `?`, `#` and `%`. Nothing checks this.
-8. **Built-ins**: A built-in links to the [Codes](#codes) section of this page, as `?code=Failed:Invalid:INVALID_VALUE#codes`, and a `baseUrls` entry for `kiit.dev` is ignored. The origin is reserved for kiit-authored codes, so a custom status must not use it.
-9. **Not parsed**: The tail is a readable form of the same values as `code`. Read `code` for the origin, the scope and the status.
+3. **Origin**: It picks the base URL and is not in the tail. A domain is recognized by its form alone, with no DNS lookup.
+4. **Names**: A name and a scope must not contain `/` or `:`, and should avoid `?`, `#` and `%`. Nothing checks this.
+5. **Stable**: `type` is the problem's identity, so pick the base once and keep it.
+6. **Built-ins**: A built-in links to the [Codes](#codes) section of this page, as `?code=Failed:Invalid:INVALID_VALUE#codes`, and a `baseUrls` entry for `kiit.dev` is ignored. The origin is reserved for kiit-authored codes, so a custom status must not use it.
+7. **Read code**: The tail is a readable form of the same values as `code`. Read `code` for the origin, the scope and the status.
 :::
 
 <Example id="guide-type-url" />
