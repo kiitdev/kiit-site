@@ -230,10 +230,18 @@ Every Status carries the same six fields, built-in or custom:
 |---|---|
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L97">success</ConceptTermLink> | `true` for `Passed`, `false` for `Failed`. A quick check that doesn't need the group. |
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L100">group</ConceptTermLink> | The kind of outcome (`Succeeded`, `Invalid`, ...). Lets generic code handle any Status, including custom ones, without knowing its name. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L56">name</ConceptTermLink> | A stable, `SCREAMING_SNAKE_CASE` key that logs, metrics and clients can match on. Never built from runtime data. Must not contain `/` or `:`. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L56">name</ConceptTermLink> | A stable, `SCREAMING_SNAKE_CASE` key that logs, metrics and clients can match on. Never built from runtime data. |
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L91">title</ConceptTermLink> | A constant, human-readable title for the code, not a description of one occurrence. It fills `title` in a `Problem` and a `CodeDetail`. Per-occurrence detail lives in an `Err`. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L70">origin</ConceptTermLink> | Who owns the code: `kiit.dev` for built-ins, which is reserved for kiit-authored codes, and your domain or a name of your own for custom codes. Keeps custom codes apart from the built-in ones and other teams', and becomes the host of an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `type`. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L84">scope</ConceptTermLink> | An optional label inside an origin, such as a department or product area (`payments.cards`). Empty when unset. Never parsed, but must not contain `/` or `:`. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L70">origin</ConceptTermLink> | Who owns the code: `kiit.dev` for built-ins, your domain or a name of your own for custom codes. Keeps custom codes apart from the built-in ones and other teams', and becomes the host of an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `type`. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L84">scope</ConceptTermLink> | An optional label inside an origin, such as a department or product area (`payments.cards`). Empty when unset. Never parsed. |
+
+:::info[Field rules]
+1. **Name**: `SCREAMING_SNAKE_CASE`. It must not contain `/` or `:`, and should avoid `?`, `#` and `%`.
+2. **Scope**: Levels split by `.`, such as `payments.cards`. Same character rules as the name.
+3. **Origin**: A domain you own or a specific name. Never `kiit.dev`, it is reserved.
+4. **As written**: `code` and `type` use these values exactly as you write them.
+5. **Not checked**: Nothing enforces these rules, so a status that breaks them gives an unreliable `code` or `type`.
+:::
 
 :::warning[Choose a specific origin]
 1. **Domain**: A domain you own is unique through DNS, so your codes can't collide with anyone else's.
@@ -485,7 +493,7 @@ base                          scope          status group    name
    - **Name**: the name of the code, such as `DUPLICATE_CHARGE`.
 2. **Scope**: Each `.` becomes `/`, so `payments.cards` is `payments/cards`. An empty scope is skipped.
 3. **Origin**: It picks the base URL and is not in the tail. A domain is recognized by its form alone, with no DNS lookup.
-4. **Names**: A name and a scope must not contain `/` or `:`, and should avoid `?`, `#` and `%`. Nothing checks this.
+4. **Names**: A name and a scope follow the [field rules](#taxonomy).
 5. **Stable**: `type` is the problem's identity, so pick the base once and keep it.
 6. **Built-ins**: A built-in links to the [Codes](#codes) section of this page, as `?code=Failed:Invalid:INVALID_VALUE#codes`, and a `baseUrls` entry for `kiit.dev` is ignored. The origin is reserved for kiit-authored codes, so a custom status must not use it.
 7. **Read code**: The tail is a readable form of the same values as `code`. Read `code` for the origin, the scope and the status.
