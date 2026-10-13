@@ -228,17 +228,17 @@ Every Status carries the same six fields, built-in or custom:
 
 | Field | Why it exists |
 |---|---|
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L97">success</ConceptTermLink> | `true` for `Passed`, `false` for `Failed`. A quick check that doesn't need the group. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L100">group</ConceptTermLink> | The kind of outcome (`Succeeded`, `Invalid`, ...). Lets generic code handle any Status, including custom ones, without knowing its name. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L56">name</ConceptTermLink> | A stable, `SCREAMING_SNAKE_CASE` key that logs, metrics and clients can match on. Never built from runtime data. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L91">title</ConceptTermLink> | A constant, human-readable title for the code, not a description of one occurrence. It fills `title` in a `Problem` and a `CodeDetail`. Per-occurrence detail lives in an `Err`. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L70">origin</ConceptTermLink> | Who owns the code: `kiit.dev` for built-ins, your domain or a name of your own for custom codes. Keeps custom codes apart from the built-in ones and other teams', and becomes the host of an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `type`. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L84">scope</ConceptTermLink> | An optional label inside an origin, such as a department or product area (`payments.cards`). Empty when unset. Never parsed. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L100">success</ConceptTermLink> | `true` for `Passed`, `false` for `Failed`. A quick check that doesn't need the group. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L103">group</ConceptTermLink> | The kind of outcome (`Succeeded`, `Invalid`, ...). Lets generic code handle any Status, including custom ones, without knowing its name. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L57">name</ConceptTermLink> | A stable, `SCREAMING_SNAKE_CASE` key that logs, metrics and clients can match on. Never built from runtime data. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L94">title</ConceptTermLink> | A constant, human-readable title for the code, not a description of one occurrence. It fills `title` in a `Problem` and a `CodeDetail`. Per-occurrence detail lives in an `Err`. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L73">origin</ConceptTermLink> | Who owns the code: `kiit.dev` for built-ins, your domain or a name of your own for custom codes. Keeps custom codes apart from the built-in ones and other teams', and becomes the host of an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `type`. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L87">scope</ConceptTermLink> | An optional label inside an origin, such as a department or product area (`payments.cards`). Empty when unset. Never parsed. |
 
 :::info[Field rules]
 1. **Name**: `SCREAMING_SNAKE_CASE`. It must not contain `/` or `:`, and should avoid `?`, `#` and `%`.
 2. **Scope**: Levels split by `.`, such as `payments.cards`. Same character rules as the name.
-3. **Origin**: A domain you own or a specific name. Never `kiit.dev`, it is reserved.
+3. **Origin**: A domain you own or a specific name, without `:`. Never `kiit.dev`, it is reserved.
 4. **As written**: `code` and `type` use these values exactly as you write them.
 5. **Not checked**: Nothing enforces these rules, so a status that breaks them gives an unreliable `code` or `type`.
 :::
@@ -376,6 +376,31 @@ on purpose, since echoing them back is a disclosure risk.
 4. **Passed statuses**: RFC 9457 describes problems, so use a `Problem` for `Failed` and a `CodeDetail` for `Passed`.
 :::
 
+<Spacer />
+
+### Security
+
+Every status carries an origin, a scope and a name, and all three end up in what a client sees. Treat them as public, like a route in your API.
+RFC 9457 asks that the information in a problem type is carefully vetted, and that the details of a generated problem are scrutinized.
+See section 5 of the [RFC](https://www.rfc-editor.org/rfc/rfc9457.html) for more.
+
+```json title="Where the values show"
+{
+  "type": "https://stripe.com/docs/codes/payments/cards/Failed/Rejected/DUPLICATE_CHARGE",
+  "code": "stripe.com:payments.cards:Failed:Rejected:DUPLICATE_CHARGE"
+}
+```
+
+| Value | Fine to show | Avoid |
+|---|---|---|
+| origin | `stripe.com` | `billing-internal.corp.example.com`, an internal host |
+| scope | `payments.cards` | `payments.fraud-review`, an internal step |
+| name | `DUPLICATE_CHARGE` | `BETA_WALLET_LIMIT`, a feature that has not launched |
+
+kiit-codes doesn't inspect these values. The `baseUrls` of `ProblemConverter`, or a type builder, change `type`, but `code` always carries the origin and
+the scope. See [Response: Keep internals out](#response-keep-internals-out). `detail`, `instance` and `errors` describe one occurrence,
+so keep stack traces and internal identifiers out of them.
+
 <BackToTop />
 
 ## Guide
@@ -394,8 +419,9 @@ Recipes for common tasks, grouped like the topics in Explanation.
 | 8 | [Response: JSON](#response-json) | Send an error body to a client |
 | 9 | [Response: Type URL](#response-type-url) | Know which `type` a status produces |
 | 10 | [Response: Custom type URL](#response-custom-type-url) | Change the suffix, the base, or the whole URL |
-| 11 | [Response: HTTP and gRPC](#response-http-and-grpc) | Pick the response code at the edge of your service |
-| 12 | [Response: Custom protocol](#response-custom-protocol) | Give a custom code its own value, such as 402 |
+| 11 | [Response: Keep internals out](#response-keep-internals-out) | Keep an internal host or scope out of a response |
+| 12 | [Response: HTTP and gRPC](#response-http-and-grpc) | Pick the response code at the edge of your service |
+| 13 | [Response: Custom protocol](#response-custom-protocol) | Give a custom code its own value, such as 402 |
 
 ### Status: Built-ins
 
@@ -515,6 +541,45 @@ Use it when the default suffix or base does not fit, such as docs that live unde
 
 <Spacer />
 
+### Response: Keep internals out
+
+Use it when an origin or a scope names something clients shouldn't see, such as an internal host or a team. `ProblemConverter` builds `type`, and it takes a `baseUrls` map of origin to base URL.
+There is no new API. Pick the option by what you want to hide:
+
+| Hide | How |
+|---|---|
+| The host in `type` | Pass `baseUrls` to `ProblemConverter`, with the origin mapped to a public URL. |
+| The scope in `type` | Pass a type builder to `ProblemConverter.convert` that leaves it out, such as `{ it.code.replace(':', '/') }` in Kotlin. |
+| The origin or scope in `code` | Use other values. `code` is always built from them. |
+
+The default output for an internal origin and scope:
+
+```json title="Default"
+{
+  "type": "https://billing-internal.corp.example.com/docs/codes/payments/fraud-review/Failed/Rejected/DUPLICATE_CHARGE",
+  "code": "billing-internal.corp.example.com:payments.fraud-review:Failed:Rejected:DUPLICATE_CHARGE"
+}
+```
+
+With `ProblemConverter(baseUrls = mapOf("billing-internal.corp.example.com" to "https://api.example.com/errors"))` and the type builder
+above, `type` no longer shows the host or the scope, and `code` is the same:
+
+```json title="Public base, no scope in type"
+{
+  "type": "https://api.example.com/errors/Failed/Rejected/DUPLICATE_CHARGE",
+  "code": "billing-internal.corp.example.com:payments.fraud-review:Failed:Rejected:DUPLICATE_CHARGE"
+}
+```
+
+:::info[code does not change]
+`code` shows the origin and the scope however `type` was built. If those values are internal, choose public ones for the status itself.
+:::
+
+See [Response: Custom type URL](#response-custom-type-url) for each way to build `type`, in every language, and
+[Security](#security) for why.
+
+<Spacer />
+
 ### Response: HTTP and gRPC
 
 Use it at the edge of your service, where an outcome becomes a response code. There is no reverse conversion, because many statuses share one code.
@@ -626,7 +691,7 @@ The kinds of `Err` and the builders that create them.
 | `Err.of(message)` | Plain message, no field or cause. |
 | `Err.of(status)` | Build directly from a `Status`. |
 | `Err.on(field, value, message)` | Error on a specific field, including its value. |
-| `Err.on(field, message)` | Same, but omits the value — for sensitive fields. |
+| `Err.on(field, message)` | Same, but omits the value, for sensitive fields. |
 | `Err.ex(throwable)` | Wrap a caught exception or throwable. |
 | `Err.obj(any)` | Wrap an arbitrary object as the cause. |
 | `Err.list(strings, message)` | Build an `Err.ErrorList` from a list of plain strings. |
@@ -728,9 +793,9 @@ code.
 
 | Question | Answer |
 |---|---|
-| **How is this different from Arrow's `Either`/`Validated` or `kotlin-result`?** | Those give you a `Result` type with no taxonomy underneath, so you supply the meaning yourself. This provides the taxonomy those types can build on, plus a working exception path. |
+| **How is this different from Arrow's `Either`/`Validated` or other Kotlin Result types?** | Those give you a `Result` type with no taxonomy underneath, so you supply the meaning yourself. This provides the taxonomy those types can build on, plus a working exception path. |
 | **Why not just use raw HTTP status codes everywhere?** | A background job or CLI command doesn't have an HTTP status. HTTP was the closest precedent and the taxonomy is validated against it, but it isn't scoped to HTTP. |
-| **Doesn't this lock me into Kiit's taxonomy?** | The eight groups are closed and cross-checked against HTTP and gRPC. Every code inside them is yours to extend, and you can ignore the built-in ones entirely. |
+| **Doesn't this lock me into the kiit-codes taxonomy?** | The eight groups are closed and cross-checked against HTTP and gRPC. Every code inside them is yours to extend, and you can ignore the built-in ones entirely. |
 | **What if my company already has its own status system?** | Map it into the taxonomy step by step, keeping the original names and meanings. Services share the groups, not identical codes. |
 
 <Spacer />
