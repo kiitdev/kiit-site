@@ -230,17 +230,17 @@ Every Status carries the same six fields, built-in or custom:
 |---|---|
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L100">success</ConceptTermLink> | `true` for `Passed`, `false` for `Failed`. A quick check that doesn't need the group. |
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L103">group</ConceptTermLink> | The kind of outcome (`Succeeded`, `Invalid`, ...). Lets generic code handle any Status, including custom ones, without knowing its name. |
-| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L57">name</ConceptTermLink> | A stable, `SCREAMING_SNAKE_CASE` key that logs, metrics and clients can match on. Never built from runtime data. |
+| <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L57">name</ConceptTermLink> | A stable, `CAPITAL_SNAKE_CASE` key that logs, metrics and clients can match on. Never built from runtime data. |
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L94">title</ConceptTermLink> | A constant, human-readable title for the code, not a description of one occurrence. It fills `title` in a `Problem` and a `CodeDetail`. Per-occurrence detail lives in an `Err`. |
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L73">origin</ConceptTermLink> | Who owns the code: `kiit.dev` for built-ins, your domain or a name of your own for custom codes. Keeps custom codes apart from the built-in ones and other teams', and becomes the host of an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457.html) `type`. |
 | <ConceptTermLink href="https://github.com/kiitdev/kiit-codes/blob/main/kiit-codes/src/commonMain/kotlin/kiit/codes/Status.kt#L87">scope</ConceptTermLink> | An optional label inside an origin, such as a department or product area (`payments.cards`). Empty when unset. Never parsed. |
 
 :::info[Field rules]
-1. **Name**: `SCREAMING_SNAKE_CASE`. It must not contain `/` or `:`, and should avoid `?`, `#` and `%`.
-2. **Scope**: Levels split by `.`, such as `payments.cards`. Same character rules as the name.
-3. **Origin**: A domain you own or a specific name, without `:`. Never `kiit.dev`, it is reserved.
-4. **As written**: `code` and `type` use these values exactly as you write them.
-5. **Not checked**: Nothing enforces these rules, so a status that breaks them gives an unreliable `code` or `type`.
+1. **Name**: `CAPITAL_SNAKE_CASE` by convention. Letters, digits, `.`, `-` and `_`, starting with a letter or digit.
+2. **Scope**: Levels split by `.`, such as `payments.cards`. Same characters as the name, and it may be empty.
+3. **Origin**: A domain you own or a specific name. Same characters as the name. `kiit.dev` is reserved for kiit-authored codes.
+4. **As written**: `code` and `type` use these values exactly as you write them. Case is not changed.
+5. **Checked**: Creating a status with any other character, or an empty name or origin, throws. `StatusRules.check` tests values without throwing.
 :::
 
 :::warning[Choose a specific origin]
