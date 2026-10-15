@@ -350,7 +350,7 @@ val d = Validations.of(form, errorsFound)
 ### Conversions
 
 - **`toOutcome()`**: converts any `Result<T, E>` to `Outcome<T>` (`Result<T, Err>`), building an `Err` from whatever the failure held (`String`, `Exception`, or an existing `Err`).
-- **`toTry()`**: converts any `Result<T, E>` to `Try<T>` (`Result<T, Throwable>`). An `Err`-typed failure becomes a kiit-codes `StatusException` via `Failed.toException(errors)`, so the exception still carries the original status and error detail.
+- **`toTry()`**: converts any `Result<T, E>` to `Try<T>` (`Result<T, Throwable>`). An `Err`-typed failure becomes a kiit-codes `StatusException` via `Failed.toException(errors = errors)`, so the exception still carries the original status and error detail.
 - **`Tries.of { ... }`**: the reverse direction. If the block throws a `StatusException` (`RestrictedException`/`InvalidException`/`RejectedException`/`UnservedException`), the resulting `Try` is built with the matching `restricted`/`invalid`/`rejected`/`unserved` status instead of a generic failure.
 
 <BackToTop />
