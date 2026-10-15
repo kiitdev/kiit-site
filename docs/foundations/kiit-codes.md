@@ -259,7 +259,7 @@ A `Status` is the kind of outcome. The details of one occurrence travel separate
 |---|---|
 | `Err` | The details of one occurrence: which field, what value, what message. The variants and builders are in [Err types](#err-types). |
 | `Checked` | A status and its errors together, so they never disagree: a passing `Checked` has no errors, a failing one has at least one. `collect(...)` combines several into one. |
-| `StatusException` | For boundaries that only understand exceptions, with one subclass per failed group: `RestrictedException`, `InvalidException`, `RejectedException` and `UnservedException`. `Failed.toException(errors)` picks the right one. |
+| `StatusException` | For boundaries that only understand exceptions, with one subclass per failed group: `RestrictedException`, `InvalidException`, `RejectedException` and `UnservedException`. `Failed.toException()` picks the right one. Each subclass is open, so your own exception can extend one and carry its own data. |
 
 :::tip[Status or Err?]
 1. **Status**: The kind of outcome, constant: `Invalid.INVALID_VALUE`.
@@ -414,7 +414,7 @@ Recipes for common tasks, grouped like the topics in Explanation.
 | 3 | [Status: Pattern matching](#status-pattern-matching) | Turn a status into a response or a decision |
 | 4 | [Error Handling: Collect errors](#error-handling-collect-errors) | Report all the problems at once |
 | 5 | [Error Handling: Error details](#error-handling-error-details) | Say which field failed and why |
-| 6 | [Error Handling: Exceptions](#error-handling-exceptions) | Cross a boundary that only understands exceptions |
+| 6 | [Error Handling: Exceptions](#error-handling-exceptions) | Cross a boundary that only understands exceptions, or add your own data to one |
 | 7 | [Error Handling: Result](#error-handling-result) | Pair a value with a status, with kiit-result |
 | 8 | [Response: JSON](#response-json) | Send an error body to a client |
 | 9 | [Response: Type URL](#response-type-url) | Know which `type` a status produces |
@@ -471,6 +471,12 @@ Use it when a framework or a callback only understands exceptions. `toException(
 the caller can catch the kind of failure it cares about. In Java it is a checked exception. Kotlin exceptions do not bridge to Swift's `Error`, so there is no Swift tab.
 
 <Example id="guide-exceptions" />
+
+To carry data of your own, extend the subclass for the group. The status is fixed by the group you extend, and `status` has that narrow type, so a `RestrictedException` gives you a `Failed.Restricted` with no cast. `message` is the one line summary and defaults to the status title. `errors` is the full list and is separate from `message`, so setting one does not change the other.
+
+Match the narrow type before its group. The first match wins, so a `when` or a `catch` that lists the group first never reaches your subclass. Kotlin does not warn about that order, and Java rejects it at compile time. The iOS `*Error` classes are final, so they cannot be extended from Swift.
+
+<Example id="guide-exceptions-subclass" />
 
 <Spacer />
 
