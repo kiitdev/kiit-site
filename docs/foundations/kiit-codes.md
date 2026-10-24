@@ -107,6 +107,12 @@ Refer to the [LICENSE](https://github.com/kiitdev/kiit-codes/blob/main/LICENSE) 
 
 <Example id="setup-imports" />
 
+:::info[TypeScript requirements]
+1. **Node**: 22.13 or later.
+2. **Modules**: One ESM build that works from both `import` and `require()`. `require()` loads the ES module directly, with no flag or warning from Node 22.13.
+3. **Jest**: A project on Jest's default CommonJS setup may need `transformIgnorePatterns` changed to let Jest handle the package.
+:::
+
 <Spacer />
 
 ### Sources
@@ -259,7 +265,7 @@ A `Status` is the kind of outcome. The details of one occurrence travel separate
 |---|---|
 | `Err` | The details of one occurrence: which field, what value, what message. The variants and builders are in [Err types](#err-types). |
 | `Checked` | A status and its errors together, so they never disagree: a passing `Checked` has no errors, a failing one has at least one. `collect(...)` combines several into one. |
-| `StatusException` | For boundaries that only understand exceptions, with one subclass per failed group: `RestrictedException`, `InvalidException`, `RejectedException` and `UnservedException`. `Failed.toException()` picks the right one. Each subclass is open, so your own exception can extend one and carry its own data. |
+| `StatusException` | For boundaries that only understand exceptions, with one subclass per failed group: `RestrictedException`, `InvalidException`, `RejectedException` and `UnservedException`. `Failed.toException()` picks the right one. Each subclass is open, so your own exception can extend one and carry its own data. In TypeScript the classes are `StatusError`, `RestrictedError`, `InvalidError`, `RejectedError` and `UnservedError`, and `toError(failed)` picks the right one. |
 
 :::tip[Status or Err?]
 1. **Status**: The kind of outcome, constant: `Invalid.INVALID_VALUE`.
@@ -468,7 +474,7 @@ Use it to say which field failed and why. Leave the value out for a sensitive fi
 ### Error Handling: Exceptions
 
 Use it when a framework or a callback only understands exceptions. `toException()` picks the subclass for the status group, so
-the caller can catch the kind of failure it cares about. In Java it is a checked exception. Kotlin exceptions do not bridge to Swift's `Error`, so there is no Swift tab.
+the caller can catch the kind of failure it cares about. In Java it is a checked exception. In TypeScript the base class is `StatusError`, there is one `*Error` class per group such as `RejectedError`, and the function is `toError()`. Kotlin exceptions do not bridge to Swift's `Error`, so there is no Swift tab.
 
 <Example id="guide-exceptions" />
 
@@ -519,7 +525,7 @@ base                          scope          status group    name
 | `convertWithUrl(baseUrl = …)` | Any | The URL you pass for that call |
 
 :::info[Rules]
-1. **Tail**: `{scope}/{status}/{group}/{name}`, the values of `Status.code` with `/` in place of `:`.
+1. **Tail**: `{scope}/{status}/{group}/{name}`. The last three are the values of `Status.code` (`statusCode(status)` in TypeScript) with `/` in place of `:`.
    - **Status**: `Passed` or `Failed`.
    - **Group**: the group of the code, such as `Rejected`.
    - **Name**: the name of the code, such as `DUPLICATE_CHARGE`.
@@ -697,7 +703,7 @@ The kinds of `Err` and the builders that create them.
 | `Err.of(message)` | Plain message, no field or cause. |
 | `Err.of(status)` | Build directly from a `Status`. |
 | `Err.on(field, value, message)` | Error on a specific field, including its value. |
-| `Err.on(field, message)` | Same, but omits the value, for sensitive fields. |
+| `Err.on(field, message)` | Same, but omits the value, for sensitive fields. In TypeScript this is `Err.onField(field, message)`. |
 | `Err.ex(throwable)` | Wrap a caught exception or throwable. |
 | `Err.obj(any)` | Wrap an arbitrary object as the cause. |
 | `Err.list(strings, message)` | Build an `Err.ErrorList` from a list of plain strings. |
